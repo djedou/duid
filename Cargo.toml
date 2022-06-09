@@ -1,0 +1,42 @@
+[package]
+name = "duid"
+version = "0.1.0"
+edition = "2021"
+
+
+
+
+[dependencies]
+duid-core = { path = "packages/duid-core", default-features = false }
+duid-rsx-macro = { path = "packages/duid-rsx-macro", optional = true }
+cfg-if = "1.0"
+
+[features]
+default = ["with-dom", "with-rsx-macro", "with-request-animation-frame"]
+with-dom = ["duid-core/with-dom"]
+
+# request-animation-frame should be ON all the time, otherwise
+# your webapp will have a very poor UI responsiveness
+with-request-animation-frame = ["duid-core/with-request-animation-frame"]
+
+# shows telemetry such as duration it took to update the dom
+with-measure = ["duid-core/with-measure"]
+# log debug patches
+with-debug = ["duid-core/with-debug"]
+
+# lets you use node! macro to write jsx like code in the view
+with-rsx-macro = ["duid-rsx-macro"]
+
+
+[workspace]
+members = [
+    # Packages
+    "packages/duid-core",
+    "packages/duid-rsx-macro",
+    
+    # Examples
+]
+
+exclude = [
+    "examples/duid-dev"
+]

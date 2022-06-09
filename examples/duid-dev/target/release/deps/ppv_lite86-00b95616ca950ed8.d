@@ -1,0 +1,11 @@
+C:\Users\Djedou\Desktop\rust_project\duid\examples\duid-dev\target\release\deps\ppv_lite86-00b95616ca950ed8.rmeta: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\soft.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\types.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\mod.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\sse2.rs
+
+C:\Users\Djedou\Desktop\rust_project\duid\examples\duid-dev\target\release\deps\libppv_lite86-00b95616ca950ed8.rlib: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\soft.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\types.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\mod.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\sse2.rs
+
+C:\Users\Djedou\Desktop\rust_project\duid\examples\duid-dev\target\release\deps\ppv_lite86-00b95616ca950ed8.d: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\soft.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\types.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\mod.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\sse2.rs
+
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\lib.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\soft.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\types.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\mod.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\ppv-lite86-0.2.16\src\x86_64\sse2.rs:

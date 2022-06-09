@@ -1,0 +1,165 @@
+
+///////////////////////
+/////   JSX  //////////
+///////////////////////
+
+// ==================================
+// Tags
+// ==================================
+
+JsxTagExpression =
+	tag: JsxAnyTag
+
+JsxAnyTag =
+	JsxElement
+	| JsxSelfClosingElement
+	| JsxFragment
+
+// <a />
+JsxSelfClosingElement =
+	'<'
+	name: JsxAnyElementName
+	type_arguments: TsTypeArguments?
+	attributes: JsxAttributeList
+	'/'
+	'>'
+
+JsxElement =
+	opening_element: JsxOpeningElement
+	children: JsxChildList
+	closing_element: JsxClosingElement
+
+JsxOpeningElement =
+	'<'
+	name: JsxAnyElementName
+	type_arguments: TsTypeArguments?
+	attributes: JsxAttributeList
+	'>'
+
+JsxClosingElement =
+	'<'
+	'/'
+	name: JsxAnyElementName
+	'>'
+
+// <>content</>
+JsxFragment =
+	opening_fragment: JsxOpeningFragment
+	children: JsxChildList
+	closing_fragment: JsxClosingFragment
+
+JsxOpeningFragment =
+	'<'
+	'>'
+
+JsxClosingFragment =
+	'<'
+	'/'
+	'>'
+
+// ==================================
+// Names
+// ==================================
+
+JsxName = value: 'jsx_ident'
+JsxReferenceIdentifier = value: 'jsx_ident'
+
+// <a:test>
+JsxNamespaceName =
+	namespace: JsxName
+	':'
+	name: JsxName
+
+JsxAnyElementName =
+	JsxName
+	| JsxReferenceIdentifier
+	| JsxMemberName
+	| JsxNamespaceName
+
+JsxAnyObjectName =
+	JsxReferenceIdentifier
+	| JsxMemberName
+	| JsxNamespaceName
+
+// <a.test>
+JsxMemberName =
+	object: JsxAnyObjectName
+	'.'
+	member: JsName
+
+JsxAnyName =
+	JsxName
+	| JsxNamespaceName
+
+// ==================================
+// Attributes
+// ==================================
+
+JsxAttributeList = JsxAnyAttribute*
+
+JsxAnyAttribute =
+	JsxAttribute
+	| JsxSpreadAttribute
+
+JsxAttribute =
+	name: JsxAnyAttributeName
+	initializer: JsxAttributeInitializerClause?
+
+JsxAttributeInitializerClause =
+	'='
+	value: JsxAnyAttributeValue
+
+JsxAnyAttributeValue =
+	JsxAnyTag
+	| JsxString
+	| JsxExpressionAttributeValue
+
+JsxExpressionAttributeValue =
+	'{'
+	expression: JsAnyExpression
+	'}'
+
+JsxAnyAttributeName =
+	JsxName
+	| JsxNamespaceName
+
+// <a {...b} />
+//    ^^^^^^
+JsxSpreadAttribute =
+	'{'
+	'...'
+	argument: JsAnyExpression // parse_assignment_expression_or_higher
+	'}'
+
+// ==================================
+// Children
+// ==================================
+
+JsxChildList = JsxAnyChild*
+
+JsxAnyChild =
+	JsxElement
+	| JsxSelfClosingElement
+	| JsxText
+	| JsxExpressionChild
+	| JsxSpreadChild
+	| JsxFragment
+
+JsxExpressionChild =
+	'{'
+	expression: JsAnyExpression?
+	'}'
+
+JsxSpreadChild =
+	'{'
+	'...'
+	expression: JsAnyExpression
+	'}'
+
+// ==================================
+// Auxiliary
+// ==================================
+
+JsxText = value: 'jsx_text_literal'
+
+JsxString = value: 'jsx_string_literal'
