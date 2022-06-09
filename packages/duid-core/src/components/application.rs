@@ -36,11 +36,11 @@ where
     /// This is for diagnostic and performance measurement purposes.
     ///
     /// Warning: DO NOT use for anything else other than the intended purpose
-    fn measurements(&self, measurements: Measurements) -> Cmd<Self, MSG>
+    fn measurements(&self, _measurements: Measurements) -> Cmd<Self, MSG>
     where
         Self: Sized + 'static,
     {
-        log::debug!("Measurements: {:#?}", measurements);
+        //log::debug!("Measurements: {:#?}", measurements);
         Cmd::none().no_render()
     }
 }

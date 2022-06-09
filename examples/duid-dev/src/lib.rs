@@ -38,7 +38,6 @@ impl Application<Msg> for App {
                             value="Click me!"
                             key=1
                             on_click={|_| {
-                                log::trace!("Button is clicked");
                                 Msg::Click
                             }}
                     />
@@ -50,9 +49,12 @@ impl Application<Msg> for App {
     }
 
     fn update(&mut self, msg: Msg) -> Cmd<Self, Msg> {
-        log::trace!("App is updating with msg: {:?}", msg);
+        //log::trace!("App is updating with msg: {:?}", msg);
         match msg {
-            Msg::Click => self.click_count += 1,
+            Msg::Click => {
+                log::debug!("Button is clicked");
+                self.click_count += 1
+            }
         }
         Cmd::none()
     }
@@ -60,7 +62,7 @@ impl Application<Msg> for App {
 
 #[wasm_bindgen(start)]
 pub fn main() {
-    console_log::init_with_level(log::Level::Trace).unwrap();
+    //console_log::init_with_level(log::Level::Trace).unwrap();
     console_error_panic_hook::set_once();
     Program::mount_to_body(App::new());
 }

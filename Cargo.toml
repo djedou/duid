@@ -40,3 +40,5 @@ members = [
 exclude = [
     "examples/duid-dev"
 ]
+
+#sauron = "0.49.4"

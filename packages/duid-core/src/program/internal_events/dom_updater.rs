@@ -157,8 +157,8 @@ where
         let patches = diff(&self.current_vdom, &new_vdom);
         let total_patches = patches.len();
 
-        #[cfg(feature = "with-debug")]
-        log::debug!("patches: {:#?}", patches);
+        //#[cfg(feature = "with-debug")]
+        //log::debug!("patches: {:#?}", patches);
         let mut root_node = self.root_node();
 
         let active_closures = patch(
