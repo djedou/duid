@@ -1,6 +1,8 @@
+
 use wasm_bindgen::{closure::Closure, JsCast};
 
 thread_local!(static WINDOW: web_sys::Window = web_sys::window().expect("no global `window` exists"));
+
 /// utility function which returns the Window element
 pub fn window() -> web_sys::Window {
     WINDOW.with(|window| window.clone())
@@ -32,6 +34,7 @@ pub(crate) fn request_animation_frame_for_closure(f: &Closure<dyn FnMut()>) {
 }
 
 thread_local!(static DOCUMENT: web_sys::Document = window().document().expect("should have a document on window"));
+
 /// provides access to the document element
 pub fn document() -> web_sys::Document {
     DOCUMENT.with(|document| document.clone())

@@ -1,11 +1,11 @@
-use crate::{dom::Cmd, vdom::Node};
+use crate::{program::Cmd, v_dom::v_node::Node};
 
 /// An Application is the root component of your program.
 /// Everything that happens in your application is done here.
 ///
 pub trait Application<MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
 {
     ///  The application can implement this method where it can modify its initial state.
     ///  This method is called right after the program is mounted into the DOM.

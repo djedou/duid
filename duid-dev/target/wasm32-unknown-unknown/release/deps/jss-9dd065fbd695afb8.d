@@ -1,0 +1,12 @@
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\wasm32-unknown-unknown\release\deps\jss-9dd065fbd695afb8.rmeta: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style\svg_style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\units.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\value.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\../README.md
+
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\wasm32-unknown-unknown\release\deps\libjss-9dd065fbd695afb8.rlib: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style\svg_style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\units.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\value.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\../README.md
+
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\wasm32-unknown-unknown\release\deps\jss-9dd065fbd695afb8.d: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style\svg_style.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\units.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\value.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\../README.md
+
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\lib.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\style\svg_style.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\units.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\value.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\jss-0.5.1\src\../README.md:

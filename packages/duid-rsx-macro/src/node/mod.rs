@@ -25,7 +25,7 @@ fn fragment_to_tokens(nodes: Vec<Node>) -> TokenStream {
     let children_tokens = children_to_tokens(nodes);
     tokens.extend(quote! {{
         #children_tokens
-        duid::html::fragment(children)
+        duid::v_dom::html::fragment(children)
     }});
     tokens
 }
@@ -52,7 +52,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
                     #[allow(unused_braces)]
                     {
                         #children_tokens
-                        duid::html::element_ns(Some(#namespace), #name, [#(#attributes),*], children, #self_closing)
+                        duid::v_dom::html::element_ns(Some(#namespace), #name, [#(#attributes),*], children, #self_closing)
                     }
                 }}
             );
@@ -62,7 +62,7 @@ fn node_to_tokens(node: Node) -> TokenStream {
                     #[allow(unused_braces)]
                     {
                         #children_tokens
-                        duid::html::element_ns(None, #name, [#(#attributes),*], children, #self_closing)
+                        duid::v_dom::html::element_ns(None, #name, [#(#attributes),*], children, #self_closing)
                     }
                 }}
             );
@@ -76,7 +76,7 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
             match attribute.node_type {
                 NodeType::Block => {
                     quote! {
-                        duid::Attribute::from(#value)
+                        duid::v_dom::html::Attribute::from(#value)
                     }
                 }
                 NodeType::Attribute => {
@@ -88,12 +88,12 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     if name.starts_with("on_") {
                         let name = quote::format_ident!("{}", name);
                         quote::quote! {
-                            duid::html::events::#name(#value)
+                            duid::v_dom::events::#name(#value)
                         }
                     } else {
                         let name = convert_name(&name);
                         quote::quote! {
-                            duid::html::attributes::attr(#name, #value)
+                            duid::v_dom::html::attributes::attr(#name, #value)
                         }
                     }
                 }
@@ -111,10 +111,10 @@ fn attribute_to_tokens(attribute: &Node) -> TokenStream {
                     .expect("attribute should have a name"),
             );
             quote! {
-                duid::Attribute::new(
+                duid::v_dom::html::Attribute::new(
                     None,
                     #name,
-                    duid::html::attributes::AttributeValue::Empty,
+                    duid::v_dom::html::attributes::AttributeValue::Empty,
                 )
             }
         }
@@ -144,7 +144,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         .value_as_string()
                         .expect("expecting a string on a text node");
                     tokens.extend(quote! {
-                        #receiver.push(duid::html::text(#s));
+                        #receiver.push(duid::v_dom::html::text(#s));
                     });
                 }
                 NodeType::Comment => {
@@ -152,7 +152,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         .value_as_string()
                         .expect("expecting a string on a comment node");
                     tokens.extend(quote! {
-                        #receiver.push(duid::html::comment(#s));
+                        #receiver.push(duid::v_dom::html::comment(#s));
                     });
                 }
                 NodeType::Doctype => {
@@ -160,7 +160,7 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                         .value_as_string()
                         .expect("expecting a string value on a doctype");
                     tokens.extend(quote! {
-                        #receiver.push(duid::html::doctype(#value));
+                        #receiver.push(duid::v_dom::html::doctype(#value));
                     });
                 }
                 NodeType::Block => match child.value {
@@ -171,13 +171,13 @@ fn children_to_tokens(children: Vec<Node>) -> TokenStream {
                             }) => {
                                 tokens.extend(quote! {
                                         for #pat in #expr {
-                                            #receiver.push(duid::Node::from(#body));
+                                            #receiver.push(duid::v_dom::v_node::Node::from(#body));
                                         }
                                     });
                             }
                             _ => {
                                 tokens.extend(quote! {
-                                    #receiver.push(duid::Node::from(#expr));
+                                    #receiver.push(duid::v_dom::v_node::Node::from(#expr));
                                 });
                             }
                         }

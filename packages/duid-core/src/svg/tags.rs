@@ -15,7 +15,7 @@ macro_rules! declare_svg_tags{
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::vdom::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::vdom::Node<MSG>>) -> $crate::vdom::Node<MSG>
+                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::v_node::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
                     {
                         $crate::svg::svg_element(stringify!($name), attrs, children)
                 }
@@ -35,7 +35,7 @@ macro_rules! declare_svg_tags{
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::vdom::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::vdom::Node<MSG>>) -> $crate::vdom::Node<MSG>
+                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::v_node::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
                     {
                         $crate::svg::svg_element($tagname, attrs, children)
                  }

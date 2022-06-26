@@ -1,15 +1,14 @@
-use crate::events::MountEvent;
-use crate::vdom;
-use crate::vdom::Listener;
-use crate::vdom::NodeTrait;
 use crate::{
     program::internal_events::Dispatch,
-    //dom::Dispatch,
-    events::Event,
-    html,
-    html::attributes::{AttributeValue, SegregatedAttributes, Special},
-    vdom::Attribute,
-    vdom::Leaf,
+    //components::{Component, Application },
+    v_dom::{
+        events::{Event, MountEvent},
+        html,
+        html::attributes::{AttributeValue, SegregatedAttributes, Special},
+        v_node,
+        v_node::{Attribute, Leaf, Listener, NodeTrait}
+    },
+    dom::{document}
 };
 use std::cell::Cell;
 use std::collections::HashMap;
@@ -20,7 +19,8 @@ use web_sys::{
     HtmlLiElement, HtmlLinkElement, HtmlMenuItemElement, HtmlMeterElement,
     HtmlOptGroupElement, HtmlOptionElement, HtmlOutputElement,
     HtmlParamElement, HtmlProgressElement, HtmlSelectElement, HtmlStyleElement,
-    HtmlTextAreaElement, Node, Text,
+    HtmlTextAreaElement, Text,
+    Node
 };
 
 thread_local!(static NODE_ID_COUNTER: Cell<usize> = Cell::new(1));
@@ -47,8 +47,7 @@ pub(crate) const DATA_VDOM_ID: &str = "data-vdom-id";
 /// The u32 is a unique identifier that is associated with the DOM element that this closure is
 /// attached to.
 ///
-pub type ActiveClosure =
-    HashMap<usize, Vec<(&'static str, Closure<dyn FnMut(web_sys::Event)>)>>;
+pub type ActiveClosure = HashMap<usize, Vec<(&'static str, Closure<dyn FnMut(web_sys::Event)>)>>;
 
 /// A node along with all of the closures that were created for that
 /// node's events and all of it's child node's events.
@@ -70,16 +69,16 @@ impl CreatedNode {
 
     /// create a text node
     pub fn create_text_node(txt: &str) -> Text {
-        crate::document().create_text_node(txt)
+        document().create_text_node(txt)
     }
 
     fn create_leaf_node<DSP, MSG>(
-        program: &DSP,
+        component: &DSP,
         leaf: &Leaf<MSG>,
         focused_node: &mut Option<Node>,
     ) -> CreatedNode
     where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
         match leaf {
@@ -88,7 +87,7 @@ impl CreatedNode {
                 CreatedNode::without_closures(text_node.unchecked_into())
             }
             Leaf::Comment(comment) => {
-                let comment_node = crate::document().create_comment(comment);
+                let comment_node = document().create_comment(comment);
                 CreatedNode::without_closures(comment_node.unchecked_into())
             }
             Leaf::SafeHtml(_safe_html) => {
@@ -99,12 +98,12 @@ impl CreatedNode {
                     doctype is only used in rendering");
             }
             Leaf::Fragment(nodes) => {
-                let document = crate::document();
+                let document = document();
                 let doc_fragment = document.create_document_fragment();
                 let mut closures = ActiveClosure::new();
                 for vnode in nodes {
                     let created_node =
-                        Self::create_dom_node(program, vnode, focused_node);
+                        Self::create_dom_node(component, vnode, focused_node);
                     closures.extend(created_node.closures);
                     doc_fragment
                         .append_child(&created_node.node)
@@ -119,20 +118,20 @@ impl CreatedNode {
     /// Create and return a `CreatedNode` instance (containing a DOM `Node`
     /// together with potentially related closures) for this virtual node.
     pub fn create_dom_node<DSP, MSG>(
-        program: &DSP,
-        vnode: &vdom::Node<MSG>,
+        component: &DSP,
+        vnode: &v_node::Node<MSG>,
         focused_node: &mut Option<Node>,
     ) -> CreatedNode
     where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
         match vnode {
-            vdom::Node::Leaf(leaf_node) => {
-                Self::create_leaf_node(program, leaf_node, focused_node)
+            v_node::Node::Leaf(leaf_node) => {
+                Self::create_leaf_node(component, leaf_node, focused_node)
             }
-            vdom::Node::Element(element_node) => {
-                Self::create_element_node(program, element_node, focused_node)
+            v_node::Node::Element(element_node) => {
+                Self::create_element_node(component, element_node, focused_node)
             }
         }
     }
@@ -141,11 +140,11 @@ impl CreatedNode {
     /// call the listener since browser don't allow asynchronous execution of
     /// dispatching custom events (non-native browser events)
     fn dispatch_mount_event<DSP, MSG>(
-        program: &DSP,
-        velem: &vdom::Element<MSG>,
+        component: &DSP,
+        velem: &v_node::Element<MSG>,
         element: &Element,
     ) where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
         for att in velem.attrs.iter() {
@@ -155,7 +154,7 @@ impl CreatedNode {
                         let msg = cb.emit(Event::from(MountEvent {
                             target_node: element.clone().unchecked_into(),
                         }));
-                        program.dispatch(msg);
+                        component.dispatch(msg);
                     }
                 }
             }
@@ -165,15 +164,15 @@ impl CreatedNode {
     /// Build a DOM element by recursively creating DOM nodes for this element and it's
     /// children, it's children's children, etc.
     fn create_element_node<DSP, MSG>(
-        program: &DSP,
-        velem: &vdom::Element<MSG>,
+        component: &DSP,
+        velem: &v_node::Element<MSG>,
         focused_node: &mut Option<Node>,
     ) -> CreatedNode
     where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
-        let document = crate::document();
+        let document = document();
 
         let element = if let Some(namespace) = velem.namespace() {
             document
@@ -184,19 +183,18 @@ impl CreatedNode {
                 .create_element(velem.tag())
                 .expect("Unable to create element")
         };
-
-        Self::dispatch_mount_event(program, velem, &element);
-
+        Self::dispatch_mount_event(component, velem, &element);
+        
         if velem.is_focused() {
             *focused_node = Some(element.clone().unchecked_into());
             //log::trace!("element is focused..{:?}", focused_node);
             Self::set_element_focus(&element);
         }
-
+        
         let mut closures = ActiveClosure::new();
 
         Self::set_element_attributes(
-            program,
+            component,
             &mut closures,
             &element,
             &velem.get_attributes().iter().collect::<Vec<_>>(),
@@ -211,7 +209,7 @@ impl CreatedNode {
                     .expect("must not error");
             } else {
                 let created_child =
-                    Self::create_dom_node(program, child, focused_node);
+                    Self::create_dom_node(component, child, focused_node);
 
                 closures.extend(created_child.closures);
                 element
@@ -226,17 +224,17 @@ impl CreatedNode {
 
     /// set the element attribute
     pub fn set_element_attributes<DSP, MSG>(
-        program: &DSP,
+        component: &DSP,
         closures: &mut ActiveClosure,
         element: &Element,
         attrs: &[&Attribute<MSG>],
     ) where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
         let attrs = mt_dom::merge_attributes_of_same_name(attrs);
         for att in attrs {
-            Self::set_element_attribute(program, closures, element, &att);
+            Self::set_element_attribute(component, closures, element, &att);
         }
     }
 
@@ -247,12 +245,12 @@ impl CreatedNode {
     /// attributes, style, function_call.
     #[track_caller]
     pub fn set_element_attribute<DSP, MSG>(
-        program: &DSP,
+        component: &DSP,
         closures: &mut ActiveClosure,
         element: &Element,
         attr: &Attribute<MSG>,
     ) where
-        MSG: 'static,
+        MSG: 'static + std::fmt::Debug,
         DSP: Clone + Dispatch<MSG> + 'static,
     {
         let SegregatedAttributes {
@@ -379,7 +377,7 @@ impl CreatedNode {
             // a custom enter event which triggers the listener
             // when the enter key is pressed
             if *event_str == "enter" {
-                let program_clone = program.clone();
+                let component_clone = component.clone();
                 let listener_clone = listener.clone();
                 let key_press_func: Closure<dyn FnMut(web_sys::Event)> =
                     Closure::wrap(Box::new(move |event: web_sys::Event| {
@@ -388,7 +386,7 @@ impl CreatedNode {
                             .expect("should be a keyboard event");
                         if ke.key() == "Enter" {
                             let msg = listener_clone.emit(Event::from(event));
-                            program_clone.dispatch(msg);
+                            component_clone.dispatch(msg);
                         }
                     }));
 
@@ -404,9 +402,9 @@ impl CreatedNode {
                 // This is where all of the UI events is wired in this part of the code.
                 // All event listener is added to this element.
                 // The callback to this listener emits an Msg which is then \
-                // dispatched to the `program` which then triggers update view cycle.
+                // dispatched to the `component` which then triggers update view cycle.
                 let callback_wrapped: Closure<dyn FnMut(web_sys::Event)> =
-                    create_closure_wrap(program, listener);
+                    create_closure_wrap(component, listener);
                 current_elm
                     .add_event_listener_with_callback(
                         event_str,
@@ -584,18 +582,18 @@ impl CreatedNode {
 
 /// This wrap into a closure the function that is dispatched when the event is triggered.
 pub(crate) fn create_closure_wrap<DSP, MSG>(
-    program: &DSP,
+    component: &DSP,
     listener: &Listener<MSG>,
 ) -> Closure<dyn FnMut(web_sys::Event)>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
     DSP: Clone + Dispatch<MSG> + 'static,
 {
     let listener_clone = listener.clone();
-    let program_clone = program.clone();
+    let component_clone = component.clone();
 
     Closure::wrap(Box::new(move |event: web_sys::Event| {
         let msg = listener_clone.emit(Event::from(event));
-        program_clone.dispatch(msg);
+        component_clone.dispatch(msg);
     }))
 }

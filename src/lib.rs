@@ -2,6 +2,8 @@
 //!  **Duid** is an web framework for creating fast and interactive client side web application.
 //!
 //!
+
+/*
 #![deny(clippy::all)]
 #![deny(
     warnings,
@@ -12,6 +14,14 @@
     unstable_features,
     unused_import_braces
 )]
+*/
+pub use duid_core::*;
+
+#[cfg(feature = "with-rsx-macro")]
+pub use duid_rsx_macro::rsx;
+
+
+/*
 use cfg_if::cfg_if;
 
 cfg_if! {if #[cfg(feature = "with-dom")] {
@@ -43,3 +53,4 @@ pub use duid_core::{
 };
 #[cfg(feature = "with-rsx-macro")]
 pub use duid_rsx_macro::rsx;
+*/

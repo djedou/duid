@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use duid_core::{
-    html::tags::{
+    v_dom::html::tags::{
         HTML_SC_TAGS, HTML_TAGS, HTML_TAGS_NON_COMMON,
         HTML_TAGS_WITH_MACRO_NON_COMMON,
     },

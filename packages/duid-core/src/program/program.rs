@@ -1,13 +1,16 @@
 
+/*
 #[cfg(feature = "with-measure")]
 use crate::dom::Measurements;
-use crate::Cmd;
+use std::collections::BTreeMap;
+#[cfg(feature = "with-request-animation-frame")]
+*/
+use crate::program::Cmd;
 use crate::program::internal_events::{DomUpdater, Dispatch};
 use crate::components::Application;
+use crate::dom::document;
 use std::any::TypeId;
-use std::collections::BTreeMap;
 use std::{cell::RefCell, rc::Rc};
-#[cfg(feature = "with-request-animation-frame")]
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::Node;
@@ -17,19 +20,21 @@ use web_sys::Node;
 /// will be called after the event is triggered.
 pub struct Program<APP, MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
 {
     /// holds the user application
     // Note: This needs to be in Rc<RefCell<_>> to allow interior mutability
     // from a non-mutable reference
     pub app: Rc<RefCell<APP>>,
+    
     /// The dom_updater responsible to updating the actual document in the browser
     pub dom_updater: Rc<RefCell<DomUpdater<MSG>>>,
+    
 }
 
 impl<APP, MSG> Clone for Program<APP, MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
 {
     fn clone(&self) -> Self {
         Program {
@@ -41,7 +46,7 @@ where
 
 impl<APP, MSG> Program<APP, MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
     APP: Application<MSG> + 'static,
 {
     /// Create an Rc wrapped instance of program, initializing DomUpdater with the initial view
@@ -52,8 +57,7 @@ where
         replace: bool,
         use_shadow: bool,
     ) -> Self {
-        let dom_updater: DomUpdater<MSG> =
-            DomUpdater::new(app.view(), mount_node, replace, use_shadow);
+        let dom_updater: DomUpdater<MSG> = DomUpdater::new(app.view(), mount_node, replace, use_shadow);
         Program {
             app: Rc::new(RefCell::new(app)),
             dom_updater: Rc::new(RefCell::new(dom_updater)),
@@ -76,7 +80,7 @@ where
             Self::inject_style(type_id, &style);
         }
     }
-
+    /*
     /// get the real DOM node where this app is mounted to.
     pub fn root_node(&self) -> web_sys::Node {
         self.dom_updater.borrow().root_node()
@@ -86,78 +90,36 @@ where
     pub fn mount_node(&self) -> web_sys::Node {
         self.dom_updater.borrow().mount_node()
     }
-    /// Creates an Rc wrapped instance of Program and replace the root_node with the app view
-    /// # Example
-    /// ```rust,ignore
-    /// # use sauron::prelude::*;
-    /// # use sauron::document;
-    /// struct App{}
-    /// # impl Application<()> for App{
-    /// #     fn view(&self) -> Node<()>{
-    /// #         text("hello")
-    /// #     }
-    /// #     fn update(&mut self, _: ()) -> Cmd<Self, ()> {
-    /// #         Cmd::none()
-    /// #     }
-    /// # }
-    /// let mount = document().query_selector(".container").ok().flatten().unwrap();
-    /// Program::replace_mount(App{}, &mount);
-    /// ```
-    pub fn replace_mount(app: APP, mount_node: &Node) -> Self {
+    */
+
+    pub fn render(app: APP, mount_node: &Node) -> Self {
+        console_log::init_with_level(tracing::log::Level::Debug).unwrap();
+        std::panic::set_hook(Box::new(|info| {
+            tracing::error!("{:#?}", info);
+        }));
+            
         let program = Self::new(app, mount_node, true, false);
         program.mount();
         program
     }
+/*
 
-    ///  Instantiage an app and append the view to the root_node
-    /// # Example
-    /// ```rust,ignore
-    /// # use sauron::prelude::*;
-    /// # use sauron::document;
-    /// struct App{}
-    /// # impl Application<()> for App{
-    /// #     fn view(&self) -> Node<()>{
-    /// #         text("hello")
-    /// #     }
-    /// #     fn update(&mut self, _: ()) -> Cmd<Self, ()> {
-    /// #         Cmd::none()
-    /// #     }
-    /// # }
-    /// let mount = document().query_selector("#app").ok().flatten().unwrap();
-    /// Program::append_to_mount(App{}, &mount);
-    /// ```
     pub fn append_to_mount(app: APP, mount_node: &Node) -> Self {
         let program = Self::new(app, mount_node, false, false);
         program.mount();
         program
     }
 
-    /// Instantiate the app and then append it to the document body
-    /// # Example
-    /// ```rust,ignore
-    /// # use sauron::prelude::*;
-    /// # use sauron::document;
-    /// struct App{}
-    /// # impl Application<()> for App{
-    /// #     fn view(&self) -> Node<()>{
-    /// #         text("hello")
-    /// #     }
-    /// #     fn update(&mut self, _: ()) -> Cmd<Self, ()> {
-    /// #         Cmd::none()
-    /// #     }
-    /// # }
-    /// Program::mount_to_body(App{});
-    /// ```
     pub fn mount_to_body(app: APP) -> Self {
         Self::append_to_mount(app, &crate::body())
     }
-
+*/
     /// Do the actual mounting of the view to the specified mount node
     pub fn mount(&self) {
         self.dom_updater.borrow_mut().mount(self);
         self.after_mounted();
     }
-
+/*
     /// explicity update the dom
     pub fn update_dom(&self) {
         let view = self.app.borrow().view();
@@ -179,7 +141,7 @@ where
                 .expect("unable to set attribute in the mount element");
         }
     }
-
+*/
     // Updating stuff start here
     
     /// This is called when an event is triggered in the html DOM.
@@ -194,16 +156,18 @@ where
     /// - update the app with msgs (use a request_idle_callback)
     /// - compute the view and update the dom (use request_animation_frame )
     fn dispatch_inner(&self, msgs: Vec<MSG>) {
+        /*
         #[cfg(feature = "with-measure")]
         let t1 = crate::now();
         #[cfg(feature = "with-measure")]
         let msg_count = msgs.len();
+        */
         // update the app and emit the cmd returned from the update
         let all_cmd = msgs
             .into_iter()
             .map(|msg| self.app.borrow_mut().update(msg));
         let cmd = Cmd::batch(all_cmd);
-
+/*
         if cmd.modifier.should_update_view {
             #[cfg(feature = "with-measure")]
             let t2 = crate::now();
@@ -249,6 +213,7 @@ where
                 cmd_measurement.emit(self);
             }
         }
+        */
         cmd.emit(self);
     }
 
@@ -257,7 +222,7 @@ where
         dbg!(&type_id);
         let type_id = format!("{:?}", type_id);
 
-        let document = crate::document();
+        let document = document();
         let html_style = document
             .create_element("style")
             .expect("must be able to create style element");
@@ -275,17 +240,18 @@ where
 /// Defined in the DomUpdater::create_closure_wrap function
 impl<APP, MSG> Dispatch<MSG> for Program<APP, MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
     APP: Application<MSG> + 'static,
 {
     #[cfg(feature = "with-request-animation-frame")]
     fn dispatch_multiple(&self, msgs: Vec<MSG>) {
+        crate::console::info!("clicked");
         let program_clone = self.clone();
         let closure_raf: Closure<dyn FnMut() + 'static> =
             Closure::once(move || {
                 program_clone.dispatch_inner(msgs);
             });
-        crate::dom::util::request_animation_frame_for_closure(&closure_raf);
+        crate::dom::request_animation_frame_for_closure(&closure_raf);
         closure_raf.forget();
     }
 

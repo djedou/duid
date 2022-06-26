@@ -1,11 +1,14 @@
 use crate::{
     program::internal_events::{
-        patch, Dispatch
+        /*patch, */Dispatch
     },
+
     components::{ActiveClosure, CreatedNode},
-    vdom,
+    v_dom,
+    /*
     vdom::diff,
     vdom::Patch,
+    */
 };
 use wasm_bindgen::JsCast;
 use web_sys::{self, Element, Node};
@@ -14,18 +17,19 @@ use web_sys::{self, Element, Node};
 /// and a new incoming Node that represents our latest DOM state.
 pub struct DomUpdater<MSG> {
     /// the current vdom representation
-    pub current_vdom: vdom::Node<MSG>,
+    pub current_vdom: v_dom::v_node::Node<MSG>,
     /// the first element of the app view, where the patch is generated is relative to
     pub root_node: Option<Node>,
 
     /// the actual DOM element where the APP is mounted to.
     pub mount_node: Node,
-
+    
     /// The closures that are currently attached to elements in the page.
     ///
     /// We keep these around so that they don't get dropped (and thus stop working);
     ///
     pub active_closures: ActiveClosure,
+    
     /// after mounting or update dispatch call, the element will be focused
     pub focused_node: Option<Node>,
 
@@ -35,11 +39,10 @@ pub struct DomUpdater<MSG> {
     /// whether or not to use shadow root of the mount_node
     pub use_shadow: bool,
 }
-
 impl<MSG> DomUpdater<MSG> {
     /// Creates and instance of this DOM updater, but doesn't mount the current_vdom to the DOM just yet.
     pub(crate) fn new(
-        current_vdom: vdom::Node<MSG>,
+        current_vdom: v_dom::v_node::Node<MSG>,
         mount: &Node,
         replace: bool,
         use_shadow: bool,
@@ -54,6 +57,7 @@ impl<MSG> DomUpdater<MSG> {
             use_shadow,
         }
     }
+    /*
 
     /// count the total active closures
     /// regardless of which element it attached to.
@@ -63,11 +67,12 @@ impl<MSG> DomUpdater<MSG> {
             .map(|(_elm_id, closures)| closures.len())
             .sum()
     }
+    */
 }
 
 impl<MSG> DomUpdater<MSG>
 where
-    MSG: 'static,
+    MSG: 'static + std::fmt::Debug,
 {
     /// each element and it's descendant in the vdom is created into
     /// an actual DOM node.
@@ -80,9 +85,9 @@ where
             &self.current_vdom,
             &mut self.focused_node,
         );
-
         //TODO: maybe remove replace the mount
         if self.replace {
+            tracing::info!("djed");
             let mount_element: &Element = self.mount_node.unchecked_ref();
             mount_element
                 .replace_with_with_node_1(&created_node.node)
@@ -122,7 +127,7 @@ where
             CreatedNode::set_element_focus(focused_element);
         }
     }
-
+/*
     /// Create a new `DomUpdater`.
     ///
     /// A root `Node` will be created and appended (as a child) to your passed
@@ -196,7 +201,7 @@ where
         .expect("Error in patching the dom");
         self.active_closures.extend(active_closures);
     }
-
+*/
     /// Return the root node of your application, the highest ancestor of all other nodes in
     /// your real DOM tree.
     pub fn root_node(&self) -> Node {
