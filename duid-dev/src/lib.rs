@@ -1,6 +1,3 @@
-mod component;
-
-use component::Counter;
 
 use duid::{
     Node,
@@ -17,12 +14,10 @@ enum Msg {
     Increment,
     Decrement,
     Reset,
-    CounterMsg()
 }
 
 struct App {
     count: i32,
-    children: Vec<Component>
 }
 
 impl App {
@@ -48,7 +43,6 @@ impl Component<Msg> for App {
                         Msg::Decrement
                     }
                 />
-                Counter
             </main>
         }
     }
