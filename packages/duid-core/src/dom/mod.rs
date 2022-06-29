@@ -1,6 +1,9 @@
 /// Util
 mod util;
 mod window;
+mod r_dom;
+
+pub(crate) use r_dom::*;
 
 
 pub use util::{

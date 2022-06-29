@@ -1,8 +1,7 @@
 
 use duid::{
-    Node,
-    program::{Duid, Cmd},
-    components::Component,
+    app::{DuidApp, Application},
+    event_manager::AppCmd,
     rsx,
     v_dom::v_node,
     v_dom::html::{text},
@@ -16,6 +15,7 @@ enum Msg {
     Reset,
 }
 
+#[derive(Debug)]
 struct App {
     count: i32,
 }
@@ -26,7 +26,7 @@ impl App {
     }
 }
 
-impl Component<Msg> for App {
+impl Application<Msg> for App {
     fn view(&self) -> v_node::Node<Msg> {
         rsx! {
             <main>
@@ -47,18 +47,18 @@ impl Component<Msg> for App {
         }
     }
 
-    fn update(&mut self, msg: Msg) -> Cmd<Self, Msg> {
+    fn update(&mut self, msg: Msg) -> AppCmd<Self, Msg> {
         match msg {
             Msg::Increment => self.count += 1,
             Msg::Decrement => self.count -= 1,
             Msg::Reset => self.count = 0,
         }
-        Cmd::none()
+        AppCmd::none()
     }
 }
 
 
 #[wasm_bindgen]
-pub fn duid(node: &Node) {
-    Duid::render(App::new(), &node);
+pub fn duid(node: &str) {
+    DuidApp::render(App::new(), &node);
 }
