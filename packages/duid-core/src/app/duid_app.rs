@@ -23,6 +23,7 @@ where
 
     // ports
     // updater
+    // workers
     phantom: PhantomData<MSG>
     
 }
