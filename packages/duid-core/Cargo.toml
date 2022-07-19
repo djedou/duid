@@ -2,39 +2,27 @@
 name = "duid-core"
 version = "0.1.0"
 edition = "2021"
-categories = [ "gui", "wasm", "web-programming"]
+categories = [ "GUI", "Wasm", "Web-programming", "Elm"]
 
 
 
 
 [features]
-default = ["wasm-bindgen", "js-sys", "web-sys", "with-request-animation-frame"] #["with-dom", ]
+default = ["wasm-bindgen", "js-sys", "web-sys", "with-request-animation-frame"]
 with-lookup = [] #enumerates html tags and attributes
-#with-measure = ["mt-dom/with-measure"] # log traces for measurements in various parts of the system where performance matters.
-#with-debug = [] # log debug patches
+#with-debug = []
 with-request-animation-frame = [] # enable the use of request-animation-frame in calling dispatch
-#with-dom = ["wasm-bindgen", "js-sys", "web-sys"] # for client-side usage
 
 [dependencies]
-mt-dom = "0.19"
+indextree = "4.4"
 gloo-timers = { version = "0.2.1", features = ["futures"], optional = true }
 js-sys = { version = "0.3", optional = true }
-duid-prettiest = { version = "0.1.0", path = "../duid-prettiest", optional = true }
 paste = "1.0"
 doc-comment = "0.3"
 jss = { version = "0.5" }
 console_log = "0.2.0"
 tracing = { version = "^0.1", features = ["log"] }
-#acteur = "0.12"
-#async-trait = "0.1"
-#js-sys = { version = "0.3", optional = true }
-#log = "0.4"
-#cfg-if = "1.0"
-#thiserror = "1.0"
-#once_cell = "1.8"
 
-#futures = "0.3.5"
-# webdom dependencies:
 
 
 [dependencies.wasm-bindgen]
@@ -105,9 +93,6 @@ features = [
     "ReadableStream",
 ]
 
+
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
-
-#[[bench]]
-#name = "nodes_benchmark"
-#harness = false

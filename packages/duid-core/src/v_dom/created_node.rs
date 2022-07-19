@@ -1,34 +1,38 @@
 use crate::{
-    event_manager::Dispatch,
+    dom::{document},
     v_dom::{
-        events::{Event, MountEvent},
-        html,
-        html::attributes::{AttributeValue, SegregatedAttributes, Special},
-        v_node,
-        v_node::{Attribute, Leaf, Listener, NodeTrait}
-    },
-    dom::{document}
+        v_node::{NodeType, LeafType},
+        Vdom, Vnode,
+        events::{Event, Listener}
+    }
 };
-use std::cell::Cell;
+use std::rc::Rc;
+use std::cell::{RefCell, Cell};
+use crate::event_manager::Dispatcher;
+use indextree::{NodeId};
 use std::collections::HashMap;
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 use web_sys::{
-    self, Element, EventTarget, HtmlButtonElement, HtmlDataElement,
-    HtmlDetailsElement, HtmlElement, HtmlFieldSetElement, HtmlInputElement,
+    self, HtmlInputElement,EventTarget, Element, HtmlButtonElement, HtmlDataElement,
+    HtmlDetailsElement, HtmlElement, HtmlFieldSetElement,
     HtmlLiElement, HtmlLinkElement, HtmlMenuItemElement, HtmlMeterElement,
     HtmlOptGroupElement, HtmlOptionElement, HtmlOutputElement,
     HtmlParamElement, HtmlProgressElement, HtmlSelectElement, HtmlStyleElement,
-    HtmlTextAreaElement, Text,
-    Node
+    HtmlTextAreaElement, Node, Document
 };
+use crate::v_dom::html::attributes::{
+    Attribute, merge_attributes_of_same_name, SegregatedAttributes, partition_callbacks_from_plain_styles_and_func_calls,
+    merge_plain_attributes_values, merge_styles_attributes_values, AttributeValue
+};
+
+
+
 
 thread_local!(static NODE_ID_COUNTER: Cell<usize> = Cell::new(1));
 
 /// This is the value of the data-sauron-vdom-id.
 /// Used to uniquely identify elements that contain closures so that the DomUpdater can
 /// look them up by their unique id.
-/// When the DomUpdater sees that the element no longer exists it will drop all of it's
-/// Rc'd Closures for those events.
 fn create_unique_identifier() -> usize {
     let id = NODE_ID_COUNTER.with(|x| {
         let tmp = x.get();
@@ -38,7 +42,7 @@ fn create_unique_identifier() -> usize {
     id
 }
 
-pub(crate) const DATA_VDOM_ID: &str = "data-vdom-id";
+pub(crate) const DATA_VDOM_ID: &str = "duid-event-id";
 
 /// Closures that we are holding on to to make sure that they don't get invalidated after a
 /// VirtualNode is dropped.
@@ -48,93 +52,90 @@ pub(crate) const DATA_VDOM_ID: &str = "data-vdom-id";
 ///
 pub type ActiveClosure = HashMap<usize, Vec<(&'static str, Closure<dyn FnMut(web_sys::Event)>)>>;
 
-/// A node along with all of the closures that were created for that
-/// node's events and all of it's child node's events.
+
+
 #[derive(Debug)]
 pub struct CreatedNode {
-    /// A `Node` or `Element` that was created from a `Node`
-    pub node: Node,
-    pub(crate) closures: ActiveClosure,
+    /// A `Node` or `Element` that was created from a `Vnode`
+    pub node: Node
 }
 
 impl CreatedNode {
-    /// create a simple node with no closure attache
-    pub fn without_closures(node: Node) -> Self {
-        CreatedNode {
-            node,
-            closures: HashMap::with_capacity(0),
-        }
+
+
+    /// Create and return a `CreatedNode` instance for this virtual node.
+    pub fn create_dom_node(duid: Rc<RefCell<Dispatcher>>, vdom: &Vdom<Vnode>, app_node_id: &NodeId) -> CreatedNode {
+        let doc = document();
+        //tracing::info!("vdom: {:?}", vdom);
+        let app = vdom.get(app_node_id.clone());
+        let app_node: Node = Self::create_doc_node(&app.unwrap().get(), &doc, duid.clone());
+        
+        let _ = app_node_id.children(&vdom).into_iter().map(|child_id| {Self::create_children(&vdom, &child_id, &app_node, &doc, duid.clone());}).collect::<Vec<_>>();
+        CreatedNode { node: app_node }
     }
 
-    /// create a text node
-    pub fn create_text_node(txt: &str) -> Text {
-        document().create_text_node(txt)
+    fn create_doc_node(vnode: &Vnode, doc: &Document, duid: Rc<RefCell<Dispatcher>>) -> Node {
+        let element = if let Some(namespace) = vnode.namespace.clone() {
+            doc
+                .create_element_ns(Some(&namespace), &vnode.tag)
+                .expect("Unable to create element")
+        } else {
+            doc
+                .create_element(&vnode.tag)
+                .expect("Unable to create element")
+        };
+        
+        let attrs = vnode.props.iter().map(|attr| attr).collect::<Vec<_>>();
+        Self::set_element_attributes(duid.clone(), &element, &attrs);
+        
+        element.unchecked_into()
     }
 
-    fn create_leaf_node<DSP, MSG>(
-        component: &DSP,
-        leaf: &Leaf<MSG>,
-        focused_node: &mut Option<Node>,
-    ) -> CreatedNode
-    where
-        MSG: 'static + std::fmt::Debug,
-        DSP: Clone + Dispatch<MSG> + 'static,
-    {
-        match leaf {
-            Leaf::Text(txt) => {
-                let text_node = Self::create_text_node(&txt);
-                CreatedNode::without_closures(text_node.unchecked_into())
-            }
-            Leaf::Comment(comment) => {
-                let comment_node = document().create_comment(comment);
-                CreatedNode::without_closures(comment_node.unchecked_into())
-            }
-            Leaf::SafeHtml(_safe_html) => {
-                panic!("safe html must have already been dealt in create_element node");
-            }
-            Leaf::DocType(_doctype) => {
-                panic!("It looks like you are using doctype in the middle of an app,
-                    doctype is only used in rendering");
-            }
-            Leaf::Fragment(nodes) => {
-                let document = document();
-                let doc_fragment = document.create_document_fragment();
-                let mut closures = ActiveClosure::new();
-                for vnode in nodes {
-                    let created_node =
-                        Self::create_dom_node(component, vnode, focused_node);
-                    closures.extend(created_node.closures);
-                    doc_fragment
-                        .append_child(&created_node.node)
-                        .expect("Unable to append node to document fragment");
+    fn create_children(vdom: &Vdom<Vnode>, v_node_id: &NodeId, parent_node: &Node, doc: &Document, duid: Rc<RefCell<Dispatcher>>) {
+        // 1. Get the Vnode it self.
+        if let Some(vnode) = vdom.get(v_node_id.clone()) {
+            let node = vnode.get();
+            // 2. Check its type (Element ?, Fragment ?, Leaf ?).
+            match &node.node_type {
+                NodeType::Element => {
+                    let child_node: Node = Self::create_doc_node(&node, &doc, duid.clone());
+                    let _ = v_node_id.children(&vdom).into_iter().map(|child_id| {Self::create_children(&vdom, &child_id, &child_node, &doc, duid.clone());}).collect::<Vec<_>>();
+                    let _ = parent_node.append_child(&child_node);
+                },
+                NodeType::Fragment => {
+                    let doc_fragment: Node = doc.create_document_fragment().unchecked_into();
+                    let _ = v_node_id.children(&vdom).into_iter().map(|child_id| {Self::create_children(&vdom, &child_id, &doc_fragment, &doc, duid.clone());}).collect::<Vec<_>>();
+                    let _ = parent_node.append_child(&doc_fragment);
+                },
+                NodeType::Leaf(leaf) => {
+                    match leaf {
+                        LeafType::Text => {
+                            let text = match &node.leaf_value {
+                                Some(v) => v.clone(),
+                                None => ""
+                            };
+                            let attrs = node.props.iter().map(|attr| attr).collect::<Vec<_>>();
+                            let text_node: Element = doc.create_text_node(&text).unchecked_into();
+                            Self::set_element_attributes(duid.clone(), &text_node, &attrs);
+                            let _ = parent_node.append_child(&text_node);
+                        },
+                        LeafType::Comment => {
+                            let text = match &node.leaf_value {
+                                Some(v) => v.clone(),
+                                None => ""
+                            };
+                            
+                            let comment_node: Node = doc.create_comment(&text).unchecked_into();
+                            let _ = parent_node.append_child(&comment_node);
+                        },
+                        LeafType::DocType => {}
+                    }
                 }
-                let node: Node = doc_fragment.unchecked_into();
-                CreatedNode { node, closures }
             }
         }
     }
-
-    /// Create and return a `CreatedNode` instance (containing a DOM `Node`
-    /// together with potentially related closures) for this virtual node.
-    pub fn create_dom_node<DSP, MSG>(
-        component: &DSP,
-        vnode: &v_node::Node<MSG>,
-        focused_node: &mut Option<Node>,
-    ) -> CreatedNode
-    where
-        MSG: 'static + std::fmt::Debug,
-        DSP: Clone + Dispatch<MSG> + 'static,
-    {
-        match vnode {
-            v_node::Node::Leaf(leaf_node) => {
-                Self::create_leaf_node(component, leaf_node, focused_node)
-            }
-            v_node::Node::Element(element_node) => {
-                Self::create_element_node(component, element_node, focused_node)
-            }
-        }
-    }
-
+    
+    /*
     /// dispatch the mount event,
     /// call the listener since browser don't allow asynchronous execution of
     /// dispatching custom events (non-native browser events)
@@ -159,81 +160,18 @@ impl CreatedNode {
             }
         }
     }
-
-    /// Build a DOM element by recursively creating DOM nodes for this element and it's
-    /// children, it's children's children, etc.
-    fn create_element_node<DSP, MSG>(
-        component: &DSP,
-        velem: &v_node::Element<MSG>,
-        focused_node: &mut Option<Node>,
-    ) -> CreatedNode
-    where
-        MSG: 'static + std::fmt::Debug,
-        DSP: Clone + Dispatch<MSG> + 'static,
-    {
-        let document = document();
-
-        let element = if let Some(namespace) = velem.namespace() {
-            document
-                .create_element_ns(Some(namespace), velem.tag())
-                .expect("Unable to create element")
-        } else {
-            document
-                .create_element(velem.tag())
-                .expect("Unable to create element")
-        };
-        Self::dispatch_mount_event(component, velem, &element);
-        
-        if velem.is_focused() {
-            *focused_node = Some(element.clone().unchecked_into());
-            //log::trace!("element is focused..{:?}", focused_node);
-            Self::set_element_focus(&element);
-        }
-        
-        let mut closures = ActiveClosure::new();
-
-        Self::set_element_attributes(
-            component,
-            &mut closures,
-            &element,
-            &velem.get_attributes().iter().collect::<Vec<_>>(),
-        );
-
-        for child in velem.get_children().iter() {
-            if child.is_safe_html() {
-                let child_text = child.unwrap_safe_html();
-                // https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentHTML
-                element
-                    .insert_adjacent_html("beforeend", &child_text)
-                    .expect("must not error");
-            } else {
-                let created_child =
-                    Self::create_dom_node(component, child, focused_node);
-
-                closures.extend(created_child.closures);
-                element
-                    .append_child(&created_child.node)
-                    .expect("Unable to append element node");
-            }
-        }
-
-        let node: Node = element.unchecked_into();
-        CreatedNode { node, closures }
-    }
+*/
 
     /// set the element attribute
-    pub fn set_element_attributes<DSP, MSG>(
-        component: &DSP,
-        closures: &mut ActiveClosure,
+    pub fn set_element_attributes(
+        dispatcher: Rc<RefCell<Dispatcher>>,
         element: &Element,
-        attrs: &[&Attribute<MSG>],
-    ) where
-        MSG: 'static + std::fmt::Debug,
-        DSP: Clone + Dispatch<MSG> + 'static,
+        attrs: &[&Attribute],
+    )
     {
-        let attrs = mt_dom::merge_attributes_of_same_name(attrs);
+        let attrs = merge_attributes_of_same_name(attrs);
         for att in attrs {
-            Self::set_element_attribute(component, closures, element, &att);
+            Self::set_element_attribute(dispatcher.clone(), element, &att);
         }
     }
 
@@ -243,14 +181,11 @@ impl CreatedNode {
     /// the same call, but on a subsequent call to each other. Using the if-else-if here for
     /// attributes, style, function_call.
     #[track_caller]
-    pub fn set_element_attribute<DSP, MSG>(
-        component: &DSP,
-        closures: &mut ActiveClosure,
+    pub fn set_element_attribute(
+        dispatcher: Rc<RefCell<Dispatcher>>,
         element: &Element,
-        attr: &Attribute<MSG>,
-    ) where
-        MSG: 'static + std::fmt::Debug,
-        DSP: Clone + Dispatch<MSG> + 'static,
+        attr: &Attribute,
+    )
     {
         let SegregatedAttributes {
             listeners,
@@ -258,19 +193,15 @@ impl CreatedNode {
             styles,
             function_calls,
         } =
-            html::attributes::partition_callbacks_from_plain_styles_and_func_calls(
+            partition_callbacks_from_plain_styles_and_func_calls(
                 attr,
             );
 
         // set simple values
         if let Some(merged_plain_values) =
-            html::attributes::merge_plain_attributes_values(&plain_values)
+            merge_plain_attributes_values(&plain_values)
         {
             if let Some(namespace) = attr.namespace() {
-                // Warning NOTE: set_attribute_ns should only be called
-                // when you meant to use a namespace
-                // using this with None will error in the browser with:
-                // NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces
                 element
                     .set_attribute_ns(
                         Some(namespace),
@@ -284,7 +215,7 @@ impl CreatedNode {
                         )
                     });
             } else {
-                match *attr.name() {
+                match attr.name() {
                     "value" => {
                         Self::set_value_str(element, &merged_plain_values);
                         Self::set_with_values(element, &plain_values);
@@ -332,7 +263,7 @@ impl CreatedNode {
                 }
             }
         } else if let Some(merged_styles) =
-            html::attributes::merge_styles_attributes_values(&styles)
+            merge_styles_attributes_values(&styles)
         {
             // set the styles
             element
@@ -350,9 +281,9 @@ impl CreatedNode {
 
         // do function calls such as set_inner_html
         if let Some(merged_func_values) =
-            html::attributes::merge_plain_attributes_values(&function_calls)
+            merge_plain_attributes_values(&function_calls)
         {
-            if *attr.name() == "inner_html" {
+            if attr.name() == "inner_html" {
                 element.set_inner_html(&merged_func_values);
             }
         }
@@ -367,7 +298,7 @@ impl CreatedNode {
                 .set_attribute(DATA_VDOM_ID, &unique_id.to_string())
                 .expect("Could not set attribute on element");
 
-            closures.insert(unique_id, vec![]);
+            dispatcher.borrow_mut().active_closures.borrow_mut().insert(unique_id, vec![]);
 
             let event_str = attr.name();
             let current_elm: &EventTarget =
@@ -375,8 +306,8 @@ impl CreatedNode {
 
             // a custom enter event which triggers the listener
             // when the enter key is pressed
-            if *event_str == "enter" {
-                let component_clone = component.clone();
+            if event_str == "enter" {
+                let dispatcher_clone = dispatcher.clone();
                 let listener_clone = listener.clone();
                 let key_press_func: Closure<dyn FnMut(web_sys::Event)> =
                     Closure::wrap(Box::new(move |event: web_sys::Event| {
@@ -385,7 +316,7 @@ impl CreatedNode {
                             .expect("should be a keyboard event");
                         if ke.key() == "Enter" {
                             let msg = listener_clone.emit(Event::from(event));
-                            component_clone.dispatch(msg);
+                            dispatcher_clone.borrow().dispatch(msg);
                         }
                     }));
 
@@ -403,14 +334,14 @@ impl CreatedNode {
                 // The callback to this listener emits an Msg which is then \
                 // dispatched to the `component` which then triggers update view cycle.
                 let callback_wrapped: Closure<dyn FnMut(web_sys::Event)> =
-                    create_closure_wrap(component, listener);
+                    create_closure_wrap(dispatcher.clone(), listener);
                 current_elm
                     .add_event_listener_with_callback(
                         event_str,
                         callback_wrapped.as_ref().unchecked_ref(),
                     )
                     .expect("Unable to attached event listener");
-                closures
+                dispatcher.borrow_mut().active_closures.borrow_mut()
                     .get_mut(&unique_id)
                     .expect("Unable to get closure")
                     .push((event_str, callback_wrapped));
@@ -528,9 +459,9 @@ impl CreatedNode {
     }
 
     /// set the element attribute value with the first numerical value found in values
-    fn set_with_values<MSG>(
+    fn set_with_values(
         element: &Element,
-        values: &[&AttributeValue<MSG>],
+        values: &[&AttributeValue],
     ) {
         let value_i32 = values
             .first()
@@ -552,15 +483,15 @@ impl CreatedNode {
 
     /// remove element attribute,
     /// takes care of special case such as checked
-    pub fn remove_element_attribute<MSG>(
+    pub fn remove_element_attribute(
         element: &Element,
-        attr: &Attribute<MSG>,
+        attr: &Attribute,
     ) -> Result<(), JsValue> {
         //log::trace!("removing attribute: {}", attr.name());
 
         element.remove_attribute(attr.name())?;
 
-        match *attr.name() {
+        match attr.name() {
             "value" => {
                 Self::set_value_str(element, "");
             }
@@ -579,20 +510,18 @@ impl CreatedNode {
     }
 }
 
+
 /// This wrap into a closure the function that is dispatched when the event is triggered.
-pub(crate) fn create_closure_wrap<DSP, MSG>(
-    component: &DSP,
-    listener: &Listener<MSG>,
+pub(crate) fn create_closure_wrap(
+    dispatcher: Rc<RefCell<Dispatcher>>,
+    listener: &Listener,
 ) -> Closure<dyn FnMut(web_sys::Event)>
-where
-    MSG: 'static + std::fmt::Debug,
-    DSP: Clone + Dispatch<MSG> + 'static,
 {
     let listener_clone = listener.clone();
-    let component_clone = component.clone();
+    let component_clone = dispatcher.clone();
 
     Closure::wrap(Box::new(move |event: web_sys::Event| {
         let msg = listener_clone.emit(Event::from(event));
-        component_clone.dispatch(msg);
+        component_clone.borrow().dispatch(msg);
     }))
 }

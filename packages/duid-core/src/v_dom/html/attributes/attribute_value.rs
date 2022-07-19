@@ -1,9 +1,10 @@
-use crate::v_dom::html::attributes::{Style, Value};
-use crate::v_dom::v_node::Listener;
+use crate::v_dom::html::attributes::{Style};
+use jss::Value;
+use crate::v_dom::events::Listener;
 use std::fmt::{self, Debug};
 
 /// Values of an attribute can be in these variants
-pub enum AttributeValue<MSG> {
+pub enum AttributeValue {
     /// an argument value, to be called as parameter, the function is called to the element
     FunctionCall(Value),
     /// a simple value, wrapper of primitive types
@@ -11,14 +12,14 @@ pub enum AttributeValue<MSG> {
     /// style values
     Style(Vec<Style>),
     /// Event Listener
-    EventListener(Listener<MSG>),
+    EventListener(Listener),
     /// no value
     Empty,
 }
 
 /// This is written manually, so we don't push
 /// constraint on MSG to be Clone
-impl<MSG> Clone for AttributeValue<MSG> {
+impl Clone for AttributeValue {
     fn clone(&self) -> Self {
         match self {
             AttributeValue::FunctionCall(this) => {
@@ -38,7 +39,7 @@ impl<MSG> Clone for AttributeValue<MSG> {
 
 /// This is written manually, so we don't push
 /// constraint on MSG to be Debug
-impl<MSG> Debug for AttributeValue<MSG> {
+impl Debug for AttributeValue {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             AttributeValue::FunctionCall(this) => this.fmt(f),
@@ -52,7 +53,7 @@ impl<MSG> Debug for AttributeValue<MSG> {
 
 /// This is written manually, so we don't push
 /// constraint on MSG to be PartialEq
-impl<MSG> PartialEq for AttributeValue<MSG> {
+impl PartialEq for AttributeValue {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (
@@ -75,7 +76,7 @@ impl<MSG> PartialEq for AttributeValue<MSG> {
     }
 }
 
-impl<MSG> AttributeValue<MSG> {
+impl AttributeValue {
     /// create an attribute from Vec<Style>
     pub fn from_styles(styles: impl IntoIterator<Item = Style>) -> Self {
         AttributeValue::Style(styles.into_iter().collect())
@@ -113,7 +114,7 @@ impl<MSG> AttributeValue<MSG> {
     }
 
     /// return the styles if the attribute value is a style
-    pub fn as_event_listener(&self) -> Option<&Listener<MSG>> {
+    pub fn as_event_listener(&self) -> Option<&Listener> {
         match self {
             AttributeValue::EventListener(cb) => Some(cb),
             _ => None,

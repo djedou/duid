@@ -1,7 +1,6 @@
 //! provides functions and macros for building svg attributes
-use crate::v_dom::html::attributes::{AttributeValue, Value};
+use crate::v_dom::html::attributes::{AttributeValue, Value, attr, attr_ns};
 use crate::declare_attributes;
-use mt_dom::{attr, attr_ns};
 
 pub(in crate) const XLINK_NAMESPACE: &str = "http://www.w3.org/1999/xlink";
 
@@ -16,7 +15,7 @@ macro_rules! declare_xlink_attributes {
             $(#[$attr])*
             #[inline]
             #[allow(non_snake_case)]
-            pub fn $name<V, MSG>(v: V) -> crate::v_dom::v_node::Attribute<MSG>
+            pub fn $name<V>(v: V) -> crate::v_dom::html::attributes::Attribute
                 where V: Into<Value>,
                 {
                     attr_ns(Some(XLINK_NAMESPACE), $attribute, AttributeValue::from_value(v.into()))

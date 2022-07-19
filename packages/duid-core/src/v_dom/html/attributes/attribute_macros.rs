@@ -1,5 +1,4 @@
-use crate::v_dom::html::attributes::{AttributeValue, Value};
-use mt_dom::attr;
+use crate::v_dom::html::attributes::{AttributeValue, Value, attr};
 
 /// declare a function with the name corresponds to attribute name for easy usage in html elements
 /// Example:
@@ -15,13 +14,13 @@ macro_rules! declare_attributes {
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("Creates html [",stringify!($name),"](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/",stringify!($name),") attribute"),
 
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<V, MSG>(v: V) -> crate::v_dom::v_node::Attribute<MSG>
+                pub fn $name<V>(v: V) -> crate::v_dom::html::attributes::Attribute
                     where V: Into<Value>,
                     {
                         attr(stringify!($name), AttributeValue::from_value(v.into()))
@@ -36,12 +35,12 @@ macro_rules! declare_attributes {
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("Creates html [",$attribute,"](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/",$attribute,") attribute"),
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<V, MSG>(v: V) -> crate::v_dom::v_node::Attribute<MSG>
+                pub fn $name<V>(v: V) -> crate::v_dom::html::attributes::Attribute
                     where V: Into<Value>,
                     {
                         attr($attribute, AttributeValue::from_value(v.into()))

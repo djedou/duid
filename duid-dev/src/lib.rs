@@ -1,64 +1,122 @@
 
 use duid::{
-    app::{DuidApp, Application},
-    event_manager::AppCmd,
-    rsx,
-    v_dom::v_node,
-    v_dom::html::{text},
+    app::{
+        DuidApp, Model, Store, Node
+    },
+    event_manager::Message,
+    v_dom::html::{div, text, button},
+    v_dom::events::{on_click}
 };
 use wasm_bindgen::prelude::*;
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::default::Default;
 
-#[derive(Debug)]
+
+
+// Messages
+#[derive(PartialEq)]
 enum Msg {
     Increment,
     Decrement,
     Reset,
 }
 
-#[derive(Debug)]
-struct App {
-    count: i32,
+#[derive(PartialEq)]
+enum ChildMsg {
+    Increment,
+    Decrement,
+    Reset,
 }
 
-impl App {
+
+// Models
+#[derive(Debug, Clone, PartialEq)]
+struct AppModel {
+    count: i32
+}
+
+
+#[derive(Debug, Clone, PartialEq)]
+struct ChildModel {
+    count: i32
+}
+
+
+impl AppModel {
     fn new() -> Self {
-        App { count: 0 }
+        AppModel {
+            count: 10
+        }
     }
 }
 
-impl Application<Msg> for App {
-    fn view(&self) -> v_node::Node<Msg> {
-        rsx! {
-            <main>
-                <input type="button"
-                    value="+"
-                    on_click=|_| {
-                        Msg::Increment
-                    }
-                />
-                <button class="count" on_click=|_|{Msg::Reset} >{text(self.count)}</button>
-                <input type="button"
-                    value="-"
-                    on_click=|_| {
-                        Msg::Decrement
-                    }
-                />
-            </main>
-        }
-    }
 
-    fn update(&mut self, msg: Msg) -> AppCmd<Self, Msg> {
-        match msg {
-            Msg::Increment => self.count += 1,
-            Msg::Decrement => self.count -= 1,
-            Msg::Reset => self.count = 0,
+impl ChildModel {
+    fn new() -> Self {
+        ChildModel {
+            count: 20
         }
-        AppCmd::none()
     }
 }
+
+// updates
+fn app_update(model: Model, msg: Message) -> Model {
+    
+    match msg.msg.downcast_ref::<Msg>() {
+        Some(app_msg) => {
+            match app_msg {
+                Msg::Decrement => model,
+                Msg::Increment => model,
+                Msg::Reset => model
+            }
+        }
+        None => {
+            model
+        }
+    }
+}
+
+fn child_update(model: Model, msg: Message) -> Model {
+    
+    match msg.msg.downcast_ref::<ChildMsg>() {
+        Some(app_msg) => {
+            match app_msg {
+                ChildMsg::Decrement => model,
+                ChildMsg::Increment => model,
+                ChildMsg::Reset => model
+            }
+        }
+        None => {
+            model
+        }
+    }
+}
+
+// Views
+
+fn button_view(label: &'static str) -> Node {
+
+    button(
+        Some(Store::new(Model::new(Rc::new(RefCell::new(ChildModel::new()))), child_update)),
+        &[on_click(|_| Message::from(&ChildMsg::Decrement))],
+        &[text(None, &[], label)]
+    )
+}
+
+fn app_view() -> Node {
+    div(
+        Some(Store::new(Model::new(Rc::new(RefCell::new(AppModel::new()))), app_update)),
+        &[],
+        &[button_view("Djedou Btn")]
+    )
+}
+
+
 
 
 #[wasm_bindgen]
 pub fn duid(node: &str) {
-    DuidApp::render(App::new(), &node);
+    
+    DuidApp::render(app_view(), &node);
 }

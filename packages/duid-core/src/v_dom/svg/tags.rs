@@ -9,15 +9,19 @@ macro_rules! declare_svg_tags{
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("Creates an svg [",stringify!($name),"](/https://developer.mozilla.org/en-US/docs/Web/SVG/Element/",stringify!($name),") element"),
 
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::v_node::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
-                    {
-                        $crate::v_dom::svg::svg_element(stringify!($name), attrs, children)
+                pub fn $name( 
+                    model: Option<$crate::app::Store>, 
+                    attrs: &[$crate::v_dom::html::attributes::Attribute], 
+                    children: &[$crate::v_dom::v_node::Node]
+                ) -> $crate::v_dom::v_node::Node
+                {
+                        $crate::v_dom::svg::svg_element(stringify!($name), model, attrs, children)
                 }
             }
          )*
@@ -29,15 +33,19 @@ macro_rules! declare_svg_tags{
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("Creates an svg [",$tagname,"](/https://developer.mozilla.org/en-US/docs/Web/SVG/Element/",$tagname,") element"),
 
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::v_node::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
-                    {
-                        $crate::v_dom::svg::svg_element($tagname, attrs, children)
+                pub fn $name(
+                    model: Option<$crate::app::Store>, 
+                    attrs: &[$crate::v_dom::html::attributes::Attribute], 
+                    children: &[$crate::v_dom::v_node::Node]
+                ) -> $crate::v_dom::v_node::Node
+                {
+                        $crate::v_dom::svg::svg_element($tagname, model, attrs, children)
                  }
             }
          )*

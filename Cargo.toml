@@ -8,11 +8,11 @@ edition = "2021"
 
 [dependencies]
 duid-core = { path = "packages/duid-core", default-features = true }
-duid-rsx-macro = { path = "packages/duid-rsx-macro", optional = true }
+#duid-rsx-macro = { path = "packages/duid-rsx-macro", optional = true }
 #cfg-if = "1.0"
 
 [features]
-default = ["duid-core/default", "with-rsx-macro", "with-request-animation-frame"] #["with-dom", "with-rsx-macro", ]
+default = ["duid-core/default", "with-request-animation-frame"] #["with-dom", "with-rsx-macro", ] "with-rsx-macro",
 #with-dom = ["duid-core/with-dom"]
 
 # request-animation-frame should be ON all the time, otherwise
@@ -25,15 +25,14 @@ with-request-animation-frame = ["duid-core/with-request-animation-frame"]
 #with-debug = ["duid-core/with-debug"]
 
 # lets you use node! macro to write jsx like code in the view
-with-rsx-macro = ["duid-rsx-macro"]
+#with-rsx-macro = ["duid-rsx-macro"]
 
 
 [workspace]
 members = [
     # Packages
     "packages/duid-core",
-    "packages/duid-prettiest",
-    "packages/duid-rsx-macro",
+    #"packages/duid-rsx-macro",
     
     # Examples
 ]
@@ -41,5 +40,3 @@ members = [
 exclude = [
     "duid-dev"
 ]
-
-#sauron = "0.49.4"

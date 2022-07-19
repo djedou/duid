@@ -1,4 +1,3 @@
-/// Util
 mod util;
 mod window;
 mod r_dom;

@@ -7,15 +7,19 @@ macro_rules! declare_tags {
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("Creates an html [",stringify!($name),"](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/",stringify!($name),") element"),
 
             $(#[$attr])*
             #[inline]
             #[allow(non_snake_case)]
-            pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::html::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
+            pub fn $name(
+                model: Option<$crate::app::Store>, 
+                attrs: &[$crate::v_dom::html::attributes::Attribute], 
+                children: &[$crate::v_dom::v_node::Node]
+            ) -> $crate::v_dom::v_node::Node
                 {
-                    $crate::v_dom::html::html_element(None, stringify!($name), attrs, children, false)
+                    $crate::v_dom::v_node::create_element(None, stringify!($name), $crate::v_dom::v_node::NodeType::Element, model, attrs, children)
                 }
             }
 
@@ -34,15 +38,19 @@ macro_rules! declare_sc_tags {
         /// self closing tags
         pub(crate) mod self_closing{
             $(
-                doc_comment!{
+                doc_comment::doc_comment!{
                     concat!("Creates an html [",stringify!($name),"](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/",stringify!($name),") element"),
 
                 $(#[$attr])*
                 #[inline]
                 #[allow(non_snake_case)]
-                pub fn $name<MSG>(attrs: impl IntoIterator<Item = $crate::v_dom::html::Attribute<MSG>>, children: impl IntoIterator<Item = $crate::v_dom::v_node::Node<MSG>>) -> $crate::v_dom::v_node::Node<MSG>
+                pub fn $name(
+                    model: Option<$crate::app::Store>, 
+                    attrs: &[$crate::v_dom::html::attributes::Attribute], 
+                    children: &[$crate::v_dom::v_node::Node]
+                ) -> $crate::v_dom::v_node::Node
                     {
-                        $crate::v_dom::html::html_element(None, stringify!($name), attrs, children, true)
+                        $crate::v_dom::v_node::create_element(None, stringify!($name), $crate::v_dom::v_node::NodeType::Element, model, attrs, children)
                     }
                 }
 

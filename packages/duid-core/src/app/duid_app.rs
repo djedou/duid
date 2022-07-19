@@ -1,66 +1,65 @@
-use crate::event_manager::PortCmd;
-use crate::event_manager::Dispatch;
-use super::Application;
-use crate::dom::{document, RDom};
-use std::any::TypeId;
-use std::{cell::RefCell, rc::Rc};
-use wasm_bindgen::closure::Closure;
-use wasm_bindgen::JsCast;
-//use web_sys::Node;
-use std::marker::PhantomData;
-use std::fmt::Debug;
+use crate::v_dom::{
+    v_node::Node,
+    Vdom, Vnode, build_vdom
+};
+use std::rc::Rc;
+use std::cell::RefCell;
+use crate::dom::RDom;
+use indextree::{NodeId};
+use crate::event_manager::Dispatcher;
 
 
 #[derive(Debug)]
-pub struct DuidApp<APP, MSG>
-where
-    MSG: 'static + Debug,
+pub struct DuidApp
 {
 
-    v_dom: Rc<RefCell<APP>>,
+    v_dom: Vdom<Vnode>,
     r_dom: Rc<RefCell<RDom>>,
+    app_node_id: NodeId,
+    dispatcher: Rc<RefCell<Dispatcher>>
     //pub dom_updater: Rc<RefCell<DomUpdater<MSG>>>,
 
     // ports
     // updater
     // workers
-    phantom: PhantomData<MSG>
     
 }
 
-impl<APP, MSG> Clone for DuidApp<APP, MSG>
-where
-    MSG: 'static + Debug,
+impl Clone for DuidApp
 {
     fn clone(&self) -> Self {
         DuidApp {
-            v_dom: Rc::clone(&self.v_dom),
+            v_dom: self.v_dom.clone(),
             r_dom: Rc::clone(&self.r_dom),
-            phantom: PhantomData,
+            app_node_id: self.app_node_id.clone(),
+            dispatcher: Rc::clone(&self.dispatcher)
         }
     }
 }
 
-impl<APP, MSG> DuidApp<APP, MSG>
-where
-    MSG: 'static + Debug,
-    APP: Application<MSG> + 'static + Debug,
+
+impl DuidApp
 {
-    pub fn new(
-        app: APP,
+    pub fn new<'a>(
+        node: Node,
         mount_node: &str,
         replace: bool,
         use_shadow: bool,
     ) -> Self {
         let real_dom: RDom = RDom::new(mount_node, replace, use_shadow);
+        let r_dom = Rc::new(RefCell::new(real_dom));
+        let (app_node_id, v_dom): (NodeId, Vdom<Vnode>) = build_vdom(node);
+        let dispatcher = Dispatcher::new();
+        
         DuidApp {
-            v_dom: Rc::new(RefCell::new(app)),
-            r_dom: Rc::new(RefCell::new(real_dom)),
-            phantom: PhantomData
+            v_dom,
+            r_dom,
+            app_node_id,
+            dispatcher: Rc::new(RefCell::new(dispatcher))
         }
     }
 
-
+    /*
     fn after_mounted(&self) {
         let cmds = self.v_dom.borrow_mut().init();
 
@@ -72,34 +71,26 @@ where
             Self::inject_style(type_id, &style);
         }
     }
-
-    pub fn render(app: APP, mount_node: &str) -> Self {
+*/
+    pub fn render(app: Node, mount_node: &str) -> Self {
         console_log::init_with_level(tracing::log::Level::Debug).unwrap();
         std::panic::set_hook(Box::new(|info| {
-            tracing::error!("{:#?}", info);
+            tracing::error!("{:?}", info);
         }));
-            
+        
+        //tracing::info!("{:?}", app);
         let program = Self::new(app, mount_node, true, false);
         program.mount();
         program
     }
 
     pub fn mount(&self) {
-        self.r_dom.borrow_mut().mount(self, &self.v_dom.borrow().view());
-        self.after_mounted();
+        self.r_dom.borrow_mut().mount(self.dispatcher.clone(), &self.v_dom, &self.app_node_id);
+        //self.after_mounted();
     }
 
-    fn dispatch_inner(&self, msgs: Vec<MSG>) {
-
-        let all_cmd = msgs
-            .into_iter()
-            .map(|msg| self.v_dom.borrow_mut().update(msg));
-        let cmd = PortCmd::batch(all_cmd);
-
-        cmd.emit(self);
-    }
-
-    fn inject_style(type_id: TypeId, style: &str) {
+    /*
+    fn _inject_style(type_id: TypeId, style: &str) {
         //dbg!(&type_id);
         let type_id = format!("{:?}", type_id);
 
@@ -115,31 +106,6 @@ where
         let head = document.head().expect("must have a head");
         head.append_child(&html_style).expect("must append style");
     }
-}
 
-impl<APP, MSG> Dispatch<MSG> for DuidApp<APP, MSG>
-where
-    MSG: 'static + Debug,
-    APP: Application<MSG> + 'static + Debug,
-{
-    #[cfg(feature = "with-request-animation-frame")]
-    fn dispatch_multiple(&self, msgs: Vec<MSG>) {
-        crate::console::info!("clicked");
-        let program_clone = self.clone();
-        let closure_raf: Closure<dyn FnMut() + 'static> =
-            Closure::once(move || {
-                program_clone.dispatch_inner(msgs);
-            });
-        crate::dom::request_animation_frame_for_closure(&closure_raf);
-        closure_raf.forget();
-    }
-
-    #[cfg(not(feature = "with-request-animation-frame"))]
-    fn dispatch_multiple(&self, msgs: Vec<MSG>) {
-        self.dispatch_inner(msgs)
-    }
-
-    fn dispatch(&self, msg: MSG) {
-        self.dispatch_multiple(vec![msg])
-    }
+    */
 }

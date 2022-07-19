@@ -1,7 +1,9 @@
-mod application;
 mod duid_app;
-mod component;
+mod model;
+mod store;
 
-pub use application::*;
+
 pub use duid_app::*;
-pub use component::*;
+pub use model::*;
+pub use store::*;
+pub use crate::v_dom::v_node::Node;

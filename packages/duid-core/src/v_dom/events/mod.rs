@@ -1,8 +1,10 @@
 //! Create [events][0] Object
 //!
 //! [0]: https://developer.mozilla.org/en-US/docs/Web/Events
-use crate::v_dom::html::attributes::AttributeValue;
-use crate::v_dom::v_node::{Attribute, Listener};
+
+pub mod listener;
+
+use crate::v_dom::html::attributes::{AttributeValue, Attribute, attr};
 use wasm_bindgen::JsCast;
 #[cfg(web_sys_unstable_apis)]
 pub use web_sys::ClipboardEvent;
@@ -10,8 +12,16 @@ pub use web_sys::{
     AnimationEvent, HashChangeEvent, KeyboardEvent, MouseEvent, TransitionEvent,
 };
 use web_sys::{
-    EventTarget, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement,
+    EventTarget, HtmlInputElement, HtmlSelectElement, HtmlTextAreaElement
 };
+use crate::event_manager::Message;
+
+
+
+
+/// Callback where Event type is supplied
+/// for Components
+pub type Listener = listener::Listener<Event>;
 
 /// Map the Event to DomEvent, which are browser events
 #[derive(Debug, Clone, PartialEq)]
@@ -54,36 +64,32 @@ impl From<web_sys::MouseEvent> for Event {
 }
 
 /// an event builder
-pub fn on<F, MSG>(event_name: &'static str, f: F) -> Attribute<MSG>
+pub fn on<F>(event_name: &'static str, f: F) -> Attribute
 where
-    F: Fn(Event) -> MSG + 'static,
-    MSG: 'static,
+    F: Fn(Event) -> Message + 'static,
 {
-    mt_dom::attr(event_name, AttributeValue::EventListener(Listener::from(f)))
+    attr(event_name, AttributeValue::EventListener(Listener::from(f)))
 }
 
 /// on click event
-pub fn on_click<F, MSG>(f: F) -> Attribute<MSG>
+pub fn on_click<F>(f: F) -> Attribute
 where
-    F: Fn(MouseEvent) -> MSG + 'static,
-    MSG: 'static,
+    F: Fn(MouseEvent) -> Message + 'static,
 {
     on("click", move |event: Event| f(to_mouse_event(event)))
 }
 
 /// custom on_enter event, which is triggered from key_press when the Enter key is pressed
-pub fn on_enter<F, MSG>(f: F) -> Attribute<MSG>
+pub fn on_enter<F>(f: F) -> Attribute
 where
-    F: Fn(KeyboardEvent) -> MSG + 'static,
-    MSG: 'static,
+    F: Fn(KeyboardEvent) -> Message + 'static,
 {
     on("enter", move |event: Event| f(to_keyboard_event(event)))
 }
 /// attach callback to the scroll event
-pub fn on_scroll<F, MSG>(f: F) -> Attribute<MSG>
+pub fn on_scroll<F>(f: F) -> Attribute
 where
-    F: Fn((i32, i32)) -> MSG + 'static,
-    MSG: 'static,
+    F: Fn((i32, i32)) -> Message + 'static,
 {
     on("scroll", move |event: Event| {
         let web_event = event.as_web().expect("must be a web event");
@@ -112,10 +118,9 @@ pub struct MountEvent {
 }
 
 /// custom mount event
-pub fn on_mount<F, MSG>(f: F) -> Attribute<MSG>
+pub fn on_mount<F>(f: F) -> Attribute
 where
-    F: Fn(MountEvent) -> MSG + 'static,
-    MSG: 'static,
+    F: Fn(MountEvent) -> Message + 'static,
 {
     on("mount", move |event: Event| match event {
         Event::MountEvent(me) => f(me),
@@ -134,13 +139,12 @@ macro_rules! declare_events {
        )*
      ) => {
         $(
-            doc_comment!{
+            doc_comment::doc_comment!{
                 concat!("attach an [",stringify!($name),"](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/",stringify!($name),") event to the html element"),
                 $(#[$attr])*
                 #[inline]
-                pub fn $name<CB, MSG>(cb: CB) -> crate::v_dom::v_node::Attribute<MSG>
-                    where CB: Fn($ret) -> MSG + 'static,
-                          MSG: 'static,
+                pub fn $name<CB>(cb: CB) -> crate::v_dom::html::attributes::Attribute
+                    where CB: Fn($ret) -> crate::event_manager::Message + 'static,
                     {
                         on(stringify!($event), move|event:Event|{
                             cb($mapper(event))

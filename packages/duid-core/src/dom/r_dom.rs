@@ -1,22 +1,23 @@
 use crate::{
-    event_manager::Dispatch,
-
-    v_dom::{ActiveClosure, CreatedNode},
-    v_dom::v_node
+    v_dom::{Vdom, Vnode, CreatedNode},
+    event_manager::Dispatcher
 };
 use wasm_bindgen::JsCast;
-use web_sys::{self, Element, Node};
 use std::fmt::Debug;
 use super::document;
+use indextree::{NodeId};
+use std::rc::Rc;
+use std::cell::RefCell;
+
+use web_sys::{
+    self, Element, Node
+};
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RDom {
-    pub root_node: Option<Node>,
     pub mount_node: Node,
-    pub active_closures: ActiveClosure,
-    pub focused_node: Option<Node>,
     pub replace: bool,
     pub use_shadow: bool,
 }
@@ -36,10 +37,7 @@ impl RDom {
             .unchecked_into::<Node>();
         
         RDom {
-            root_node: None,
             mount_node: node,
-            active_closures: ActiveClosure::new(),
-            focused_node: None,
             replace,
             use_shadow,
         }
@@ -48,20 +46,11 @@ impl RDom {
 
 impl RDom {
 
-    pub fn mount<DSP, MSG>(&mut self, program: &DSP, current_v_node: &v_node::Node<MSG>)
-    where
-        MSG: 'static + Debug,   
-        DSP: Dispatch<MSG> + Clone + 'static,
-    {
-        let created_node = CreatedNode::create_dom_node(
-            program,
-            current_v_node,
-            &mut self.focused_node,
-        );
-
-        //TODO: maybe remove replace the mount
+    pub fn mount(&mut self, duid: Rc<RefCell<Dispatcher>>, current_v_node: &Vdom<Vnode>, app_node_id: &NodeId) {
+        
+        let created_node = CreatedNode::create_dom_node(duid.clone(), current_v_node, &app_node_id);
+        
         if self.replace {
-            tracing::info!("djed");
             let mount_element: &Element = self.mount_node.unchecked_ref();
             mount_element
                 .replace_with_with_node_1(&created_node.node)
@@ -90,28 +79,21 @@ impl RDom {
                     .expect("Could not append child to mount");
             }
         }
-        self.root_node = Some(created_node.node);
-        self.active_closures = created_node.closures;
-        self.set_focus_element();
+        
+        //self.root_node = Some(created_node.node);
+        //self.active_closures = created_node.closures;
+        //self.set_focus_element();
+        
     }
 
-
+    /*
     fn set_focus_element(&self) {
         if let Some(focused_node) = &self.focused_node {
             let focused_element: &Element = focused_node.unchecked_ref();
             CreatedNode::set_element_focus(focused_element);
         }
     }
-
-
-    pub fn _root_node(&self) -> Node {
-        self.root_node
-            .as_ref()
-            .expect("must have a root_node")
-            .clone()
-    }
-
-
+    */
     pub fn _mount_node(&self) -> Node {
         self.mount_node.clone()
     }
