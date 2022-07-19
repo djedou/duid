@@ -1,0 +1,1605 @@
+// Javascript Un-Grammar.
+//
+// This grammar specifies the structure of Rust's concrete syntax tree.
+// It does not specify parsing rules (ambiguities, precedence, etc are out of scope).
+// Tokens are processed -- contextual keywords are recognised, compound operators glued.
+//
+// Legend:
+//
+//   //          				-- comment
+//   Name =      				-- non-terminal definition
+//   'ident'     				-- token (terminal)
+//   A B         				-- sequence
+//   A | B       				-- alternation
+//   A*          				-- zero or more repetition
+//   (A (',' A)* ','?)	        -- repetition of node A separated by ',' and allowing a trailing comma
+//   (A (',' A)*)	            -- repetition of node A separated by ',' without a trailing comma
+//   A?          				-- zero or one repetition
+//   (A)         				-- same as A
+//   label:A     				-- suggested name for field of AST node
+
+// NOTES
+//
+// - SyntaxNode, SyntaxToken and SyntaxElement will be stripped from the codegen
+// - Unknown nodes are special nodes used to keep track of broken code; they are
+//   not part of the grammar but they will appear inside the green tree
+//
+
+
+///////////////
+// UNKNOWN NODES
+///////////////
+// SyntaxElement is a generic data structure that is meant to track nodes and tokens
+// in cases where we care about both types
+//
+// As Unknown* node will need to yield both tokens and nodes without discrimination,
+// and their children will need to yield nodes and tokens as well.
+// For this reason, SyntaxElement = SyntaxElement
+SyntaxElement = SyntaxElement
+
+JsUnknown = SyntaxElement*
+JsUnknownStatement = SyntaxElement*
+JsUnknownExpression = SyntaxElement*
+JsUnknownMember = SyntaxElement*
+JsUnknownBinding = SyntaxElement*
+JsUnknownAssignment = SyntaxElement*
+JsUnknownParameter = SyntaxElement*
+JsUnknownImportAssertionEntry = SyntaxElement*
+JsUnknownNamedImportSpecifier = SyntaxElement*
+
+JsAnyRoot =
+	JsScript | JsModule | JsExpressionSnipped
+
+JsScript =
+	interpreter: 'js_shebang'?
+	directives: JsDirectiveList
+	statements: JsStatementList
+	eof: 'EOF'
+
+JsModule =
+	interpreter: 'js_shebang'?
+	directives: JsDirectiveList
+	items: JsModuleItemList
+	eof: 'EOF'
+
+JsExpressionSnipped =
+	expression: JsAnyExpression
+	eof: 'EOF'
+
+
+JsDirective =
+	value: 'js_string_literal'
+	';'?
+
+JsDirectiveList = JsDirective*
+
+///////////////
+// STATEMENTS
+///////////////
+
+JsAnyStatement =
+	JsBlockStatement
+	| JsBreakStatement
+	| JsClassDeclaration
+	| JsContinueStatement
+	| JsDebuggerStatement
+	| JsDoWhileStatement
+	| JsEmptyStatement
+	| JsExpressionStatement
+	| JsForInStatement
+	| JsForOfStatement
+	| JsForStatement
+	| JsIfStatement
+	| JsLabeledStatement
+	| JsReturnStatement
+	| JsSwitchStatement
+	| JsThrowStatement
+	| JsTryFinallyStatement
+	| JsTryStatement
+	| JsUnknownStatement
+	| JsVariableStatement
+	| JsWhileStatement
+	| JsWithStatement
+	| JsFunctionDeclaration
+	| TsEnumDeclaration
+	| TsTypeAliasDeclaration
+	| TsInterfaceDeclaration
+	| TsDeclareFunctionDeclaration
+	| TsDeclareStatement
+	| TsModuleDeclaration
+	| TsExternalModuleDeclaration
+	| TsGlobalDeclaration
+	| TsImportEqualsDeclaration
+
+
+JsBlockStatement =
+	'{'
+	statements: JsStatementList
+	'}'
+
+JsStatementList = JsAnyStatement*
+
+JsEmptyStatement =
+    ';'
+
+JsExpressionStatement =
+    expression: JsAnyExpression ';'?
+
+
+JsWhileStatement =
+    'while' '(' test: JsAnyExpression ')'
+    body: JsAnyStatement
+
+
+JsDoWhileStatement =
+    'do'
+    body: JsAnyStatement
+    'while' '(' test: JsAnyExpression ')'
+    ';'?
+
+
+// if statement
+JsIfStatement =
+	'if' '(' test: JsAnyExpression ')'
+	consequent: JsAnyStatement
+	else_clause: JsElseClause?
+
+JsElseClause =
+	'else'
+	alternate: JsAnyStatement
+
+
+// for..in statement
+JsForStatement =
+	'for'
+	'('
+	initializer: JsAnyForInitializer?
+	first_semi: ';'
+	test: JsAnyExpression?
+	second_semi: ';'
+	update: JsAnyExpression?
+	')'
+	body: JsAnyStatement
+
+JsAnyForInitializer = JsVariableDeclaration | JsAnyExpression
+
+// for..in statement
+JsForInStatement =
+	'for'
+	'('
+	initializer: JsAnyForInOrOfInitializer
+	'in'
+	expression: JsAnyExpression
+	')'
+	body: JsAnyStatement
+
+// for..of statement
+JsForOfStatement =
+	'for'
+	'await'?
+	'('
+	initializer: JsAnyForInOrOfInitializer
+	'of'
+	expression: JsAnyExpression
+	')'
+	body: JsAnyStatement
+
+JsAnyForInOrOfInitializer =
+	JsAnyAssignmentPattern
+	| JsForVariableDeclaration
+
+JsForVariableDeclaration =
+	kind_token: ('var' | 'let' | 'const')
+	declarator: JsVariableDeclarator
+
+JsBreakStatement =
+    'break'
+    (label: 'ident')?
+    ';'?
+
+JsContinueStatement =
+    'continue'
+    (label: 'ident')?
+    ';'?
+
+
+JsReturnStatement =
+    'return'
+    argument: JsAnyExpression?
+    ';'?
+
+
+JsWithStatement =
+    'with' '(' object: JsAnyExpression ')'
+    body: JsAnyStatement
+
+
+JsLabeledStatement =
+    label: 'ident' ':'
+    body: JsAnyStatement
+
+
+JsSwitchStatement =
+    'switch' '(' discriminant: JsAnyExpression ')'
+    '{'
+    cases: JsSwitchCaseList
+    '}'
+
+JsSwitchCaseList = JsAnySwitchClause*
+
+JsAnySwitchClause = JsCaseClause | JsDefaultClause
+JsCaseClause = 'case' test: JsAnyExpression ':' consequent: JsStatementList
+JsDefaultClause = 'default' ':' consequent: JsStatementList
+
+
+JsThrowStatement =
+    'throw'
+    argument: JsAnyExpression
+    ';'?
+
+// try..catch..finally statement
+JsTryStatement =
+    'try'
+    body: JsBlockStatement
+    catch_clause: JsCatchClause
+
+JsTryFinallyStatement =
+    'try'
+    body: JsBlockStatement
+    catch_clause: JsCatchClause?
+    finally_clause: JsFinallyClause
+
+JsCatchClause =
+    'catch'
+    declaration: JsCatchDeclaration?
+    body: JsBlockStatement
+
+JsCatchDeclaration =
+    '('
+    binding: JsAnyBindingPattern
+    type_annotation: TsTypeAnnotation?
+    ')'
+
+JsFinallyClause =
+    'finally'
+    body: JsBlockStatement
+
+
+// debugger statement
+JsDebuggerStatement =
+	'debugger' ';'?
+
+// declare function test();
+TsDeclareStatement =
+	'declare'
+	declaration: JsAnyDeclarationClause
+
+
+///////////////
+// EXPRESSIONS
+///////////////
+
+// Expression
+JsAnyExpression =
+	JsAnyLiteralExpression
+	| ImportMeta
+	| JsArrayExpression
+	| JsArrowFunctionExpression
+	| JsAssignmentExpression
+	| JsAwaitExpression
+	| JsBinaryExpression
+	| JsCallExpression
+	| JsClassExpression
+	| JsComputedMemberExpression
+	| JsConditionalExpression
+	| JsFunctionExpression
+	| JsIdentifierExpression
+	| JsImportCallExpression
+	| JsInExpression
+	| JsInstanceofExpression
+	| JsLogicalExpression
+	| JsNewExpression
+	| JsObjectExpression
+	| JsParenthesizedExpression
+	| JsPostUpdateExpression
+	| JsPreUpdateExpression
+	| JsSequenceExpression
+	| JsStaticMemberExpression
+	| JsSuperExpression
+	| JsThisExpression
+	| JsUnaryExpression
+	| JsUnknownExpression
+	| JsYieldExpression
+	| NewTarget
+	| JsTemplate
+	// Typescript
+	| TsTypeAssertionExpression
+	| TsAsExpression
+	| TsNonNullAssertionExpression
+	// JSX
+	| JsxTagExpression
+
+
+JsTemplate =
+	tag: JsAnyExpression?
+	type_arguments: TsTypeArguments?
+	l_tick: '`'
+	elements: JsTemplateElementList
+	r_tick: '`'
+
+JsTemplateElementList = JsAnyTemplateElement*
+
+JsAnyTemplateElement =
+	JsTemplateChunkElement
+	| JsTemplateElement
+
+JsTemplateChunkElement = 'template_chunk'
+
+JsTemplateElement =
+	'dollar_curly'
+	expression: JsAnyExpression
+	'}'
+
+JsThisExpression = 'this'
+
+JsSuperExpression = 'super'
+
+// new expression
+JsNewExpression =
+	'new'
+	callee: JsAnyExpression
+	type_arguments: TsTypeArguments?
+	arguments: JsCallArguments?
+
+// call expression
+JsCallExpression =
+	callee: JsAnyExpression
+	optional_chain: '?.'?
+	type_arguments: TsTypeArguments?
+	arguments: JsCallArguments
+
+
+JsAwaitExpression =
+	'await'
+	argument: JsAnyExpression
+
+
+JsYieldExpression =
+	'yield'
+	argument: JsYieldArgument?
+
+JsYieldArgument =
+	'*'?
+	expression: JsAnyExpression
+
+JsImportCallExpression =
+	'import'
+	arguments: JsCallArguments
+
+// new target expression
+NewTarget = 'new' '.' 'target'
+
+
+JsConditionalExpression =
+	test: JsAnyExpression
+	'?'
+	consequent: JsAnyExpression
+	':'
+	alternate: JsAnyExpression
+
+// import meta expression
+ImportMeta = 'import' '.' 'meta'
+
+JsFunctionExpression =
+	'async'?
+	'function'
+	'*'?
+	id: JsAnyBinding?
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	body: JsFunctionBody
+
+
+JsArrowFunctionExpression =
+	'async'?
+	type_parameters: TsTypeParameters?
+	parameters: JsAnyArrowFunctionParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	'=>'
+	body: JsAnyFunctionBody
+
+JsAnyArrowFunctionParameters = JsParameters | JsAnyBinding
+JsAnyFunctionBody = JsAnyExpression | JsFunctionBody
+
+// Array expression
+JsArrayExpression =
+	'['
+	elements: JsArrayElementList
+	']'
+
+JsArrayElementList = (JsAnyArrayElement (',' JsAnyArrayElement)* ','?)
+
+JsAnyArrayElement =
+	JsAnyExpression
+	| JsSpread
+	| JsArrayHole
+
+JsArrayHole = hole: ''?
+
+JsAssignmentExpression =
+  left: JsAnyAssignmentPattern
+  operator_token: (
+		'=' |'+=' | '-=' | '*=' | '/=' | '%=' |
+		'**=' | '>>=' | '<<=' | '>>>=' | '&=' |
+		'|=' | '^=' | '&&=' | '||=' | '??='
+  )
+  right: JsAnyExpression
+
+
+JsSequenceExpression =
+	left: JsAnyExpression
+	comma: ','
+	right: JsAnyExpression
+
+
+JsParenthesizedExpression =
+	'(' expression: JsAnyExpression ')'
+
+
+JsIdentifierExpression = name: JsReferenceIdentifier
+
+// a.b
+// a.#b
+JsStaticMemberExpression =
+	object: JsAnyExpression
+	operator_token: ('.' | '?.')
+	member: JsAnyName
+
+// a[b]
+JsComputedMemberExpression =
+	object: JsAnyExpression
+	optional_chain: '?.'?
+	'['
+	member: JsAnyExpression
+	']'
+
+JsBinaryExpression =
+    left: JsAnyExpression
+    operator_token: (
+    	'<' | '>' | '<=' | '>=' | '==' | '===' | '!=' | '!=='
+    	| '+' | '-' | '*' | '/' | '%' | '**' | '<<' | '>>' | '>>>'
+    	| '&' | '|' | '^'
+		)
+    right: JsAnyExpression
+
+JsInstanceofExpression =
+	left: JsAnyExpression
+	'instanceof'
+	right: JsAnyExpression
+
+JsInExpression =
+	property: JsAnyInProperty
+	'in'
+	object: JsAnyExpression
+
+JsAnyInProperty =
+	JsPrivateName
+	| JsAnyExpression
+
+JsLogicalExpression =
+	left: JsAnyExpression
+	operator_token: ('??' | '||' | '&&')
+	right: JsAnyExpression
+
+// unary expression
+JsUnaryExpression =
+  operator_token: ('delete' | 'void' | 'typeof' | '+' | '-' | '~' | '!')
+  argument: JsAnyExpression
+
+JsPreUpdateExpression =
+    operator_token: ('++' | '--')
+    operand: JsAnyAssignment
+
+JsPostUpdateExpression =
+    operand: JsAnyAssignment
+    operator_token: ('++' | '--')
+
+
+///////////////
+// OBJECTS
+///////////////
+JsAnyObjectMemberName =
+	JsLiteralMemberName
+	| JsComputedMemberName
+
+JsObjectExpression =
+	'{'
+	members: JsObjectMemberList
+	'}'
+
+JsObjectMemberList = (JsAnyObjectMember (',' JsAnyObjectMember)* ','?)
+
+JsAnyObjectMember =
+	JsPropertyObjectMember
+	| JsMethodObjectMember
+	| JsGetterObjectMember
+	| JsSetterObjectMember
+	| JsShorthandPropertyObjectMember
+	| JsSpread
+	| JsUnknownMember
+
+
+// { a: 5, b: () => {} }
+//   ^^^^  ^^^^^^^^^^^
+JsPropertyObjectMember =
+	name: JsAnyObjectMemberName
+	':'
+	value: JsAnyExpression
+
+// { get a() {} }
+//   ^^^^^^^^^^
+JsGetterObjectMember =
+	'get'
+	name: JsAnyObjectMemberName
+	'('')'
+	return_type: TsTypeAnnotation?
+	body: JsFunctionBody
+
+//  { set a(value) {} }
+//    ^^^^^^^^^^^^^^^
+JsSetterObjectMember =
+	'set'
+	name: JsAnyObjectMemberName
+	'('
+	parameter: JsAnyFormalParameter
+	')'
+	body: JsFunctionBody
+
+// { a() {}, async b() {}, async * c() {} }
+//   ^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+JsMethodObjectMember =
+	'async'?
+	'*'?
+	name: JsAnyObjectMemberName
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	body: JsFunctionBody
+
+// { a }
+//   ^
+JsShorthandPropertyObjectMember = name: JsReferenceIdentifier
+
+///////////////
+// CLASSES
+///////////////
+
+JsClassDeclaration =
+	'abstract'?
+	'class'
+	id: JsAnyBinding
+	type_parameters: TsTypeParameters?
+	extends_clause: JsExtendsClause?
+	implements_clause: TsImplementsClause?
+	'{'
+	members: JsClassMemberList
+	'}'
+
+JsClassExpression =
+	'class'
+	id: JsAnyBinding?
+	type_parameters: TsTypeParameters?
+	extends_clause: JsExtendsClause?
+	implements_clause: TsImplementsClause?
+	'{'
+	members: JsClassMemberList
+	'}'
+
+JsClassMemberList = JsAnyClassMember*
+
+JsAnyClass =
+	JsClassDeclaration
+	| JsClassExpression
+	| JsClassExportDefaultDeclaration
+
+// class Test extends A {}
+//            ^^^^^^^^^
+JsExtendsClause =
+	'extends'
+	super_class: JsAnyExpression
+	type_arguments: TsTypeArguments?
+
+TsImplementsClause =
+	'implements'
+	types: TsTypeList
+
+// class Test { #test; }
+//              ^^^^^
+JsPrivateClassMemberName = '#' id: 'ident'
+
+JsAnyClassMemberName =
+	JsLiteralMemberName
+	| JsComputedMemberName
+	| JsPrivateClassMemberName
+
+JsAnyClassMember =
+	JsConstructorClassMember
+	| JsStaticInitializationBlockClassMember
+	| JsPropertyClassMember
+	| JsMethodClassMember
+	| JsGetterClassMember
+	| JsSetterClassMember
+	| TsConstructorSignatureClassMember
+	| TsPropertySignatureClassMember
+	| TsMethodSignatureClassMember
+	| TsGetterSignatureClassMember
+	| TsSetterSignatureClassMember
+	| TsIndexSignatureClassMember
+	| JsEmptyClassMember
+	| JsUnknownMember
+
+JsStaticModifier = modifier: 'static'
+TsDeclareModifier = modifier: 'declare'
+TsReadonlyModifier = modifier: 'readonly'
+TsAbstractModifier = modifier: 'abstract'
+TsOverrideModifier = modifier: 'override'
+TsAccessibilityModifier = modifier_token: ('private' | 'protected' | 'public')
+
+JsStaticInitializationBlockClassMember =
+	'static'
+	'{'
+	statements: JsStatementList
+	'}'
+
+
+// class Test { constructor() {} }
+//              ^^^^^^^^^^^^^^^^
+// class Test { "constructor"() {} }
+//              ^^^^^^^^^^^^^^^^^^
+// class Test { 'constructor'() {} }
+//              ^^^^^^^^^^^^^^^^^^
+JsConstructorClassMember =
+	modifiers: JsConstructorModifierList
+	name: JsLiteralMemberName
+	parameters: JsConstructorParameters
+	body: JsFunctionBody
+
+JsConstructorModifierList = TsAccessibilityModifier*
+
+JsConstructorParameters =
+	'('
+	parameters: JsConstructorParameterList
+	')'
+
+JsConstructorParameterList = (JsAnyConstructorParameter (',' JsAnyConstructorParameter)* ','?)
+
+JsAnyConstructorParameter =
+	JsAnyFormalParameter
+	| JsRestParameter
+	| TsPropertyParameter
+
+// constructor(private a: string)
+//             ^^^^^^^^^^^^^^^^^
+TsPropertyParameter =
+	modifiers: TsPropertyParameterModifierList
+	formal_parameter: JsAnyFormalParameter
+
+TsPropertyParameterModifierList = TsAnyPropertyParameterModifier*
+
+TsAnyPropertyParameterModifier =
+	TsAccessibilityModifier
+	| TsReadonlyModifier
+	| TsOverrideModifier
+
+TsConstructorSignatureClassMember =
+	modifiers: JsConstructorModifierList
+	name: JsLiteralMemberName
+	parameters: JsConstructorParameters
+	';'?
+
+// class Test { a; b = 1; static c; }
+//              ^^ ^^^^^^ ^^^^^^^^^
+JsPropertyClassMember =
+	modifiers: JsPropertyModifierList
+	name: JsAnyClassMemberName
+	property_annotation: TsAnyPropertyAnnotation?
+	value: JsInitializerClause?
+	';'?
+
+JsAnyPropertyModifier =
+	TsAccessibilityModifier
+	| JsStaticModifier
+	| TsReadonlyModifier
+	| TsOverrideModifier
+
+JsPropertyModifierList = JsAnyPropertyModifier*
+
+TsPropertySignatureClassMember =
+	modifiers: TsPropertySignatureModifierList
+	name: JsAnyClassMemberName
+	property_annotation: TsAnyPropertySignatureAnnotation?
+	';'?
+
+TsPropertySignatureModifierList = TsAnyPropertySignatureModifier*
+
+TsAnyPropertySignatureModifier =
+	TsDeclareModifier
+  	| TsAccessibilityModifier
+  	| JsStaticModifier
+  	| TsReadonlyModifier
+  	| TsOverrideModifier
+  	| TsAbstractModifier
+
+TsAnyPropertySignatureAnnotation =
+	TsTypeAnnotation
+	| TsOptionalPropertyAnnotation
+
+TsAnyPropertyAnnotation =
+	TsTypeAnnotation
+	| TsOptionalPropertyAnnotation
+	| TsDefinitePropertyAnnotation
+
+TsOptionalPropertyAnnotation =
+	'?'
+	type_annotation: TsTypeAnnotation?
+
+TsDefinitePropertyAnnotation =
+	'!'
+	type_annotation: TsTypeAnnotation
+
+// class Test { a() {} }
+//              ^^^^^^
+JsMethodClassMember =
+	modifiers: JsMethodModifierList
+	'async'?
+	'*'?
+	name: JsAnyClassMemberName
+	'?'?
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	body: JsFunctionBody
+
+JsAnyMethodModifier =
+	TsAccessibilityModifier
+	| JsStaticModifier
+	| TsOverrideModifier
+
+JsMethodModifierList = JsAnyMethodModifier*
+
+TsMethodSignatureClassMember =
+	modifiers: TsMethodSignatureModifierList
+	'async'?
+	name: JsAnyClassMemberName
+	'?'?
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	';'?
+
+TsMethodSignatureModifierList = TsAnyMethodSignatureModifier*
+TsAnyMethodSignatureModifier =
+	TsAccessibilityModifier
+	| JsStaticModifier
+	| TsOverrideModifier
+	| TsAbstractModifier
+
+// class Test { get a() {} }
+//              ^^^^^^^^^^
+JsGetterClassMember =
+	modifiers: JsMethodModifierList
+	'get'
+	name: JsAnyClassMemberName
+	'(' ')'
+	return_type: TsTypeAnnotation?
+	body: JsFunctionBody
+
+TsGetterSignatureClassMember =
+	modifiers: TsMethodSignatureModifierList
+	'get'
+	name: JsAnyClassMemberName
+	'(' ')'
+	return_type: TsTypeAnnotation?
+	';'?
+
+// class Test { set a(v) {} }
+//              ^^^^^^^^^^^
+JsSetterClassMember =
+	modifiers: JsMethodModifierList
+	'set'
+	name: JsAnyClassMemberName
+	'('
+	parameter: JsAnyFormalParameter
+	')'
+	body: JsFunctionBody
+
+TsSetterSignatureClassMember =
+	modifiers: TsMethodSignatureModifierList
+	'set'
+	name: JsAnyClassMemberName
+	'('
+	parameter: JsAnyFormalParameter
+	')'
+	';'?
+
+// class Test { [a: string]: number }
+//
+TsIndexSignatureClassMember =
+	modifiers: TsIndexSignatureModifierList
+	'['
+	parameter: TsIndexSignatureParameter
+	']'
+	type_annotation: TsTypeAnnotation
+	';'?
+
+TsAnyIndexSignatureModifier =
+	JsStaticModifier
+	| TsReadonlyModifier
+
+TsIndexSignatureModifierList = TsAnyIndexSignatureModifier*
+
+JsEmptyClassMember = ';'
+
+///////////////
+// ASSIGNMENT TARGETS
+///////////////
+
+JsAnyAssignment =
+	JsIdentifierAssignment
+	| JsStaticMemberAssignment
+	| JsComputedMemberAssignment
+	| JsParenthesizedAssignment
+	| TsNonNullAssertionAssignment
+	| TsAsAssignment
+	| TsTypeAssertionAssignment
+	| JsUnknownAssignment
+
+
+JsAssignmentWithDefault =
+	pattern: JsAnyAssignmentPattern
+	'='
+	default: JsAnyExpression
+
+// (a) = "test"
+// ^^^
+JsParenthesizedAssignment =
+	'('
+	assignment: JsAnyAssignment
+	')'
+
+// Assignment to an identifier from the lexical scope
+// b = "test"
+// ^
+JsIdentifierAssignment = name: 'ident'
+
+// a.b = a.#b = "test"
+// ^^^   ^^^^
+JsStaticMemberAssignment =
+	object: JsAnyExpression
+	'.'
+	member: JsAnyName
+
+// a['b'] = a[expr] = "test"
+// ^^^^^^   ^^^^^^^
+JsComputedMemberAssignment =
+	object: JsAnyExpression
+	'['
+	member: JsAnyExpression
+	']'
+
+TsNonNullAssertionAssignment =
+	assignment: JsAnyAssignment
+	'!'
+
+// Only valid inside of parenthesized assignments
+// (a as string) = "test";
+//  ^^^^^^^^^^^^
+TsAsAssignment =
+	assignment: JsAnyAssignment
+	'as'
+	type: TsType
+
+TsTypeAssertionAssignment =
+	'<'
+	type: TsType
+	'>'
+	assignment: JsAnyAssignment
+
+JsAnyAssignmentPattern =
+	JsAnyAssignment
+	| JsArrayAssignmentPattern
+	| JsObjectAssignmentPattern
+
+
+// [a, b = "b", ...rest] = bar
+// ^^^^^^^^^^^^^^^^^^^^^^
+JsArrayAssignmentPattern =
+	'['
+	elements: JsArrayAssignmentPatternElementList
+	']'
+
+JsArrayAssignmentPatternElementList = (JsAnyArrayAssignmentPatternElement (',' JsAnyArrayAssignmentPatternElement)* ','?)
+
+JsAnyArrayAssignmentPatternElement =
+	JsAssignmentWithDefault
+	| JsAnyAssignmentPattern
+	| JsArrayAssignmentPatternRestElement
+	| JsArrayHole
+
+// [a, b, ...rest] = [];
+//        ^^^^^^^
+JsArrayAssignmentPatternRestElement =
+	'...'
+	pattern: JsAnyAssignmentPattern
+
+// ({a, b: x, ...rest} = c)
+//  ^^^^^^^^^^^^^^^^^^
+JsObjectAssignmentPattern =
+	'{'
+	properties: JsObjectAssignmentPatternPropertyList
+	'}'
+
+JsObjectAssignmentPatternPropertyList = (JsAnyObjectAssignmentPatternMember (',' JsAnyObjectAssignmentPatternMember)* ','?)
+
+JsAnyObjectAssignmentPatternMember =
+	JsObjectAssignmentPatternShorthandProperty
+	| JsObjectAssignmentPatternProperty
+	| JsObjectAssignmentPatternRest
+	| JsUnknownAssignment
+
+// ({ x } = b) or ({ x = "test" } = b)
+//    ^              ^^^^^^^^^^
+JsObjectAssignmentPatternShorthandProperty =
+	identifier: JsIdentifierAssignment
+	init: JsInitializerClause?
+
+// ({ x: a } = b) or ({ x: a = "test" } = b)
+//    ^^^^              ^^^^^^^^^^^^^
+JsObjectAssignmentPatternProperty =
+	member: JsAnyObjectMemberName
+	':'
+	pattern: JsAnyAssignmentPattern
+	init: JsInitializerClause?
+
+// ({ a, ...b } = a)
+//       ^^^^
+JsObjectAssignmentPatternRest =
+	'...'
+	target: JsAnyAssignment
+
+///////////////
+// BINDINGS
+///////////////
+
+JsAnyBinding =
+	JsIdentifierBinding
+	| JsUnknownBinding
+
+// Binds a value to an identifier.
+// let x = OR function(test) {}
+//     ^               ^^^^
+JsIdentifierBinding =
+	name: 'ident'
+
+// [ a = "b"] = [];
+//   ^^^^^^^
+JsBindingPatternWithDefault =
+	pattern: JsAnyBindingPattern
+	'='
+	default: JsAnyExpression
+
+JsAnyBindingPattern =
+	JsAnyBinding
+	| JsArrayBindingPattern
+	| JsObjectBindingPattern
+
+// let [a, b] = [1, 2];
+//     ^^^^^^
+JsArrayBindingPattern =
+	'['
+	elements: JsArrayBindingPatternElementList
+	']'
+
+JsArrayBindingPatternElementList = (JsAnyArrayBindingPatternElement (',' JsAnyArrayBindingPatternElement)* ','?)
+
+JsAnyArrayBindingPatternElement =
+	JsArrayHole
+	| JsAnyBindingPattern
+	| JsBindingPatternWithDefault
+	| JsArrayBindingPatternRestElement
+
+JsArrayBindingPatternRestElement =
+	'...'
+	pattern: JsAnyBindingPattern
+
+// let { a, b} = c;
+//     ^^^^^^^
+JsObjectBindingPattern =
+	'{'
+	properties: JsObjectBindingPatternPropertyList
+	'}'
+
+JsObjectBindingPatternPropertyList = (JsAnyObjectBindingPatternMember (',' JsAnyObjectBindingPatternMember)* ','?)
+
+JsAnyObjectBindingPatternMember =
+	JsObjectBindingPatternProperty
+	| JsObjectBindingPatternRest
+	| JsObjectBindingPatternShorthandProperty
+	| JsIdentifierBinding
+	| JsUnknownBinding
+
+// let { a: b.m } = {}
+//       ^^^^^^
+// let { a: b.m = "test" } = {}
+//       ^^^^^^^^^^^^^^^
+JsObjectBindingPatternProperty =
+	member: JsAnyObjectMemberName
+	':'
+	pattern: JsAnyBindingPattern
+	init: JsInitializerClause?
+
+// let { a } = c
+//       ^
+// let { a = "test" } = c
+//       ^^^^^^^^^^
+JsObjectBindingPatternShorthandProperty =
+	identifier: JsAnyBinding
+	init: JsInitializerClause?
+
+// let { ...a } = c
+//       ^^^^
+JsObjectBindingPatternRest =
+	'...'
+	binding: JsAnyBinding
+
+
+///////////////
+// LITERALS
+///////////////
+
+JsAnyLiteralExpression =
+	JsStringLiteralExpression
+	| JsNumberLiteralExpression
+	| JsBigIntLiteralExpression
+	| JsBooleanLiteralExpression
+	| JsNullLiteralExpression
+	| JsRegexLiteralExpression
+
+// "abcd" | 'abcd'
+JsStringLiteralExpression = value: 'js_string_literal'
+
+// 4, 5.5, 0x00, ...
+JsNumberLiteralExpression = value: 'js_number_literal'
+
+// 45n
+JsBigIntLiteralExpression =  value: 'js_big_int_literal'
+
+// true, false
+JsBooleanLiteralExpression = value_token: ('true' | 'false')
+
+// null
+JsNullLiteralExpression = value: 'null'
+
+JsRegexLiteralExpression = value: 'js_regex_literal'
+
+
+///////////////
+// DECLARATIONS
+///////////////
+
+JsAnyDeclaration =
+	JsClassDeclaration
+	| JsFunctionDeclaration
+	| JsVariableDeclaration
+	| TsEnumDeclaration
+	| TsTypeAliasDeclaration
+	| TsInterfaceDeclaration
+	| TsDeclareFunctionDeclaration
+	| TsModuleDeclaration
+	| TsExternalModuleDeclaration
+	| TsGlobalDeclaration
+	| TsImportEqualsDeclaration
+
+// Used when declarations appear in a non-statement position.
+// export let a, b;
+//        ^^^^^^^^^
+// declare let a, b;
+//         ^^^^^^^^^
+JsAnyDeclarationClause =
+	JsClassDeclaration
+	| JsFunctionDeclaration
+	| JsVariableDeclarationClause
+	| TsEnumDeclaration
+	| TsTypeAliasDeclaration
+	| TsInterfaceDeclaration
+	| TsDeclareFunctionDeclaration
+	| TsModuleDeclaration
+	| TsExternalModuleDeclaration
+	| TsGlobalDeclaration
+	| TsImportEqualsDeclaration
+
+JsVariableDeclarationClause =
+	declaration: JsVariableDeclaration
+	';'?
+
+
+JsFunctionDeclaration =
+	'async'?
+	'function'
+	'*'?
+	id: JsAnyBinding
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	body: JsFunctionBody
+
+TsTypeAnnotation =
+	':'
+	type: TsType
+
+TsReturnTypeAnnotation =
+	':'
+	type: TsAnyReturnType
+
+// let a, b = c;
+JsVariableStatement =
+	declaration: JsVariableDeclaration
+	 ';'?
+
+// Declaration of multiple variables
+// let a, b = c;
+// ^^^^^^^^
+JsVariableDeclaration =
+    kind: ('var' | 'const' | 'let')
+    declarators: JsVariableDeclaratorList
+
+JsVariableDeclaratorList = (JsVariableDeclarator (',' JsVariableDeclarator)*)
+
+// let b = c;
+//     ^^^^^
+JsVariableDeclarator =
+    id: JsAnyBindingPattern
+    variable_annotation: TsAnyVariableAnnotation?
+    initializer: JsInitializerClause?
+
+TsAnyVariableAnnotation =
+	TsTypeAnnotation
+	| TsDefiniteVariableAnnotation
+
+TsDefiniteVariableAnnotation =
+	'!'
+	type_annotation: TsTypeAnnotation
+
+
+///////////////
+// MODULE SYNTAX
+///////////////
+
+JsAnyModuleItem =
+	JsAnyStatement
+	| JsExport
+	| JsImport
+JsModuleItemList = JsAnyModuleItem*
+
+JsImport =
+	'import'
+	import_clause: JsAnyImportClause
+	';'?
+
+JsAnyImportClause =
+    JsImportBareClause
+    | JsImportNamedClause
+    | JsImportDefaultClause
+    | JsImportNamespaceClause
+
+// import "abcd"
+// import "abcd" assert ...
+JsImportBareClause =
+	source: JsModuleSource
+	assertion: JsImportAssertion?
+
+// import foo from "mod"
+// import type foo from "mod"
+JsImportDefaultClause =
+		'type'?
+		local_name: JsAnyBinding
+		'from'
+		source: JsModuleSource
+		assertion: JsImportAssertion?
+
+// import * as foo from "mod";
+// import type * as foo from "mod";
+JsImportNamespaceClause =
+  'type'?
+	'*'
+	'as'
+	local_name: JsAnyBinding
+	'from'
+	source: JsModuleSource
+	assertion: JsImportAssertion?
+
+// import { a, b: c } from "d"
+//        ^^^^^^^^^^^^^^^^^^^^
+// import c, { b } from "c"
+//        ^^^^^^^^^^^^^^^^^
+// import { type a } from "c"
+//        ^^^^^^^^^^^^^^^^^^^
+// import foo, * as bar from "mod"
+//        ^^^^^^^^^^^^^^^^^^^^^^^^
+// import type { foo } from "mod";
+//        ^^^^^^^^^^^^^^^^^^^^^^^
+// import foo, { type bar } from "mod";
+JsImportNamedClause =
+    'type'?
+    default_specifier: JsDefaultImportSpecifier?
+    named_import: JsAnyNamedImport
+    'from'
+    source: JsModuleSource
+    assertion: JsImportAssertion?
+
+// import a, { b, c } from "d";
+//        ^^
+JsDefaultImportSpecifier =
+    local_name: JsAnyBinding
+    trailing_comma: ','
+
+JsAnyNamedImport =
+	JsNamedImportSpecifiers
+	|  JsNamespaceImportSpecifier
+
+// import a, * as b from "d";
+//           ^^^^^^
+JsNamespaceImportSpecifier =
+    '*'
+    'as'
+    local_name: JsAnyBinding
+
+// import a, { b, c } from "d";
+//           ^^^^^^^^
+JsNamedImportSpecifiers =
+    '{'
+    specifiers: JsNamedImportSpecifierList
+    '}'
+
+JsNamedImportSpecifierList = (JsAnyNamedImportSpecifier (',' JsAnyNamedImportSpecifier)* ','?)
+
+JsAnyNamedImportSpecifier =
+    JsShorthandNamedImportSpecifier
+    | JsNamedImportSpecifier
+    | JsUnknownNamedImportSpecifier
+
+// import { foo as test } from "mod";
+//          ^^^^^^^^^^^
+// import { type foo as test } from "mod";
+//          ^^^^^^^^^^^^^^^^^
+JsNamedImportSpecifier =
+    'type'?
+    name: JsLiteralExportName
+    'as'
+    local_name: JsAnyBinding
+
+// import { type foo } from "mod";
+//          ^^^^^^^^
+JsShorthandNamedImportSpecifier =
+    'type'?
+    local_name: JsAnyBinding
+
+// import a from "mod" assert { type: "json" }
+//                     ^^^^^^^^^^^^^^^^^^^^^^^
+JsImportAssertion =
+    'assert'
+    '{'
+    assertions: JsImportAssertionEntryList
+    '}'
+
+JsImportAssertionEntryList = (JsAnyImportAssertionEntry (',' JsAnyImportAssertionEntry)* ','?)
+
+JsAnyImportAssertionEntry =
+	JsImportAssertionEntry
+	| JsUnknownImportAssertionEntry
+
+// import a from "mod" assert { type: "json" }
+//                              ^^^^^^^^^^^^
+JsImportAssertionEntry =
+    key: ('ident' | 'js_string_literal')
+    ':'
+    value: 'js_string_literal'
+
+// import { a as b } from "c"
+//          ^
+// export { a as "a-b-c" };
+//               ^^^^^^^
+JsLiteralExportName = value: ('ident' | 'js_string_literal')
+
+
+// import "test"
+//        ^^^^^^
+// export a from "b"
+//               ^^^
+JsModuleSource = value: 'js_string_literal'
+
+
+JsExport =
+	'export'
+	export_clause: JsAnyExportClause
+
+
+// export function a() {}
+// export default function () {}
+// export class A {}
+// export default class A {}
+// export let a, b, c, d;
+// export default a, b, c;
+// export { a, b as c };
+// export * from "b";
+// export { a, b as c } from "b";
+//
+// Typescript:
+// export type A = string;
+// export enum B { A, B }
+// export interface C {}
+// export namespace D {}
+// export as namespace c;
+// export = b;
+// export import a = b;
+JsAnyExportClause =
+	JsExportDefaultDeclarationClause
+	| JsExportDefaultExpressionClause
+	| JsExportNamedClause
+	| JsExportFromClause
+	| JsExportNamedFromClause
+	| JsAnyDeclarationClause
+	| TsExportAsNamespaceClause
+	| TsExportAssignmentClause
+	| TsExportDeclareClause
+
+
+// export default a;
+//        ^^^^^^^^^^
+JsExportDefaultExpressionClause =
+	'default'
+	expression: JsAnyExpression
+	';'?
+
+// export default class {}
+//        ^^^^^^^^^^^^^^^^
+JsExportDefaultDeclarationClause =
+	'default'
+	declaration: JsAnyExportDefaultDeclaration
+	';'?
+
+JsAnyExportDefaultDeclaration =
+	JsClassExportDefaultDeclaration
+	| JsFunctionExportDefaultDeclaration
+	| TsDeclareFunctionDeclaration
+	| TsInterfaceDeclaration
+
+
+// export default class {}
+//                ^^^^^^^^
+JsClassExportDefaultDeclaration =
+	'abstract'?
+	'class'
+	id: JsAnyBinding?
+	type_parameters: TsTypeParameters?
+	extends_clause: JsExtendsClause?
+	implements_clause: TsImplementsClause?
+	'{'
+	members: JsClassMemberList
+	'}'
+
+// export default function () {}
+//                ^^^^^^^^^^^^^^
+JsFunctionExportDefaultDeclaration =
+	'async'?
+	'function'
+	'*'?
+	id: JsAnyBinding?
+	type_parameters: TsTypeParameters?
+	parameters: JsParameters
+	return_type_annotation: TsReturnTypeAnnotation?
+	body: JsFunctionBody
+
+// export { myFunction as default };
+// export { myFunction, myVariable };
+JsExportNamedClause =
+	'type'?
+	'{'
+	specifiers: JsExportNamedSpecifierList
+	'}'
+	';'?
+
+JsExportNamedSpecifierList = (JsAnyExportNamedSpecifier (',' JsAnyExportNamedSpecifier)* ','?)
+
+JsAnyExportNamedSpecifier =
+    JsExportNamedShorthandSpecifier
+    | JsExportNamedSpecifier
+
+// export { a };
+//          ^
+JsExportNamedShorthandSpecifier =
+    'type'?
+    name: JsReferenceIdentifier
+
+// export { a as b };
+//          ^^^^^^
+// export { a as default };
+//          ^^^^^^^^^^^^
+JsExportNamedSpecifier =
+    'type'?
+    local_name: JsReferenceIdentifier
+    'as'
+    exported_name: JsLiteralExportName
+
+JsExportFromClause =
+	'*'
+	export_as: JsExportAsClause?
+	'from'
+	source: JsModuleSource
+	assertion: JsImportAssertion?
+	';'?
+
+// export { a } from "b";
+// export { default, … } from …;
+// export { type default as C } from "a";
+// export { type default } from "a";
+JsExportNamedFromClause =
+	'type'?
+	'{'
+	specifiers: JsExportNamedFromSpecifierList
+	'}'
+	'from'
+	source: JsModuleSource
+	assertion: JsImportAssertion?
+	';'?
+
+JsExportNamedFromSpecifierList = (JsExportNamedFromSpecifier (',' JsExportNamedFromSpecifier)* ','?)
+
+// export { a } from "b";
+//          ^
+// export { a as b } from "c";
+//          ^^^^^^
+JsExportNamedFromSpecifier =
+    'type'?
+    source_name: JsLiteralExportName
+    export_as: JsExportAsClause?
+
+
+// export { a as b } from "c";
+//            ^^^^
+JsExportAsClause =
+    'as'
+    exported_name: JsLiteralExportName
+
+// export as namespace mathLib
+//        ^^^^^^^^^^^^^^^^^^^^
+TsExportAsNamespaceClause =
+	'as'
+	'namespace'
+	name: JsName
+	';'?
+
+// export = a
+//        ^^^
+// export = a.b.c;
+//        ^^^^^^^^
+// export = class {}
+TsExportAssignmentClause =
+	'='
+	expression: JsAnyExpression
+	';'?
+
+// export declare class A {}
+//        ^^^^^^^^^^^^^^^^^^
+TsExportDeclareClause =
+	'declare'
+	declaration: JsAnyDeclarationClause
+
+///////////////
+// AUXILIARY
+///////////////
+
+// { ...a }
+//   ^^^^
+// [ ...a ]
+//   ^^^^
+JsSpread =
+	'...'
+	argument: JsAnyExpression
+
+
+// Reference to an identifier from the lexical scope
+JsReferenceIdentifier = value: 'ident'
+
+// A js identifier that is neither a binding, assignment, nor a reference.
+// For example a member name
+JsName = value: 'ident'
+
+JsPrivateName =
+	'#'
+	value: 'ident'
+
+JsAnyName =
+	JsName
+	| JsPrivateName
+
+
+JsAnyFunction =
+	JsFunctionExpression
+	| JsFunctionDeclaration
+	| JsArrowFunctionExpression
+	| JsFunctionExportDefaultDeclaration
+
+
+// { a: ..., "b": ..., 4: ... }
+//   ^       ^^^       ^
+JsLiteralMemberName = value: ('ident' | 'js_string_literal' | 'js_number_literal')
+
+// { [call()]: ... }
+//   ^^^^^^^^
+JsComputedMemberName =
+	'['
+	expression: JsAnyExpression
+	']'
+
+
+JsParameters =
+	'('
+	items: JsParameterList
+	')'
+
+JsParameterList = (JsAnyParameter (',' JsAnyParameter)* ','?)
+
+JsAnyFormalParameter =
+	JsFormalParameter
+	| JsUnknownParameter
+
+JsAnyParameter =
+	JsAnyFormalParameter
+	| JsRestParameter
+	| TsThisParameter
+
+// (a?: string) => {}
+//  ^^^^^^^^^^
+JsFormalParameter =
+	binding: JsAnyBindingPattern
+	'?'?
+	type_annotation: TsTypeAnnotation?
+	initializer: JsInitializerClause?
+
+// (...a) => {}
+//  ^^^^
+JsRestParameter =
+	'...'
+	binding: JsAnyBindingPattern
+	type_annotation: TsTypeAnnotation?
+
+// function a(this: string) {}
+//  ^^^^
+TsThisParameter =
+	'this'
+	type_annotation: TsTypeAnnotation?
+
+JsCallArguments = '(' args: JsCallArgumentList ')'
+
+JsCallArgumentList = (JsAnyCallArgument (',' JsAnyCallArgument)* ','?)
+
+JsAnyCallArgument =
+	JsAnyExpression
+	| JsSpread
+
+
+// let a = 10;
+//       ^^^^
+// class { a = 10; }
+//           ^^^^
+JsInitializerClause =
+	'='
+	expression: JsAnyExpression
+
+JsFunctionBody =
+	'{'
+	directives: JsDirectiveList
+	statements: JsStatementList
+	'}'

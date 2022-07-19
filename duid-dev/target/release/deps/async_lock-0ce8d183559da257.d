@@ -1,0 +1,11 @@
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\release\deps\async_lock-0ce8d183559da257.rmeta: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\barrier.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\mutex.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\rwlock.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\semaphore.rs
+
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\release\deps\libasync_lock-0ce8d183559da257.rlib: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\barrier.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\mutex.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\rwlock.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\semaphore.rs
+
+C:\Users\Djedou\Desktop\rust_project\duid\duid-dev\target\release\deps\async_lock-0ce8d183559da257.d: C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\lib.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\barrier.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\mutex.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\rwlock.rs C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\semaphore.rs
+
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\lib.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\barrier.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\mutex.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\rwlock.rs:
+C:\Users\Djedou\.cargo\registry\src\github.com-1ecc6299db9ec823\async-lock-2.5.0\src\semaphore.rs:
