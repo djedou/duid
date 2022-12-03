@@ -1,0 +1,95 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+categories = [ "Rust", "Webassembly", "GUI", "Web-programming", "Elm"]
+
+
+
+
+[features]
+default = ["wasm-bindgen", "js-sys", "web-sys", "with-request-animation-frame"]
+with-request-animation-frame = []
+
+[dependencies]
+js-sys = { version = "0.3", optional = true }
+doc-comment = "0.3"
+jss = { version = "0.5" }
+console_log = "0.2.0"
+tracing = { version = "^0.1", features = ["log"] }
+wasm-bindgen-futures = "0.4"
+futures = "0.3"
+indextree = "4.5"
+
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+optional = true
+
+
+
+[dependencies.web-sys]
+version = "0.3.28"
+optional = true
+features = [
+    "AnimationEvent",
+    "Comment",
+    "ClipboardEvent",
+    "console",
+    "CustomElementRegistry",
+    "Document",
+    "DocumentFragment",
+    "Element",
+    "Event",
+    "HtmlElement",
+    "EventTarget",
+    "KeyboardEvent",
+    "HashChangeEvent",
+    "InputEvent",
+    "Headers",
+    "HtmlButtonElement",
+    "HtmlCollection",
+    "HtmlDetailsElement",
+    "HtmlElement",
+    "HtmlHeadElement",
+    "HtmlInputElement",
+    "HtmlMenuItemElement",
+    "HtmlTextAreaElement",
+    "HtmlFieldSetElement",
+    "HtmlLinkElement",
+    "HtmlLiElement",
+    "HtmlMeterElement",
+    "HtmlMenuItemElement",
+    "HtmlProgressElement",
+    "HtmlParamElement",
+    "HtmlOutputElement",
+    "HtmlDataElement",
+    "HtmlOptGroupElement",
+    "HtmlOptionElement",
+    "HtmlSelectElement",
+    "HtmlStyleElement",
+    "HtmlTextAreaElement",
+    "Storage",
+    "ShadowRoot",
+    "ShadowRootInit",
+    "ShadowRootMode",
+    "MouseEvent",
+    "Node",
+    "NodeList",
+    "Text",
+    "TransitionEvent",
+    "CharacterData",
+    "Performance",
+    "Window",
+    "History",
+    "Response",
+    "RequestInit",
+	"Location",
+	"ScrollToOptions",
+    "Navigator",
+    "ReadableStream"
+]
+
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

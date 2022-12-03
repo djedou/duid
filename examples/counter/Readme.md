@@ -1,20 +1,11 @@
-# Duid
-**D**jedou **u**ser **i**nterface **d**esign is a web framework for creating fast and interactive client side web application in **Rust webassembly** following [**Elm Architecture**](https://guide.elm-lang.org/architecture/).  
-
-# Testing  
+# How to dev a duid app ?  
 
 ## Step 0:  
 1.  Add the WebAssembly target  
 ```rustup target add wasm32-unknown-unknown```
 2.  Install ```wasm-pack``` and ```cargo install basic-http-server```  
 
-## Run provided Test  
-```cd .\examples\counter\```  
-```wasm-pack build --target web --release```  
-```basic-http-server -a 127.0.0.1:4000```  
-
-## Run your own test  
- 
+## Step 1:  
 1.  Move to your project root (here it is ```examples/counter```).  
 2.  Make sure to have an **index.html** file in your root project that has a content like this:  
 ```

@@ -1,0 +1,25 @@
+[package]
+name = "duid"
+version = "0.1.0"
+edition = "2021"
+
+
+
+
+[dependencies]
+core = { path = "core", default-features = true }
+
+[features]
+default = ["core/default", "with-request-animation-frame"]
+with-request-animation-frame = ["core/with-request-animation-frame"]
+
+
+
+[workspace]
+members = [
+    "core",
+]
+
+exclude = [
+    "examples/counter"
+]
