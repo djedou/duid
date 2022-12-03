@@ -9,6 +9,8 @@ keywords = [ "gui", "wasm", "elm"]
 repository = "https://github.com/djedou/duid/tree/master/duid-core"
 readme = "README.md"
 documentation = "https://docs.rs/duid-core"
+license = "MIT"
+
 
 
 [features]
