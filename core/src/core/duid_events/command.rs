@@ -60,14 +60,14 @@ impl<MSG> Cmd<MSG> {
         }
     }
 
-    pub fn webSocket(msg: MSG) -> Self {
+    pub fn websocket(msg: MSG) -> Self {
 
         Self {
             messages: vec![(CmdType::WebSocket, msg)]
         }
     }
 
-    pub fn webSocket_batch(
+    pub fn websocket_batch(
         messages: impl IntoIterator<Item = MSG>
     ) -> Self {
 
@@ -92,14 +92,14 @@ impl<MSG> Cmd<MSG> {
         }
     }
 
-    pub fn javaScript(msg: MSG) -> Self {
+    pub fn javascript(msg: MSG) -> Self {
 
         Self {
             messages: vec![(CmdType::JavaScript, msg)]
         }
     }
 
-    pub fn javaScript_batch(
+    pub fn javascript_batch(
         messages: impl IntoIterator<Item = MSG>
     ) -> Self {
 
@@ -124,14 +124,14 @@ impl<MSG> Cmd<MSG> {
         }
     }
 
-    pub fn graphQL(msg: MSG) -> Self {
+    pub fn graphql(msg: MSG) -> Self {
 
         Self {
             messages: vec![(CmdType::GraphQL, msg)]
         }
     }
 
-    pub fn graphQL_batch(
+    pub fn graphql_batch(
         messages: impl IntoIterator<Item = MSG>
     ) -> Self {
 

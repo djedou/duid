@@ -1,5 +1,3 @@
-pub(crate) mod grpc;
-
 use crate::core::duid_events::{CmdType, Cmd, Dispatch};
 
 #[derive(Debug, Clone)]
