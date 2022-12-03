@@ -4,5 +4,5 @@
 //!
 //!
 
-pub use core::core::*;
-pub use core::console;
+pub use duid_core::core::*;
+pub use duid_core::console;

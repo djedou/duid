@@ -13,17 +13,17 @@ documentation = "https://docs.rs/duid"
 
 
 [dependencies]
-core = {version = "0.1", path = "./core", default-features = true }
+duid-core = {version = "0.1", path = "duid-core", default-features = true }
 
 [features]
-default = ["core/default", "with-request-animation-frame"]
-with-request-animation-frame = ["core/with-request-animation-frame"]
+default = ["duid-core/default", "with-request-animation-frame"]
+with-request-animation-frame = ["duid-core/with-request-animation-frame"]
 
 
 
 [workspace]
 members = [
-    "core",
+    "duid-core",
 ]
 
 exclude = [
