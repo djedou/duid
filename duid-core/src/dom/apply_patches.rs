@@ -9,7 +9,7 @@ use crate::{
 use web_sys::{
     Document, Element, Node
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::cell::RefCell;
 use super::patch::Patch;
@@ -22,7 +22,7 @@ where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>);
+    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, classes_set: &mut HashSet<String>);
 }
 
 impl<DSP, MSG> ApplyPatch<DSP, MSG> for Rc<RefCell<Arena<VirtualNode<MSG>>>> 
@@ -30,7 +30,7 @@ where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>)
+    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, classes_set: &mut HashSet<String>)
     {
         patches.iter().for_each(|patch| {
             match patch {
@@ -71,7 +71,7 @@ where
                     old_id.insert_before(new_node_to_insert, &mut self.borrow_mut());
                     old_id.remove_subtree(&mut self.borrow_mut());
 
-                    self.build(program, &doc, &new_node_to_insert, style_map);
+                    self.build(program, &doc, &new_node_to_insert, style_map, classes_set);
                     let borrow = self.borrow();
                     if let Some(parent_id) = borrow[new_node_to_insert].parent() {
                         let parent = borrow.get(parent_id).expect(&format!("The {parent_id:?} node does not exists")).get();
@@ -97,6 +97,7 @@ where
                             &[attr],
                             &mut old_node.active_closures.borrow_mut(),
                             style_map,
+                            classes_set,
                             <NodeId as Into<usize>>::into(*old_id)
                         );
                         *old_node.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
@@ -129,6 +130,7 @@ where
                             new_attribute,
                             &mut old_node.active_closures.borrow_mut(),
                             style_map,
+                            classes_set,
                             <NodeId as Into<usize>>::into(*old_id)
                         );
                         *old_node.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());

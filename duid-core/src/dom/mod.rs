@@ -16,7 +16,7 @@ use crate::core::{
     v_node::VirtualNode,
     util::document
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 pub use dom_builder::*;
 pub(crate) use dom_diff::DomDiff;
 pub(crate) use apply_patches::ApplyPatch;
@@ -83,9 +83,10 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
+        let mut classes_map: HashSet<String> = HashSet::with_capacity(0); 
         self.arena_root_node_id = Some(root_node_id);
         *self.arena.borrow_mut() = arena;
-        self.arena.build(program, &self.document, &self.arena_root_node_id.as_ref().unwrap(), &mut style_map);
+        self.arena.build(program, &self.document, &self.arena_root_node_id.as_ref().unwrap(), &mut style_map, &mut classes_map);
         
         self.first_mount(&self.mount_styles(style_map, true));
     }
@@ -95,8 +96,9 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
+        let mut classes_map: HashSet<String> = HashSet::with_capacity(0); 
         let patches: Vec<_> = self.arena.diff(&root_node_id, &arena);
-        self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map);
+        self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut classes_map);
         self.inject_styles(&self.mount_styles(style_map, false));
     }
 

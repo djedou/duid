@@ -6,7 +6,7 @@ use crate::core::{
 use web_sys::{
     Document
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::cell::RefCell;
 
@@ -16,7 +16,7 @@ where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn build(&self, program: &DSP, doc: &Document, node_id: &NodeId, style_map: &mut HashMap<String, String>);
+    fn build(&self, program: &DSP, doc: &Document, node_id: &NodeId, style_map: &mut HashMap<String, String>, classes_set: &mut HashSet<String>);
 }
 
 impl<DSP, MSG> DomBuilder<DSP, MSG> for Rc<RefCell<Arena<VirtualNode<MSG>>>> 
@@ -24,13 +24,13 @@ where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn build(&self, program: &DSP, doc: &Document, root_node_id: &NodeId, style_map: &mut HashMap<String, String>)
+    fn build(&self, program: &DSP, doc: &Document, root_node_id: &NodeId, style_map: &mut HashMap<String, String>, classes_set: &mut HashSet<String>)
     {
         // build each real node
         for node_id in root_node_id.descendants(&self.borrow()).into_iter() {
             let node_borrow = self.borrow();
             let node = node_borrow.get(node_id).expect(&format!("The {node_id:?} node does not exists")).get();
-            node.build_node(program, &doc, style_map, <NodeId as Into<usize>>::into(node_id));
+            node.build_node(program, &doc, style_map, classes_set, <NodeId as Into<usize>>::into(node_id));
         }
 
         // build each real node's children
