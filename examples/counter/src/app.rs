@@ -1,5 +1,7 @@
 use duid::{
-    html::{div, text, nodes::Node},
+    html::{div, text, nodes::Node,
+        attributes::{classes, selectors}
+    },
     duid_events::{NodeMapMsg, Cmd,Sub}
 };
 use crate::button::{ButtonModel, ButtonMsg, button_dec_view, button_inc_view, button_update};
@@ -35,7 +37,12 @@ impl AppModel {
 pub fn app_view(app_model: &AppModel) -> Node<AppMsg> {
     
     div(
-        &[],
+        &[
+            classes(&["container".to_owned()]),
+            selectors(&[
+                "md:::.container:::flex".to_owned()
+            ])
+        ],
         &[
             button_dec_view(&app_model.button_model).map_msg(|btn_msg| AppMsg::Button(btn_msg)), 
             text(&app_model.button_model.count.to_string()),

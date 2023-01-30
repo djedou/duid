@@ -84,6 +84,17 @@ pub fn classes<MSG>(
     Attribute::with_multiple_values(None, "class", &class_values)
 }
 
+pub fn selectors<MSG>(
+    selector_list: impl IntoIterator<Item = impl ToString>,
+) -> Attribute<MSG> {
+    let selector_values: Vec<_> = selector_list
+        .into_iter()
+        .map(|v| v.to_string()).collect();
+    
+    let values: String = selector_values.join(";");
+    Attribute::new(None, "selectors", AttributeValue::from_value(Value::from(values)))
+}
+
 
 pub fn class_namespaced<MSG>(
     namespace: impl ToString,

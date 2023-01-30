@@ -5,7 +5,6 @@ mod apply_patches;
 
 use std::rc::Rc;
 use std::cell::RefCell;
-use crate::core::duid_events::Dispatch;
 use wasm_bindgen::JsCast;
 use std::fmt::Debug;
 use web_sys::{
@@ -14,8 +13,10 @@ use web_sys::{
 use indextree::{Arena, NodeId};
 use crate::core::{
     v_node::VirtualNode,
-    util::document
+    util::document,
+    duid_events::Dispatch,
 };
+use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
 pub use dom_builder::*;
 pub(crate) use dom_diff::DomDiff;
@@ -36,7 +37,8 @@ where
     pub(crate) arena_root_node_id: Option<NodeId>,
     pub(crate) document: Document,
     pub(crate) base_styles: HashMap<String, String>,
-    pub(crate) styles: HashMap<String, String>
+    pub(crate) styles: HashMap<String, String>,
+    pub(crate) style_container: StyleContainer
 }
 
 
@@ -69,7 +71,8 @@ where
             arena_root_node_id: None,
             document: doc,
             base_styles,
-            styles
+            styles,
+            style_container: StyleContainer::new()
         }
     }
 }
@@ -83,11 +86,13 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
-        let mut classes_map: HashSet<String> = HashSet::with_capacity(0); 
+        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0); 
         self.arena_root_node_id = Some(root_node_id);
         *self.arena.borrow_mut() = arena;
-        self.arena.build(program, &self.document, &self.arena_root_node_id.as_ref().unwrap(), &mut style_map, &mut classes_map);
+        self.arena.build(program, &self.document, &self.arena_root_node_id.as_ref().unwrap(), &mut style_map, &mut selectors_set);
         
+        let tailwind_styles = self.style_container.build(&selectors_set);
+        self.inject_styles(&tailwind_styles);
         self.first_mount(&self.mount_styles(style_map, true));
     }
 
@@ -96,9 +101,12 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
-        let mut classes_map: HashSet<String> = HashSet::with_capacity(0); 
+        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0); 
         let patches: Vec<_> = self.arena.diff(&root_node_id, &arena);
-        self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut classes_map);
+        self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut selectors_set);
+        
+        let tailwind_styles = self.style_container.render(&selectors_set);
+        self.inject_styles(&tailwind_styles);
         self.inject_styles(&self.mount_styles(style_map, false));
     }
 
@@ -179,6 +187,8 @@ where
         if is_first_mount {
             self.base_styles.iter().for_each(|(name, style)| styles_vec.push((name.clone(), style.clone())));
         }
+        self.style_container.themes.variables.iter().for_each(|(name, style)| styles_vec.push((name.clone(), style.clone())));
+        self.style_container.themes.mode_variables.iter().for_each(|(name, style)| styles_vec.push((name.clone(), style.clone())));
 
         styles_vec
     }

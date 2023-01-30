@@ -1,6 +1,6 @@
 [package]
 name = "duid-core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Djedou Arnaud <djedouarnaud.aman@gmail.com>"]
 description = "Core crate used for Duid"
@@ -26,7 +26,6 @@ tracing = { version = "^0.1", features = ["log"] }
 wasm-bindgen-futures = "0.4"
 futures = "0.3"
 indextree = "4.5"
-
 
 [dependencies.wasm-bindgen]
 version = "0.2"

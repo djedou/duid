@@ -1,5 +1,7 @@
 use duid::{
-    html::{text, button, nodes::Node},
+    html::{text, button, nodes::Node,
+        attributes::{style, classes, selectors}
+    },
     events::{on_click},
     duid_events::Cmd
 };
@@ -33,7 +35,13 @@ impl ButtonModel {
 pub fn button_dec_view(_button_model: &ButtonModel) -> Node<ButtonMsg> {
 
     button(
-        &[on_click(|_| ButtonMsg::Decrement)],
+        &[
+            classes(&["bg-btn".to_owned()]),
+            selectors(&[
+                "md:::.bg-btn:::flex m-2 p-6 bg-gradient-to-t from-green-600 via-violet-600 outline outline-offset-2 outline-2 outline-blue-500".to_owned(),
+            ]),
+            on_click(|_| ButtonMsg::Decrement)
+        ],
         &[
             text("-")
         ]
@@ -43,7 +51,18 @@ pub fn button_dec_view(_button_model: &ButtonModel) -> Node<ButtonMsg> {
 pub fn button_inc_view(_button_model: &ButtonModel) -> Node<ButtonMsg> {
 
     button(
-        &[on_click(|_| ButtonMsg::Increment)],
+        &[
+            classes(&["btn".to_owned()]),
+            selectors(&[
+                "div > *:::block".to_owned(), 
+                ".btn-item".to_owned(),
+                "lg:::.btn:::flex bg-color-green-600".to_owned(),
+                "md:::.btn:::flex m-2 p-6 bg-color-rose-600".to_owned(),
+                ".btn:::flex bg-color-yellow-200 font-medium".to_owned(),
+                "md:::.btn:hover:::bg-color-green-200".to_owned()
+            ]),
+            on_click(|_| ButtonMsg::Increment)
+        ],
         &[
             text("+")
         ]

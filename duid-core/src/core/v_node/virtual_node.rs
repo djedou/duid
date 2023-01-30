@@ -49,7 +49,7 @@ impl<MSG> VirtualNode<MSG>
 where
     MSG: std::fmt::Debug + Clone + 'static 
 {
-    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, classes_set: &mut HashSet<String>, node_id: usize) 
+    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>, node_id: usize) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
@@ -65,7 +65,7 @@ where
                         .expect("Unable to create element")
                 };
                 let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut self.active_closures.borrow_mut(), styles_map, classes_set, node_id);
+                Self::set_element_attributes(program, &element, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set, node_id);
                 *self.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
             },
             VirtualNodeType::Fragment => {
@@ -76,7 +76,7 @@ where
                 if let Some(value) = &self.value {
                     let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut self.active_closures.borrow_mut(), styles_map, classes_set, node_id);
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set, node_id);
                     *self.real_node.borrow_mut() = Some(text_node.unchecked_into::<Node>());
                 }
             },
@@ -98,7 +98,7 @@ where
         attrs: &[&Attribute<MSG>],
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        classes_set: &mut HashSet<String>,
+        selectors_set: &mut HashSet<String>,
         node_id: usize
     )
     where
@@ -106,7 +106,7 @@ where
     {
         let attrs = merge_attributes_of_same_name(attrs);
         for att in attrs {
-            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, classes_set, node_id);
+            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, selectors_set, node_id);
         }
     }
 
@@ -117,7 +117,7 @@ where
         attr: &Attribute<MSG>,
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        classes_set: &mut HashSet<String>,
+        selectors_set: &mut HashSet<String>,
         node_id: usize
     )
     where
@@ -151,10 +151,10 @@ where
                     });
             } else {
                 match attr.name() {
-                    "class" => {
-                        crate::console::info!("{:#?}", merged_plain_values);
-                        crate::console::info!("{:#?}", plain_values);
-                        let _ = classes_set.insert("newClass".to_owned());
+                    "selectors" => {
+                        for s in merged_plain_values.split(";") {
+                            let _ = selectors_set.insert(s.to_owned());
+                        }
                     },
                     "value" => {
                         Self::set_value_str(element, &merged_plain_values);
