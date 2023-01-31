@@ -13,7 +13,7 @@ documentation = "https://docs.rs/duid"
 
 
 [dependencies]
-duid-core = {version = "0.1", path = "duid-core", default-features = true }
+duid-core = {version = "0.2", path = "duid-core", default-features = true }
 
 [features]
 default = ["duid-core/default", "with-request-animation-frame"]
