@@ -228,8 +228,8 @@ pub fn border_colors_styles() -> HashMap<String, String> {
     let _ = styles.insert("border-rose-800".to_owned(), "border-color: var(--color-rose-800);".to_owned());
     let _ = styles.insert("border-rose-900".to_owned(), "border-color: var(--color-rose-900);".to_owned());
     let _ = styles.insert("border-color-btn".to_owned(), "border-color: var(--color-btn-border);".to_owned());
-    let _ = styles.insert("border-color--btn-hover".to_owned(), "border-color: var(--color-btn-hover-border);".to_owned());
-    let _ = styles.insert("border-color--btn-active".to_owned(), "border-color: var(--color-btn-active-border);".to_owned());
+    let _ = styles.insert("border-color-btn-hover".to_owned(), "border-color: var(--color-btn-hover-border);".to_owned());
+    let _ = styles.insert("border-color-btn-active".to_owned(), "border-color: var(--color-btn-active-border);".to_owned());
     let _ = styles.insert("border-color-btn-focus".to_owned(), "border-color: var(--color-btn-focus-border);".to_owned());
     let _ = styles.insert("border-color-btn-filled".to_owned(), "border-color: var(--color-btn-filled-border);".to_owned());
     let _ = styles.insert("border-color-btn-filled-hover".to_owned(), "border-color: var(--color-btn-filled-hover-border);".to_owned());
