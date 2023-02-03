@@ -228,7 +228,24 @@ pub fn background_colors_styles() -> HashMap<String, String> {
     let _ = styles.insert("bg-color-rose-700".to_owned(), "background-color: var(--color-rose-700);".to_owned());
     let _ = styles.insert("bg-color-rose-800".to_owned(), "background-color: var(--color-rose-800);".to_owned());
     let _ = styles.insert("bg-color-rose-900".to_owned(), "background-color: var(--color-rose-900);".to_owned());
-    
+    let _ = styles.insert("bg-color-btn".to_owned(), "background-color: var(--color-btn-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-hover".to_owned(), "background-color: var(--color-btn-hover-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-active".to_owned(), "background-color: var(--color-btn-active-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-selected".to_owned(), "background-color: var(--color-btn-selected-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-focus".to_owned(), "background-color: var(--color-btn-focus-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-counter".to_owned(), "background-color: var(--color-btn-counter-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled".to_owned(), "background-color: var(--color-btn-filled-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled-hover".to_owned(), "background-color: var(--color-btn-filled-hover-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled-selected".to_owned(), "background-color: var(--color-btn-filled-selected-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled-disabled".to_owned(), "background-color: var(--color-btn-filled-disabled-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled-focus".to_owned(), "background-color: var(--color-btn-filled-focus-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-filled-counter".to_owned(), "background-color: var(--color-btn-filled-counter-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-hover".to_owned(), "background-color: var(--color-btn-outline-hover-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-hover-counter".to_owned(), "background-color: var(--color-btn-outline-hover-counter-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-selected".to_owned(), "background-color: var(--color-btn-outline-selected-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-disabled".to_owned(), "background-color: var(--color-btn-outline-disabled-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-disabled-counter".to_owned(), "background-color: var(--color-btn-outline-disabled-counter-bg);".to_owned());
+    let _ = styles.insert("bg-color-btn-outline-counter".to_owned(), "background-color: var(--color-btn-outline-counter-bg);".to_owned());
 
     styles
 }

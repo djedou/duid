@@ -228,6 +228,11 @@ pub fn colors_styles() -> HashMap<String, String> {
     let _ = styles.insert("color-rose-700".to_owned(), "color: var(--color-rose-700);".to_owned());
     let _ = styles.insert("color-rose-800".to_owned(), "color: var(--color-rose-800);".to_owned());
     let _ = styles.insert("color-rose-900".to_owned(), "color: var(--color-rose-900);".to_owned());
+    let _ = styles.insert("color-btn-text".to_owned(), "color: var(--color-btn-text);".to_owned());
+    let _ = styles.insert("color-btn-filled-disabled-text".to_owned(), "color: var(--color-btn-filled-disabled-text);".to_owned());
+    let _ = styles.insert("color-btn-filled-icon".to_owned(), "color: var(--color-btn-filled-icon);".to_owned());
+    let _ = styles.insert("color-btn-outline-text".to_owned(), "color: var(--color-btn-outline-text);".to_owned());
+    let _ = styles.insert("color-btn-outline-disabled-text".to_owned(), "color: var(--color-btn-outline-disabled-text);".to_owned());
     
     styles
 }
