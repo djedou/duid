@@ -12,6 +12,7 @@ pub(crate) fn box_shadow() -> HashMap<String, String> {
     let _ = box_shadow.insert("shadow-inner".to_owned(), "box-shadow: inset 0 2px 4px 0 var(--tw-shadow-color);".to_owned());
     let _ = box_shadow.insert("shadow-none".to_owned(), "box-shadow: 0 0 #0000;".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-focus".to_owned(), "box-shadow: inset 0 0 0 3px var(--color-white);".to_owned());
+    let _ = box_shadow.insert("shadow-color-btn-active".to_owned(), "box-shadow: var(--color-btn-shadow-active);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-default".to_owned(), "box-shadow: var(--color-btn-shadow), var(--color-btn-inset-shadow);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-filled".to_owned(), "box-shadow: var(--color-btn-primary-shadow), var(--color-btn-primary-inset-shadow);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-filled-selected".to_owned(), "box-shadow: var(--color-btn-filled-selected-shadow);".to_owned());
@@ -21,7 +22,6 @@ pub(crate) fn box_shadow() -> HashMap<String, String> {
  
     /*   
     let _ = box_shadow.insert("shadow-color-btn-focus".to_owned(), "box-shadow: var(--color-btn-focus-shadow);".to_owned());
-    let _ = box_shadow.insert("shadow-color-btn-active".to_owned(), "box-shadow: var(--color-btn-shadow-active);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-input-focus".to_owned(), "box-shadow: var(--color-btn-shadow-input-focus);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-filled".to_owned(), "box-shadow: var(--color-btn-filled-shadow);".to_owned());
     let _ = box_shadow.insert("shadow-color-btn-filled-inset".to_owned(), "box-shadow: var(--color-btn-filled-inset-shadow);".to_owned());
