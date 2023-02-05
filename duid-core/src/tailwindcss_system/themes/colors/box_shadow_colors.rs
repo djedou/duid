@@ -227,6 +227,15 @@ pub fn box_shadow_colors_styles() -> HashMap<String, String> {
     let _ = styles.insert("shadow-rose-700".to_owned(), "--tw-shadow-color: var(--color-rose-700);".to_owned());
     let _ = styles.insert("shadow-rose-800".to_owned(), "--tw-shadow-color: var(--color-rose-800);".to_owned());
     let _ = styles.insert("shadow-rose-900".to_owned(), "--tw-shadow-color: var(--color-rose-900);".to_owned());
-    
+    let _ = styles.insert("shadow-color-btn-focus".to_owned(), "--tw-shadow-color: var(--color-white);".to_owned());
+    let _ = styles.insert("shadow-color-btn-active".to_owned(), "--tw-shadow-color: var(--color-btn-shadow-active);".to_owned());
+    let _ = styles.insert("shadow-color-btn-default".to_owned(), "--tw-shadow-color: var(--color-btn-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-default-inset".to_owned(), "--tw-inset-shadow-color: var(--color-btn-inset-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-filled".to_owned(), "--tw-shadow-color: var(--color-btn-filled-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-filled-inset".to_owned(), "--tw-inset-shadow-color: var(--color-btn-filled-inset-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-filled-selected".to_owned(), "--tw-shadow-color: var(--color-btn-filled-selected-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-outline-hover".to_owned(), "--tw-shadow-color: var(--color-btn-outline-hover-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-outline-hover-inset".to_owned(), "--tw-inset-shadow-color: var(--color-btn-outline-hover-inset-shadow);".to_owned());
+    let _ = styles.insert("shadow-color-btn-outline-selected".to_owned(), "--tw-shadow-color: var(--color-btn-outline-selected-shadow);".to_owned());
     styles
 }
