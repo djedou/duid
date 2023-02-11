@@ -22,7 +22,7 @@ impl StyleContainer {
         
         let latest_vec: Vec<_> = latest.iter().collect();
         let mut index = 0;
-        for chunk in latest_vec.chunks(15) {
+        for chunk in latest_vec.chunks(30) {
             let mut chunk_styles = Vec::with_capacity(0);
             chunk.iter().for_each(|&s| {
                 let result = BuildStyle::build(&s, &self.themes.themes);
@@ -38,7 +38,7 @@ impl StyleContainer {
 
             let builded_styles = chunk_styles.join(" ");
             self.selectors.push(TailwindStyle {
-                is_full: chunk.len() > 13,
+                is_full: chunk.len() > 27,
                 selectors: rebuild_set,
                 //style: builded_styles.clone(),
             });
@@ -56,7 +56,7 @@ impl StyleContainer {
 
         let latest_vec: Vec<_> = latest.iter().collect();
         let mut index = 0;
-        for chunk in latest_vec.chunks(15) {
+        for chunk in latest_vec.chunks(30) {
             let mut chunk_styles = Vec::with_capacity(0);
 
             chunk.iter().for_each(|&s| {
@@ -76,13 +76,13 @@ impl StyleContainer {
             if let Some(last) = self.selectors.last_mut() {
                 if last.is_full {
                     self.selectors.push(TailwindStyle {
-                        is_full: chunk.len() > 13,
+                        is_full: chunk.len() > 27,
                         selectors: rebuild_set,
                         //style: builded_styles.clone(),
                     });
                 }
                 else {
-                    last.is_full = (chunk.len() + last.selectors.len()) > 13;
+                    last.is_full = (chunk.len() + last.selectors.len()) > 27;
                     last.selectors.extend(rebuild_set);
                     //last.style.push_str(&builded_styles.clone());
                 }
