@@ -14,7 +14,8 @@ impl BuildStyle {
                     match v.contains("[") {
                         true => {
                             let func_val: Vec<_> = v.split("[").collect();
-                            BuildStyle::from_function(&func_val[0], &func_val[1].replacen("]", "", 1), &themes)
+                            // replace & by " ", so in [] & is equal to " ": i.e: calc(100px&-&2px) <=> calc(100px - 2px)
+                            BuildStyle::from_function(&func_val[0], &func_val[1].replacen("]", "", 1).replace("&", " "), &themes)
                         },
                         false => BuildStyle::from_value(v, &themes)
                     }
@@ -29,7 +30,7 @@ impl BuildStyle {
                     match v.contains("[") {
                         true => {
                             let func_val: Vec<_> = v.split("[").collect();
-                            BuildStyle::from_function(&func_val[0], &func_val[1].replacen("]", "", 1), &themes)
+                            BuildStyle::from_function(&func_val[0], &func_val[1].replacen("]", "", 1).replace("&", " "), &themes)
                         },
                         false => BuildStyle::from_value(v, &themes)
                     }

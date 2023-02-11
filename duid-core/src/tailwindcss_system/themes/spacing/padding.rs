@@ -35,7 +35,7 @@ pub(crate) fn padding() -> HashMap<String, String> {
     let _ = padding.insert("pb-1".to_owned(), "padding-bottom: 0.25rem;".to_owned());
     let _ = padding.insert("pl-1".to_owned(), "padding-left: 0.25rem;".to_owned());
 
-    let _ = padding.insert("p-1.5".to_owned(), "padding: 0.375rem;".to_owned()); /*0.375rem = 4px */
+    let _ = padding.insert("p-1.5".to_owned(), "padding: 0.375rem;".to_owned()); /*0.375rem = 6px */
     let _ = padding.insert("px-1.5".to_owned(), "padding-left: 0.375rem;padding-right: 0.375rem;".to_owned());
     let _ = padding.insert("py-1.5".to_owned(), "padding-top: 0.375rem;padding-bottom: 0.375rem;".to_owned());
     let _ = padding.insert("pt-1.5".to_owned(), "padding-top: 0.375rem;".to_owned());
