@@ -24,23 +24,31 @@ impl StyleContainer {
         let mut index = 0;
         for chunk in latest_vec.chunks(30) {
             let mut chunk_styles = Vec::with_capacity(0);
+            let mut media_chunk_styles = vec!["".to_owned()];
+            let mut rebuild_set = HashSet::with_capacity(0);
+            
             chunk.iter().for_each(|&s| {
                 let result = BuildStyle::build(&s, &self.themes.themes);
-                if result.len() != 0 {
-                    chunk_styles.push(result);
+                let _ = rebuild_set.insert(s.to_owned());
+                
+                match (result.len() != 0, !result.contains("@media")) {
+                    (true, true) => {
+                        chunk_styles.push(result.clone());
+                    },
+                    (true, false) => {
+                        media_chunk_styles.push(result);
+                    },
+                    _ => {}
                 }
             });
-            
-            let mut rebuild_set = HashSet::with_capacity(0);
-            chunk.iter().for_each(|&s| {
-                let _ = rebuild_set.insert(s.to_owned());
-            });
 
-            let builded_styles = chunk_styles.join(" ");
+            let mut builded_styles = chunk_styles.join(" ");
+            let media_builded_styles = media_chunk_styles.join(" ");
+            builded_styles.push_str(&media_builded_styles);
+
             self.selectors.push(TailwindStyle {
                 is_full: chunk.len() > 27,
-                selectors: rebuild_set,
-                //style: builded_styles.clone(),
+                selectors: rebuild_set
             });
 
             styles.push((format!("duid-style-{}", index), builded_styles));
@@ -58,33 +66,38 @@ impl StyleContainer {
         let mut index = 0;
         for chunk in latest_vec.chunks(30) {
             let mut chunk_styles = Vec::with_capacity(0);
-
-            chunk.iter().for_each(|&s| {
-                let result = BuildStyle::build(&s, &self.themes.themes);
-                if result.len() != 0 {
-                    chunk_styles.push(result);
-                }
-            });
-            
+            let mut media_chunk_styles = vec!["".to_owned()];
             let mut rebuild_set = HashSet::with_capacity(0);
 
             chunk.iter().for_each(|&s| {
+                let result = BuildStyle::build(&s, &self.themes.themes);
                 let _ = rebuild_set.insert(s.to_owned());
+
+                match (result.len() != 0, !result.contains("@media")) {
+                    (true, true) => {
+                        chunk_styles.push(result.clone());
+                    },
+                    (true, false) => {
+                        media_chunk_styles.push(result);
+                    },
+                    _ => {}
+                }
             });
 
-            let builded_styles = chunk_styles.join(" ");
+            let mut builded_styles = chunk_styles.join(" ");
+            let media_builded_styles = media_chunk_styles.join(" ");
+            builded_styles.push_str(&media_builded_styles);
+
             if let Some(last) = self.selectors.last_mut() {
                 if last.is_full {
                     self.selectors.push(TailwindStyle {
                         is_full: chunk.len() > 27,
-                        selectors: rebuild_set,
-                        //style: builded_styles.clone(),
+                        selectors: rebuild_set
                     });
                 }
                 else {
                     last.is_full = (chunk.len() + last.selectors.len()) > 27;
                     last.selectors.extend(rebuild_set);
-                    //last.style.push_str(&builded_styles.clone());
                 }
             }
 

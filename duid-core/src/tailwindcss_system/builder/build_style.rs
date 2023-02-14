@@ -66,11 +66,11 @@ impl BuildStyle {
 
     fn responsive(media: &str) -> Option<String> {
         match media {
-            "sm" => Some(String::from("@media (min-width: 640px)")),
-            "md" => Some(String::from("@media (min-width: 768px)")),
-            "lg" => Some(String::from("@media (min-width: 1024px)")),
-            "xl" => Some(String::from("@media (min-width: 1280px)")),
-            "2xl" => Some(String::from("@media (min-width: 1536px)")),
+            "sm" => Some(String::from("@media (min-width: 576px)")), // 576px and up
+            "md" => Some(String::from("@media (min-width: 768px)")), // 768px and up
+            "lg" => Some(String::from("@media (min-width: 992px)")), // 992px and up
+            "xl" => Some(String::from("@media (min-width: 1200px)")), // 1200px and up
+            "2xl" => Some(String::from("@media (min-width: 1400px)")), // 1400px and up
             _ => None,
         }
     }

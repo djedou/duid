@@ -1,6 +1,6 @@
 use duid::{
     html::{text, button, nodes::Node,
-        attributes::{style, classes, selectors}
+        attributes::{classes, selectors}
     },
     events::{on_click},
     duid_events::Cmd
