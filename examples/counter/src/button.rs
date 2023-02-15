@@ -32,11 +32,15 @@ impl ButtonModel {
 }
 
 // Views
-pub fn button_dec_view(_button_model: &ButtonModel) -> Node<ButtonMsg> {
+pub fn button_dec_view(button_model: &ButtonModel) -> Node<ButtonMsg> {
+    let mut new_classes = vec!["bg-btn".to_owned()];
+    if button_model.count > 17 {
+        new_classes.push("djed_attr_test".to_owned());
+    }
 
     button(
         &[
-            classes(&["bg-btn".to_owned()]),
+            classes(&new_classes),
             selectors(&[
                 "md:::.bg-btn:::flex m-2 p-6 bg-gradient-to-t from-green-600 via-violet-600 outline outline-offset-2 outline-2 outline-blue-500".to_owned(),
             ]),

@@ -88,7 +88,7 @@ where
                     let old_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
                     old_node.props.push(attr.clone());
                     let real_node_clone = Rc::clone(&old_node.real_node);
-                    let real_node_clone_2 = Rc::clone(&old_node.real_node);
+                    let mut new_element = None;
                     
                     if let Some(root) = &*real_node_clone.borrow() {
                         let element: Element = root.to_owned().unchecked_into();
@@ -101,9 +101,12 @@ where
                             selectors_set,
                             <NodeId as Into<usize>>::into(*old_id)
                         );
-                        //*old_node.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
-                        *real_node_clone_2.borrow_mut() = Some(element.unchecked_into::<Node>());
+                        new_element = Some(element.unchecked_into::<Node>());
                     };
+
+                    if let Some(_) = &new_element {
+                        *old_node.real_node.borrow_mut() = new_element;
+                    }
                 
                 },
                 Patch::RemoveAttribute(old_id, attr_name) => {
@@ -111,14 +114,17 @@ where
                     let old_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
                     old_node.props.retain(|prop| !(prop.name == attr_name));
                     let real_node_clone = Rc::clone(&old_node.real_node);
-                    let real_node_clone_2 = Rc::clone(&old_node.real_node);
+                    let mut new_element = None;
 
                     if let Some(root) = &*real_node_clone.borrow() {
                         let element: Element = root.to_owned().unchecked_into();
                         let _ = VirtualNode::<MSG>::remove_element_attribute(&element, attr_name);
-                        //*old_node.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
-                        *real_node_clone_2.borrow_mut() = Some(element.unchecked_into::<Node>());
+                        new_element = Some(element.unchecked_into::<Node>());
                     };
+                    
+                    if let Some(_) = &new_element {
+                        *old_node.real_node.borrow_mut() = new_element;
+                    }
                 },
                 Patch::UpdateAttribute(old_id, (attr_name, new_attribute)) => {
                     let mut borrow = self.borrow_mut();
@@ -126,7 +132,8 @@ where
                     old_node.props.retain(|prop| !(prop.name == *attr_name));
                     
                     let real_node_clone = Rc::clone(&old_node.real_node);
-                    let real_node_clone_2 = Rc::clone(&old_node.real_node);
+
+                    let mut new_element = None;
 
                     if let Some(root) = &*real_node_clone.borrow() {
                         let element: Element = root.to_owned().unchecked_into();
@@ -140,9 +147,12 @@ where
                             selectors_set,
                             <NodeId as Into<usize>>::into(*old_id)
                         );
-                        //*old_node.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
-                        *real_node_clone_2.borrow_mut() = Some(element.unchecked_into::<Node>());
+                        new_element = Some(element.unchecked_into::<Node>());
                     };
+
+                    if let Some(_) = &new_element {
+                        *old_node.real_node.borrow_mut() = new_element;
+                    }
                 },
                 Patch::ChangeText(old_id, value) => {
                     if let Some(text_value) = value {
