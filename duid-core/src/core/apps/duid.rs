@@ -13,7 +13,6 @@ use crate::{
 use wasm_bindgen::{closure::Closure};
 use wasm_bindgen::JsCast;
 use std::collections::HashMap;
-use indextree::Arena;
 
 
 
@@ -83,16 +82,15 @@ where
     
     pub fn mount(&self) {
         let view = self.user_app.borrow().render();
-        let mut arena = Arena::<VirtualNode<MSG>>::new();
-        let root_node_id = ViewBuilder::build(view, &mut arena);
-        self.dom.borrow_mut().mount(self, arena, root_node_id);
+        let root_node = ViewBuilder::build(view);
+        self.dom.borrow_mut().mount(self, root_node);
     }
 
     pub fn render(&self) {
         let view = self.user_app.borrow().render();
-        let mut arena = Arena::<VirtualNode<MSG>>::new();
-        let root_node_id = ViewBuilder::build(view, &mut arena);
-        self.dom.borrow_mut().render(self, arena, root_node_id);
+        //let mut arena = Arena::<VirtualNode<MSG>>::new();
+        //let root_node_id = ViewBuilder::build(view, &mut arena);
+        //self.dom.borrow_mut().render(self, arena, root_node_id);
     }
 
     pub fn dispatch_inner(&mut self, msgs: Vec<MSG>) {

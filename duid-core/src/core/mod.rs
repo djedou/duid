@@ -13,7 +13,7 @@ use wasm_bindgen::closure::Closure;
 
 thread_local!(static NODE_ID_COUNTER: Cell<usize> = Cell::new(1));
 
-/*
+
 pub(crate) fn create_unique_identifier() -> usize {
     let id = NODE_ID_COUNTER.with(|x| {
         let tmp = x.get();
@@ -22,15 +22,15 @@ pub(crate) fn create_unique_identifier() -> usize {
     });
     id
 }
-*/
+
 /*
 pub(crate) fn clean_unique_identifier() {
     NODE_ID_COUNTER.with(|x| {
         x.set(1);
     });
 }
-*/
-/*
+
+
 pub(crate) fn set_unique_identifier(id: usize) {
     NODE_ID_COUNTER.with(|x| {
         x.set(id);

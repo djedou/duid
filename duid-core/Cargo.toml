@@ -25,7 +25,6 @@ console_log = "0.2.0"
 tracing = { version = "^0.1", features = ["log"] }
 wasm-bindgen-futures = "0.4"
 futures = "0.3"
-indextree = "4.5"
 
 [dependencies.wasm-bindgen]
 version = "0.2"

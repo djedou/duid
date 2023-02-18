@@ -1,7 +1,6 @@
-mod dom_builder;
-mod patch;
-mod dom_diff;
-mod apply_patches;
+//mod patch;
+//mod dom_diff;
+//mod apply_patches;
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -10,7 +9,6 @@ use std::fmt::Debug;
 use web_sys::{
     self, Element, Node, Document
 };
-use indextree::{Arena, NodeId};
 use crate::core::{
     v_node::VirtualNode,
     util::document,
@@ -18,9 +16,8 @@ use crate::core::{
 };
 use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
-pub use dom_builder::*;
-pub(crate) use dom_diff::DomDiff;
-pub(crate) use apply_patches::ApplyPatch;
+//pub(crate) use dom_diff::DomDiff;
+//pub(crate) use apply_patches::ApplyPatch;
 
 
 
@@ -33,8 +30,7 @@ where
     pub(crate) mount_node: Node,
     pub(crate) replace: bool,
     pub(crate) use_shadow: bool,
-    pub(crate) arena: Rc<RefCell<Arena<VirtualNode<MSG>>>>,
-    pub(crate) arena_root_node_id: Option<NodeId>,
+    pub(crate) root_node: Rc<RefCell<VirtualNode<MSG>>>,
     pub(crate) document: Document,
     pub(crate) base_styles: HashMap<String, String>,
     pub(crate) styles: HashMap<String, String>,
@@ -67,8 +63,7 @@ where
             mount_node: node,
             replace,
             use_shadow, 
-            arena: Rc::new(RefCell::new(Arena::new())),
-            arena_root_node_id: None,
+            root_node: Rc::new(RefCell::new(VirtualNode::new())),
             document: doc,
             base_styles,
             styles,
@@ -81,29 +76,28 @@ impl<MSG> Dom<MSG>
 where
     MSG: std::fmt::Debug + Clone + 'static
 {
-    pub(crate) fn mount<DSP>(&mut self, program: &DSP, arena: Arena<VirtualNode<MSG>>, root_node_id: NodeId) 
+    pub(crate) fn mount<DSP>(&mut self, program: &DSP, root_node: VirtualNode<MSG>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
-        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0); 
-        self.arena_root_node_id = Some(root_node_id);
-        *self.arena.borrow_mut() = arena;
-        self.arena.build(program, &self.document, &self.arena_root_node_id.as_ref().unwrap(), &mut style_map, &mut selectors_set);
+        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
+        root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
+        *self.root_node.borrow_mut() = root_node;
         
         let tailwind_styles = self.style_container.build(&selectors_set);
         self.inject_styles(&tailwind_styles);
         self.first_mount(&self.mount_styles(style_map, true));
     }
 
-    pub(crate) fn render<DSP>(&mut self, program: &DSP, arena: Arena<VirtualNode<MSG>>, root_node_id: NodeId) 
+    pub(crate) fn render<DSP>(&mut self, program: &DSP, root_node: VirtualNode<MSG>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
         let mut selectors_set: HashSet<String> = HashSet::with_capacity(0); 
-        let patches: Vec<_> = self.arena.diff(&root_node_id, &arena);
-        self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut selectors_set);
+        //let patches: Vec<_> = self.arena.diff(&root_node_id, &arena);
+        //self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut selectors_set);
         
         let tailwind_styles = self.style_container.render(&selectors_set);
         self.inject_styles(&tailwind_styles);
@@ -111,8 +105,7 @@ where
     }
 
     fn first_mount(&self, styles: &[(String, String)]) {
-        let node_borrow = self.arena.borrow();
-        let virtual_node = node_borrow.get(*self.arena_root_node_id.as_ref().unwrap()).expect("The node does not exists").get();
+        let virtual_node = self.root_node.borrow();
 
         if let Some(node) = &*virtual_node.real_node.borrow() {
             if self.replace {

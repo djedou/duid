@@ -1,8 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
-use crate::core::{ActiveClosure, DATA_VDOM_ID};
-
 use crate::core::{
+    ActiveClosure, DATA_VDOM_ID, create_unique_identifier,
     events::{Event, Listener},
     duid_events::Dispatch,
     html::attributes::{
@@ -41,7 +40,8 @@ pub(crate) struct VirtualNode<MSG>
     pub(crate) props: Vec<Attribute<MSG>>,
     pub(crate) value: Option<String>,
     pub(crate) real_node: Rc<RefCell<Option<Node>>>,
-    pub(crate) active_closures: Rc<RefCell<ActiveClosure>>
+    pub(crate) active_closures: Rc<RefCell<ActiveClosure>>,
+    pub(crate) children: Vec<VirtualNode<MSG>>
 }
 
 
@@ -49,7 +49,20 @@ impl<MSG> VirtualNode<MSG>
 where
     MSG: std::fmt::Debug + Clone + 'static 
 {
-    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>, node_id: usize) 
+    pub(crate) fn new() -> Self {
+        VirtualNode {
+            tag: "",
+            node_type: VirtualNodeType::Element,
+            namespace: None,
+            props: Vec::with_capacity(0),
+            value: None,
+            real_node: Rc::new(RefCell::new(None)),
+            active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),
+            children: Vec::with_capacity(0)
+        } 
+    }
+
+    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
@@ -65,18 +78,36 @@ where
                         .expect("Unable to create element")
                 };
                 let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set, node_id);
+                Self::set_element_attributes(program, &element, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set);
                 *self.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
+                self.children.iter().for_each(|child| child.build_node(program, &doc, styles_map, selectors_set));
+                
+                if let Some(real_node_parent) = &*self.real_node.borrow() {
+                    self.children.iter().for_each(|child| {
+                        if let Some(real_node_child) = &*child.real_node.borrow() {
+                            let _ = real_node_parent.append_child(&real_node_child);
+                        }
+                    });
+                }
             },
             VirtualNodeType::Fragment => {
                 let doc_fragment = doc.create_document_fragment();
                 *self.real_node.borrow_mut() = Some(doc_fragment.unchecked_into::<Node>());
+                self.children.iter().for_each(|child| child.build_node(program, &doc, styles_map, selectors_set));
+                
+                if let Some(real_node_parent) = &*self.real_node.borrow() {
+                    self.children.iter().for_each(|child| {
+                        if let Some(real_node_child) = &*child.real_node.borrow() {
+                            let _ = real_node_parent.append_child(&real_node_child);
+                        }
+                    });
+                }
             },
             VirtualNodeType::Text => {
                 if let Some(value) = &self.value {
                     let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set, node_id);
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set);
                     *self.real_node.borrow_mut() = Some(text_node.unchecked_into::<Node>());
                 }
             },
@@ -98,15 +129,14 @@ where
         attrs: &[&Attribute<MSG>],
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashSet<String>,
-        node_id: usize
+        selectors_set: &mut HashSet<String>
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static
     {
         let attrs = merge_attributes_of_same_name(attrs);
         for att in attrs {
-            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, selectors_set, node_id);
+            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, selectors_set);
         }
     }
 
@@ -117,8 +147,7 @@ where
         attr: &Attribute<MSG>,
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashSet<String>,
-        node_id: usize
+        selectors_set: &mut HashSet<String>
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static
@@ -221,12 +250,13 @@ where
         }
 
         let mut event_id = 1;
+        let unique_id = create_unique_identifier(); 
         for listener in listeners {
-            let unique_id = node_id + event_id;
+            let event_unique_id = unique_id + event_id;
             event_id += 1;
 
             element
-                .set_attribute(DATA_VDOM_ID, &unique_id.to_string())
+                .set_attribute(DATA_VDOM_ID, &event_unique_id.to_string())
                 .expect("Could not set attribute on element");
 
             closures
