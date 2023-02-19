@@ -63,9 +63,7 @@ where
     }
 
     pub(crate) fn replace_by(&mut self, new_node: &VirtualNode<MSG>) {
-            crate::console::info!("I am here!");
             if let (Some(old_node), Some(new_node)) = (&*self.real_node.borrow() , &*new_node.real_node.borrow()) {
-                crate::console::info!("I am here! Old: {:#?}", old_node);
                 let old_element: &Element = old_node.unchecked_ref();
                 old_element
                     .replace_with_with_node_1(new_node)

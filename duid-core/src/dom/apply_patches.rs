@@ -1,6 +1,6 @@
 use crate::{
     core::{
-        v_node::{VirtualNode, ChangeType, PropsChangeType},
+        v_node::{VirtualNode, ChangeType, PropsChangeType, VirtualNodeType},
         duid_events::Dispatch
     }
 };
@@ -28,10 +28,10 @@ where
 {
     fn apply_patches(&mut self, new_node: &VirtualNode<MSG>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>)
     {
+        crate::console::info!("tag: {:#?}", self.tag);
+        crate::console::info!("node_type: {:#?}", self.node_type);
         match self.diff(&new_node) {
             ChangeType::ChangedTag => {
-                crate::console::info!("old_node: {:#?}", self);
-                crate::console::info!("new_node: {:#?}", new_node);
                 new_node.build_node(program, &doc, style_map, selectors_set);
                 self.replace_by(new_node);
             },

@@ -92,7 +92,6 @@ where
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
         let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
-        crate::console::info!("new_root_node: {:#?}", new_root_node);
         self.root_node.apply_patches(&new_root_node, program, &self.document, &mut style_map, &mut selectors_set);
         
         let tailwind_styles = self.style_container.render(&selectors_set);
