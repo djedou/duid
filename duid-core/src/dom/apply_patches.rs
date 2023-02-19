@@ -30,6 +30,8 @@ where
     {
         match self.diff(&new_node) {
             ChangeType::ChangedTag => {
+                crate::console::info!("old_node: {:#?}", self);
+                crate::console::info!("new_node: {:#?}", new_node);
                 new_node.build_node(program, &doc, style_map, selectors_set);
                 self.replace_by(new_node);
             },
