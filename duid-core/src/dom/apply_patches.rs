@@ -127,9 +127,6 @@ where
                         for i in 0..old_node_children_size {
                             match (self.children.get_mut(i), new_node.children.get(i)) {
                                 (Some(old_child), Some(new_child)) => {
-                                    crate::console::info!("old_child: {:#?}", old_child);
-                                    crate::console::info!("new_child: {:#?}", new_child);
-                                    crate::console::info!("#################");
                                     old_child.apply_patches(new_child, program, &doc, style_map, selectors_set);
                                 },
                                 (Some(old_child), None) => {
