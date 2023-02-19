@@ -4,7 +4,7 @@ use crate::{
     core::{
         duid_events::{Dispatch, Cmd},
         util::{window, request_animation_frame_for_closure},
-        v_node::{ViewBuilder, VirtualNode},
+        v_node::ViewBuilder,
         apps::UserApp
     },
     dom::Dom,
@@ -88,9 +88,8 @@ where
 
     pub fn render(&self) {
         let view = self.user_app.borrow().render();
-        //let mut arena = Arena::<VirtualNode<MSG>>::new();
-        //let root_node_id = ViewBuilder::build(view, &mut arena);
-        //self.dom.borrow_mut().render(self, arena, root_node_id);
+        let root_node = ViewBuilder::build(view);
+        self.dom.borrow_mut().render(self, root_node);
     }
 
     pub fn dispatch_inner(&mut self, msgs: Vec<MSG>) {

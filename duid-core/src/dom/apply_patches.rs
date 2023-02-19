@@ -1,18 +1,14 @@
-use indextree::{Arena, NodeId};
 use crate::{
     core::{
-        v_node::VirtualNode,
+        v_node::{VirtualNode, ChangeType, PropsChangeType},
         duid_events::Dispatch
-    },
-    dom::dom_builder::DomBuilder
+    }
 };
 use web_sys::{
     Document, Element, Node
 };
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
-use std::cell::RefCell;
-use super::patch::Patch;
 use wasm_bindgen::JsCast;
 
 
@@ -22,190 +18,150 @@ where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>);
+    fn apply_patches(&mut self, new_node: &VirtualNode<MSG>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>);
 }
 
-impl<DSP, MSG> ApplyPatch<DSP, MSG> for Rc<RefCell<Arena<VirtualNode<MSG>>>> 
+impl<DSP, MSG> ApplyPatch<DSP, MSG> for VirtualNode<MSG> 
 where
     DSP: Dispatch<MSG> + Clone + 'static,
     MSG: std::fmt::Debug + Clone + 'static
 {
-    fn apply_patches(&self, patches: &[Patch<MSG>], new_arena: &Arena<VirtualNode<MSG>>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>)
+    fn apply_patches(&mut self, new_node: &VirtualNode<MSG>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>)
     {
-        patches.iter().for_each(|patch| {
-            match patch {
-                Patch::Replace(old_id, new_id) => {
-                    let new_node = new_arena.get(*new_id).expect(&format!("The {new_id:?} node does not exists")).get();
-                    let new_node_to_insert = self.borrow_mut().new_node(VirtualNode {
-                        tag: new_node.tag,
-                        node_type: new_node.node_type.clone(),
-                        namespace: new_node.namespace,
-                        props: new_node.props.clone(),
-                        value: new_node.value.clone(),
-                        real_node: Rc::clone(&new_node.real_node),
-                        active_closures: Rc::clone(&new_node.active_closures)
-                    });
+        match self.diff(&new_node) {
+            ChangeType::ChangedTag => {
+                new_node.build_node(program, &doc, style_map, selectors_set);
+                self.replace_by(new_node);
+            },
+            ChangeType::ChangedNodeType => {
+                new_node.build_node(program, &doc, style_map, selectors_set);
+                self.replace_by(new_node);
+            },
+            ChangeType::ChangedNamespace => {
+                new_node.build_node(program, &doc, style_map, selectors_set);
+                self.replace_by(new_node);
+            },
+            ChangeType::ChangedProps(props_changes) => {
+                props_changes.iter().for_each(|prop| 
+                    match prop {
+                        PropsChangeType::AddedProp(attr) => {
+                            self.props.push(attr.clone());
+                            let real_node_clone = Rc::clone(&self.real_node);
+                            let mut new_element = None;
+                            
+                            if let Some(root) = &*real_node_clone.borrow() {
+                                let element: Element = root.to_owned().unchecked_into();
+                                VirtualNode::set_element_attributes(
+                                    program,
+                                    &element,
+                                    &[attr],
+                                    &mut self.active_closures.borrow_mut(),
+                                    style_map,
+                                    selectors_set
+                                );
+                                new_element = Some(element.unchecked_into::<Node>());
+                            };
+        
+                            if let Some(_) = &new_element {
+                                *self.real_node.borrow_mut() = new_element;
+                            }
+                        },
+                        PropsChangeType::RemovedProp(value) => {
+                            let attr_name = value.to_owned();
+                            self.props.retain(|prop| !(prop.name == attr_name));
+                            let real_node_clone = Rc::clone(&self.real_node);
+                            let mut new_element = None;
 
-                    for child_id in new_id.children(&new_arena).into_iter() {
-                        let child = new_arena.get(child_id).expect(&format!("The {child_id:?} node does not exists")).get();
-                        
-                        let child_node_to_insert = self.borrow_mut().new_node(VirtualNode {
-                            tag: child.tag,
-                            node_type: child.node_type.clone(),
-                            namespace: child.namespace,
-                            props: child.props.clone(),
-                            value: child.value.clone(),
-                            real_node: Rc::clone(&child.real_node),
-                            active_closures: Rc::clone(&child.active_closures)
-                        });
-                        
-                        new_node_to_insert.append(child_node_to_insert, &mut self.borrow_mut());
-                        create_child(
-                            &new_node_to_insert,
-                            &mut self.borrow_mut(),
-                            &new_arena
-                        );
+                            if let Some(root) = &*real_node_clone.borrow() {
+                                let element: Element = root.to_owned().unchecked_into();
+                                let _ = VirtualNode::<MSG>::remove_element_attribute(&element, &attr_name);
+                                new_element = Some(element.unchecked_into::<Node>());
+                            };
+                            
+                            if let Some(_) = &new_element {
+                                *self.real_node.borrow_mut() = new_element;
+                            }
+                        },
+                        PropsChangeType::UpdatedPropValues(attr, values) => {
+                            let attr_name = attr.to_owned();
+                            let new_attribute = values.to_owned();
+                            
+                            self.props.retain(|prop| !(prop.name == attr_name));
+                            let real_node_clone = Rc::clone(&self.real_node);
+                            let mut new_element = None;
 
+                            if let Some(root) = &*real_node_clone.borrow() {
+                                let element: Element = root.to_owned().unchecked_into();
+                                let _ = VirtualNode::<MSG>::remove_element_attribute(&element, &attr_name);
+                                VirtualNode::set_element_attribute(
+                                    program,
+                                    &element,
+                                    &new_attribute,
+                                    &mut self.active_closures.borrow_mut(),
+                                    style_map,
+                                    selectors_set
+                                );
+                                new_element = Some(element.unchecked_into::<Node>());
+                            };
+
+                            if let Some(_) = &new_element {
+                                *self.real_node.borrow_mut() = new_element;
+                            }
+                        }
                     }
+                );
+            },
+            ChangeType::ChangedText(value) => {
+                if let Some(text_value) = value {
+                    let text_real_node = self.real_node.borrow();
+                    let _ = text_real_node.as_ref().unwrap().set_text_content(Some(&text_value));
+                    self.value = Some(text_value.to_owned());
+                }
+            },
+            ChangeType::UnChanged => {
+                let old_node_children_size = self.children.len();
+                let new_node_children_size = new_node.children.len();
 
-                    old_id.insert_before(new_node_to_insert, &mut self.borrow_mut());
-                    old_id.remove_subtree(&mut self.borrow_mut());
+                match old_node_children_size >= new_node_children_size {
+                    true => {
+                        for i in 0..old_node_children_size {
+                            match (self.children.get_mut(i), new_node.children.get(i)) {
+                                (Some(old_child), Some(new_child)) => {
+                                    old_child.apply_patches(new_child, program, &doc, style_map, selectors_set);
+                                },
+                                (Some(old_child), None) => {
+                                    if let Some(old_node) = &*old_child.real_node.borrow() {
+                                        let old_element: &Element = old_node.unchecked_ref();
+                                        old_element.remove();
+                                    }
 
-                    self.build(program, &doc, &new_node_to_insert, style_map, selectors_set);
-                    let borrow = self.borrow();
-                    if let Some(parent_id) = borrow[new_node_to_insert].parent() {
-                        let parent = borrow.get(parent_id).expect(&format!("The {parent_id:?} node does not exists")).get();
-                        let root = borrow.get(new_node_to_insert).expect(&format!("The {new_node_to_insert:?} node does not exists")).get();
-                        
-                        let parent_real_node = parent.real_node.borrow();
-                        let root_real_node = root.real_node.borrow();
-                        let _ = parent_real_node.as_ref().unwrap().append_child(root_real_node.as_ref().unwrap());
-                    }
+                                    let _ = self.children.remove(i);
+                                },
+                                _ => {}
+                            }
+                        }
+                    },
+                    false => {
+                        for i in 0..new_node_children_size {
+                            match (self.children.get_mut(i), new_node.children.get(i)) {
+                                (Some(old_child), Some(new_child)) => {
+                                    old_child.apply_patches(new_child, program, &doc, style_map, selectors_set);
+                                },
+                                (None, Some(new_child)) => {
+                                    if let Some(real_node_parent) = &*self.real_node.borrow() {
+                                        if let Some(real_node_child) = &*new_child.real_node.borrow() {
+                                            let _ = real_node_parent.append_child(&real_node_child);
+                                        }
+                                    }
 
-                },
-                Patch::AddAttribute(old_id, attr) => {
-                    let mut borrow = self.borrow_mut();
-                    let old_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
-                    old_node.props.push(attr.clone());
-                    let real_node_clone = Rc::clone(&old_node.real_node);
-                    let mut new_element = None;
-                    
-                    if let Some(root) = &*real_node_clone.borrow() {
-                        let element: Element = root.to_owned().unchecked_into();
-                        VirtualNode::set_element_attributes(
-                            program,
-                            &element,
-                            &[attr],
-                            &mut old_node.active_closures.borrow_mut(),
-                            style_map,
-                            selectors_set,
-                            <NodeId as Into<usize>>::into(*old_id)
-                        );
-                        new_element = Some(element.unchecked_into::<Node>());
-                    };
-
-                    if let Some(_) = &new_element {
-                        *old_node.real_node.borrow_mut() = new_element;
-                    }
-                
-                },
-                Patch::RemoveAttribute(old_id, attr_name) => {
-                    let mut borrow = self.borrow_mut();
-                    let old_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
-                    old_node.props.retain(|prop| !(prop.name == attr_name));
-                    let real_node_clone = Rc::clone(&old_node.real_node);
-                    let mut new_element = None;
-
-                    if let Some(root) = &*real_node_clone.borrow() {
-                        let element: Element = root.to_owned().unchecked_into();
-                        let _ = VirtualNode::<MSG>::remove_element_attribute(&element, attr_name);
-                        new_element = Some(element.unchecked_into::<Node>());
-                    };
-                    
-                    if let Some(_) = &new_element {
-                        *old_node.real_node.borrow_mut() = new_element;
-                    }
-                },
-                Patch::UpdateAttribute(old_id, (attr_name, new_attribute)) => {
-                    let mut borrow = self.borrow_mut();
-                    let old_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
-                    old_node.props.retain(|prop| !(prop.name == *attr_name));
-                    
-                    let real_node_clone = Rc::clone(&old_node.real_node);
-
-                    let mut new_element = None;
-
-                    if let Some(root) = &*real_node_clone.borrow() {
-                        let element: Element = root.to_owned().unchecked_into();
-                        let _ = VirtualNode::<MSG>::remove_element_attribute(&element, attr_name);
-                        VirtualNode::set_element_attribute(
-                            program,
-                            &element,
-                            new_attribute,
-                            &mut old_node.active_closures.borrow_mut(),
-                            style_map,
-                            selectors_set,
-                            <NodeId as Into<usize>>::into(*old_id)
-                        );
-                        new_element = Some(element.unchecked_into::<Node>());
-                    };
-
-                    if let Some(_) = &new_element {
-                        *old_node.real_node.borrow_mut() = new_element;
-                    }
-                },
-                Patch::ChangeText(old_id, value) => {
-                    if let Some(text_value) = value {
-                        let mut borrow = self.borrow_mut();
-                        let mut text_node = borrow.get_mut(*old_id).expect(&format!("The {old_id:?} node does not exists")).get_mut();
-                        text_node.value = Some(text_value.to_owned());
-                        let text_real_node = text_node.real_node.borrow();
-                        let _ = text_real_node.as_ref().unwrap().set_text_content(Some(text_node.value.as_ref().unwrap()));
+                                    self.children.push(new_child.to_owned());
+                                },
+                                _ => {}
+                            }
+                        }
                     }
                 }
             }
-        });
-    }
-}
-
-
-fn create_child<MSG>(
-    parent_node: &NodeId,
-    old_arena: &mut Arena::<VirtualNode<MSG>>,
-    new_arena: &Arena::<VirtualNode<MSG>>
-) 
-where
-    MSG: std::fmt::Debug + Clone + 'static,
-{
-    let new_node = new_arena.get(*parent_node).expect(&format!("The {parent_node:?} node does not exists")).get();
-    let new_node_to_insert = old_arena.new_node(VirtualNode {
-        tag: new_node.tag,
-        node_type: new_node.node_type.clone(),
-        namespace: new_node.namespace,
-        props: new_node.props.clone(),
-        value: new_node.value.clone(),
-        real_node: Rc::clone(&new_node.real_node),
-        active_closures: Rc::clone(&new_node.active_closures)
-    });
-
-    for child_id in parent_node.children(&new_arena).into_iter() {
-        let child = new_arena.get(child_id).expect(&format!("The {child_id:?} node does not exists")).get();
-        
-        let child_node_to_insert = old_arena.new_node(VirtualNode {
-            tag: child.tag,
-            node_type: child.node_type.clone(),
-            namespace: child.namespace,
-            props: child.props.clone(),
-            value: child.value.clone(),
-            real_node: Rc::clone(&child.real_node),
-            active_closures: Rc::clone(&child.active_closures)
-        });
-        
-        new_node_to_insert.append(child_node_to_insert, old_arena);
-        create_child(
-            &new_node_to_insert,
-            old_arena,
-            &new_arena
-        );
+        }
     }
 }

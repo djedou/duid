@@ -1,9 +1,6 @@
-//mod patch;
-//mod dom_diff;
-//mod apply_patches;
+mod apply_patches;
 
-use std::rc::Rc;
-use std::cell::RefCell;
+
 use wasm_bindgen::JsCast;
 use std::fmt::Debug;
 use web_sys::{
@@ -16,8 +13,7 @@ use crate::core::{
 };
 use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
-//pub(crate) use dom_diff::DomDiff;
-//pub(crate) use apply_patches::ApplyPatch;
+pub(crate) use apply_patches::ApplyPatch;
 
 
 
@@ -30,7 +26,7 @@ where
     pub(crate) mount_node: Node,
     pub(crate) replace: bool,
     pub(crate) use_shadow: bool,
-    pub(crate) root_node: Rc<RefCell<VirtualNode<MSG>>>,
+    pub(crate) root_node: VirtualNode<MSG>,
     pub(crate) document: Document,
     pub(crate) base_styles: HashMap<String, String>,
     pub(crate) styles: HashMap<String, String>,
@@ -63,7 +59,7 @@ where
             mount_node: node,
             replace,
             use_shadow, 
-            root_node: Rc::new(RefCell::new(VirtualNode::new())),
+            root_node: VirtualNode::new(),
             document: doc,
             base_styles,
             styles,
@@ -83,21 +79,20 @@ where
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
         let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
         root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
-        *self.root_node.borrow_mut() = root_node;
+        self.root_node = root_node;
         
         let tailwind_styles = self.style_container.build(&selectors_set);
         self.inject_styles(&tailwind_styles);
         self.first_mount(&self.mount_styles(style_map, true));
     }
 
-    pub(crate) fn render<DSP>(&mut self, program: &DSP, root_node: VirtualNode<MSG>) 
+    pub(crate) fn render<DSP>(&mut self, program: &DSP, new_root_node: VirtualNode<MSG>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
-        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0); 
-        //let patches: Vec<_> = self.arena.diff(&root_node_id, &arena);
-        //self.arena.apply_patches(&patches, &arena, program, &self.document, &mut style_map, &mut selectors_set);
+        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
+        self.root_node.apply_patches(&new_root_node, program, &self.document, &mut style_map, &mut selectors_set);
         
         let tailwind_styles = self.style_container.render(&selectors_set);
         self.inject_styles(&tailwind_styles);
@@ -105,9 +100,8 @@ where
     }
 
     fn first_mount(&self, styles: &[(String, String)]) {
-        let virtual_node = self.root_node.borrow();
-
-        if let Some(node) = &*virtual_node.real_node.borrow() {
+        let real_node = self.root_node.real_node.borrow();
+        if let Some(node) = &*real_node {
             if self.replace {
                 let mount_element: &Element = self.mount_node.unchecked_ref();
                 mount_element
