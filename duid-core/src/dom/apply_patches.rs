@@ -28,8 +28,6 @@ where
 {
     fn apply_patches(&mut self, new_node: &VirtualNode<MSG>, program: &DSP, doc: &Document, style_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>)
     {
-        crate::console::info!("tag: {:#?}", self.tag);
-        crate::console::info!("node_type: {:#?}", self.node_type);
         match self.diff(&new_node) {
             ChangeType::ChangedTag => {
                 new_node.build_node(program, &doc, style_map, selectors_set);
@@ -129,6 +127,9 @@ where
                         for i in 0..old_node_children_size {
                             match (self.children.get_mut(i), new_node.children.get(i)) {
                                 (Some(old_child), Some(new_child)) => {
+                                    crate::console::info!("old_child: {:#?}", old_child);
+                                    crate::console::info!("new_child: {:#?}", new_child);
+                                    crate::console::info!("#################");
                                     old_child.apply_patches(new_child, program, &doc, style_map, selectors_set);
                                 },
                                 (Some(old_child), None) => {
