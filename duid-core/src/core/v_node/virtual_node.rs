@@ -65,14 +65,9 @@ where
     pub(crate) fn replace_by(&mut self, new_node: &VirtualNode<MSG>) {
             if let (Some(old_node), Some(new_node)) = (&*self.real_node.borrow() , &*new_node.real_node.borrow()) {
                 let old_element: &Element = old_node.unchecked_ref();
-                match old_element
-                    .replace_with_with_node_1(new_node) {
-                    Ok(_) => {},
-                    Err(e) => {
-                    crate::console::info!("Error: {:#?}", e);
-                    }
-                }
-                //    .expect("Could not append child to mount");
+                old_element
+                    .replace_with_with_node_1(new_node)
+                    .expect("Could not append child to mount");
             }
             
             self.tag = new_node.tag;
