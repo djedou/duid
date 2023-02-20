@@ -1,6 +1,3 @@
-mod apply_patches;
-
-
 use wasm_bindgen::JsCast;
 use std::fmt::Debug;
 use web_sys::{
@@ -13,7 +10,6 @@ use crate::core::{
 };
 use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
-pub(crate) use apply_patches::ApplyPatch;
 
 
 
@@ -82,8 +78,9 @@ where
         self.root_node = root_node;
         
         let tailwind_styles = self.style_container.build(&selectors_set);
+        self.first_mount();
+        self.inject_styles(&self.mount_styles(style_map, true));
         self.inject_styles(&tailwind_styles);
-        self.first_mount(&self.mount_styles(style_map, true));
     }
 
     pub(crate) fn render<DSP>(&mut self, program: &DSP, new_root_node: VirtualNode<MSG>) 
@@ -92,14 +89,15 @@ where
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
         let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
-        self.root_node.apply_patches(&new_root_node, program, &self.document, &mut style_map, &mut selectors_set);
-        
+        new_root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
+
+        self.render_new_node(new_root_node);
         let tailwind_styles = self.style_container.render(&selectors_set);
-        self.inject_styles(&tailwind_styles);
         self.inject_styles(&self.mount_styles(style_map, false));
+        self.inject_styles(&tailwind_styles);
     }
 
-    fn first_mount(&self, styles: &[(String, String)]) {
+    fn first_mount(&self) {
         let real_node = self.root_node.real_node.borrow();
         if let Some(node) = &*real_node {
             if self.replace {
@@ -132,9 +130,25 @@ where
                 }
             }
         };
+    }
 
+    fn render_new_node(&mut self, new_root_node: VirtualNode<MSG>) {
+        let mut updated = false;
+        match (&*self.root_node.real_node.borrow(), &*new_root_node.real_node.borrow()) {
+            (Some(old_node), Some(new_node)) => {
+                let mount_element: &Element = old_node.unchecked_ref();
+                mount_element
+                    .replace_with_with_node_1(new_node)
+                    .expect("Could not append child to mount");
 
-        self.inject_styles(styles);
+                    updated = true;
+                },
+                _ => {}
+            };
+            
+        if updated {
+            self.root_node = new_root_node;
+        }
     }
 
     fn inject_styles(&self, styles: &[(String, String)]) {
