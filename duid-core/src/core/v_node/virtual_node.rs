@@ -62,25 +62,6 @@ where
         } 
     }
 
-    pub(crate) fn replace_by(&mut self, new_node: &VirtualNode<MSG>) {
-            if let (Some(old_node), Some(new_node)) = (&*self.real_node.borrow() , &*new_node.real_node.borrow()) {
-                let old_element: &Element = old_node.unchecked_ref();
-                old_element
-                    .replace_with_with_node_1(new_node)
-                    .expect("Could not append child to mount");
-            }
-            
-            self.tag = new_node.tag;
-            self.node_type = new_node.node_type.to_owned();
-            self.namespace = new_node.namespace;
-            self.props = new_node.props.to_owned();
-            self.value = new_node.value.to_owned();
-            self.real_node = new_node.real_node.to_owned();
-            self.active_closures = new_node.active_closures.to_owned();
-            self.children = new_node.children.to_owned();
-
-    }
-
     pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashMap<usize, HashSet<String>>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,

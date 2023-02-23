@@ -152,7 +152,14 @@ where
     }
 
     fn inject_styles(&self, styles: &[(String, String)]) {
-        styles.iter().for_each(|(name, style)| self.inject_style(name, style));
+        for (name, style) in styles.iter() {
+            if style == " " {
+                continue;
+            }
+            else {
+                self.inject_style(name, style);
+            }
+        }
     }
 
     fn inject_style(&self, name: &str, style: &str) {

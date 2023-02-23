@@ -19,8 +19,6 @@ impl StyleContainer {
     pub(crate) fn build(&mut self, selectors: &HashMap<usize, HashSet<String>>) -> Vec<(String, String)> {
         let mut full_styles = Vec::with_capacity(0);
         let mut styles = Vec::with_capacity(0);
-
-        crate::console::info!("selectors: {:#?}", selectors);
         
         for (key, values) in selectors.iter() {
             let mut loop_break = false;
@@ -53,9 +51,9 @@ impl StyleContainer {
         }
 
 
-        for chunk in full_styles.chunks(80) {
-            let mut chunk_styles: Vec<_> = chunk.iter().map(|(_, v)| v.to_owned()).collect();
-            let mut chunk_keys: Vec<_> = chunk.iter().map(|(k, _)| k.to_string()).collect();
+        for chunk in full_styles.chunks(10) {
+            let chunk_styles: Vec<_> = chunk.iter().map(|(_, v)| v.to_owned()).collect();
+            let chunk_keys: Vec<_> = chunk.iter().map(|(k, _)| k.to_string()).collect();
 
             let builded_styles = chunk_styles.join(" ");
             let builded_keys = chunk_keys.join("");
