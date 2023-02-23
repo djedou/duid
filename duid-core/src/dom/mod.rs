@@ -153,7 +153,7 @@ where
 
     fn inject_styles(&self, styles: &[(String, String)]) {
         for (name, style) in styles.iter() {
-            if style == " " {
+            if style.len() < 5 {
                 continue;
             }
             else {
