@@ -73,7 +73,7 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
-        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
+        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
         root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
         self.root_node = root_node;
         
@@ -88,11 +88,11 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
-        let mut selectors_set: HashSet<String> = HashSet::with_capacity(0);
+        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
         new_root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
 
         self.render_new_node(new_root_node);
-        let tailwind_styles = self.style_container.render(&selectors_set);
+        let tailwind_styles = self.style_container.build(&selectors_set);
         self.inject_styles(&self.mount_styles(style_map, false));
         self.inject_styles(&tailwind_styles);
     }

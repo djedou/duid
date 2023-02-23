@@ -4,7 +4,7 @@ use std::collections::HashMap;
 pub(crate) struct BuildStyle;
 
 impl BuildStyle {
-    pub(crate) fn build(data: &str, themes: &HashMap<String, String>) -> String {
+    pub(crate) fn build(data: &str, themes: &HashMap<String, String>) -> (String, String) {
         // FORMAT: media_query:::css_selectors:::tailwind_css_properties
         let data_splited: Vec<_> = data.split(":::").collect();
         
@@ -23,7 +23,7 @@ impl BuildStyle {
                 .filter(|s| s.len() != 0)
                 .collect();
 
-                format!("{} {{{}}}", data_splited[0], styles.join(""))
+                ( data_splited[0].to_owned(), format!("{} {{{}}}", data_splited[0], styles.join("")))
             },
             3 => {
                 let styles: Vec<_> = data_splited[2].split(" ").map(|v| {
@@ -39,11 +39,11 @@ impl BuildStyle {
                 .collect();
 
                 match BuildStyle::responsive(data_splited[0]) {
-                    None => format!("{} {{{}}}", data_splited[1], styles.join("")),
-                    Some(val) => format!("{} {{{}}}", val, format!("{} {{{}}}", data_splited[1], styles.join("")))
+                    None => (data_splited[1].to_owned() , format!("{} {{{}}}", data_splited[1], styles.join(""))),
+                    Some(val) => (format!("{}:::{}", data_splited[0], data_splited[1]), format!("{} {{{}}}", val, format!("{} {{{}}}", data_splited[1], styles.join(""))))
                 }
             },
-            _ => String::with_capacity(0)
+            _ => (String::with_capacity(0), String::with_capacity(0))
         }
     }
 

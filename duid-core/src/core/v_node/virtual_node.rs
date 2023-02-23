@@ -81,7 +81,7 @@ where
 
     }
 
-    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashSet<String>) 
+    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashMap<usize, HashSet<String>>) 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
@@ -148,7 +148,7 @@ where
         attrs: &[&Attribute<MSG>],
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashSet<String>
+        selectors_set: &mut HashMap<usize, HashSet<String>>
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static
@@ -166,7 +166,7 @@ where
         attr: &Attribute<MSG>,
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashSet<String>
+        selectors_set: &mut HashMap<usize, HashSet<String>>
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static
@@ -200,9 +200,13 @@ where
             } else {
                 match attr.name() {
                     "selectors" => {
+                        let mut set = HashSet::with_capacity(3);
                         for s in merged_plain_values.split(";") {
-                            let _ = selectors_set.insert(s.to_owned());
+                            let _ = set.insert(s.to_owned());
                         }
+
+                        let node_index = create_unique_identifier();
+                        selectors_set.insert(node_index, set);
                     },
                     "value" => {
                         Self::set_value_str(element, &merged_plain_values);
