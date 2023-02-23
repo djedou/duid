@@ -153,6 +153,8 @@ where
 
     fn inject_styles(&self, styles: &[(String, String)]) {
         for (name, style) in styles.iter() {
+            crate::console::info!("style: {:#?}", style);
+            crate::console::info!("style len: {:#?}", style.len());
             if style.len() < 5 {
                 continue;
             }
