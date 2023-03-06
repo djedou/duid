@@ -25,6 +25,7 @@ console_log = "0.2.0"
 tracing = { version = "^0.1", features = ["log"] }
 wasm-bindgen-futures = "0.4"
 futures = "0.3"
+css-colors = "1.0"
 
 [dependencies.wasm-bindgen]
 version = "0.2"
@@ -54,7 +55,6 @@ features = [
     "HtmlButtonElement",
     "HtmlCollection",
     "HtmlDetailsElement",
-    "HtmlElement",
     "HtmlHeadElement",
     "HtmlInputElement",
     "HtmlMenuItemElement",
@@ -91,7 +91,9 @@ features = [
 	"Location",
 	"ScrollToOptions",
     "Navigator",
-    "ReadableStream"
+    "ReadableStream",
+    "CanvasRenderingContext2d",
+    "HtmlCanvasElement"
 ]
 
 

@@ -27,5 +27,6 @@ members = [
 ]
 
 exclude = [
-    "examples/counter"
+    "examples/counter",
+    "examples/canvas"
 ]
