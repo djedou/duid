@@ -7,3 +7,6 @@ pub mod console {
     pub use tracing::{info, error, trace, debug, warn};
 }
 
+pub mod web_sys {
+    pub use web_sys::{EventTarget, HtmlElement, HtmlStyleElement, Node, CanvasRenderingContext2d, HtmlCanvasElement, Document, Window};
+}
