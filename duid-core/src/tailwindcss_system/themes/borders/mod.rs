@@ -7,7 +7,8 @@ mod outline_offset;
 mod outline_style;
 mod outline_width;
 mod ring_offset_width;
-mod ring_width;
+mod ring;
+mod ring_shadow;
 
 
 pub(crate) use border_radius::*;
@@ -19,4 +20,5 @@ pub(crate) use outline_offset::*;
 pub(crate) use outline_style::*;
 pub(crate) use outline_width::*;
 pub(crate) use ring_offset_width::*;
-pub(crate) use ring_width::*;
+pub(crate) use ring::*;
+pub(crate) use ring_shadow::*;

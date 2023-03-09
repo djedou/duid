@@ -56,28 +56,14 @@ pub enum ThemeMode {
 impl TailwindTheme {
     pub fn new(mode: ThemeMode) -> TailwindTheme {
         
-        let mut tailwind = TailwindTheme {
+        let tailwind = TailwindTheme {
             mode: mode.clone(),
             themes: TailwindTheme::set_themes(),
             variables: TailwindTheme::set_variables(),
             mode_variables: HashMap::with_capacity(0)
         };
 
-        TailwindTheme::set_mode_variables(&mut tailwind, &mode);
-
         tailwind
-    }
-
-    pub fn set_mode_variables(&mut self, mode: &ThemeMode) {
-
-        match mode {
-            ThemeMode::Dark => {
-                let _ = self.mode_variables.insert("duid-color-variables".to_owned(), dark_variables());
-            },
-            ThemeMode::Light => {
-                let _ = self.mode_variables.insert("duid-color-variables".to_owned(), light_variables());
-            }
-        }
     }
 
     fn set_variables() -> HashMap<String, String> {
@@ -199,7 +185,8 @@ impl TailwindTheme {
         themes.extend(outline_style());
         themes.extend(outline_width());
         themes.extend(ring_offset_width());
-        themes.extend(ring_width());
+        themes.extend(ring_style());
+        themes.extend(ring_shadow_styles());
         // effects
         themes.extend(background_blend_mode());
         themes.extend(box_shadow());

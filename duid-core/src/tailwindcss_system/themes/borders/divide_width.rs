@@ -14,8 +14,8 @@ pub(crate) fn divide_width() -> HashMap<String, String> {
     let _ = divide_width.insert("divide-y-4".to_owned(), "border-top-width: 4px;border-bottom-width: 0px;".to_owned());
     let _ = divide_width.insert("divide-y-8".to_owned(), "border-top-width: 8px;border-bottom-width: 0px;".to_owned());
     let _ = divide_width.insert("divide-y".to_owned(), "border-top-width: 1px;border-bottom-width: 0px;".to_owned());
-    let _ = divide_width.insert("divide-y-reverse".to_owned(), "--tw-divide-y-reverse: 1;".to_owned());
-    let _ = divide_width.insert("divide-x-reverse".to_owned(), "--tw-divide-x-reverse: 1;".to_owned());
+    let _ = divide_width.insert("divide-y-reverse-var".to_owned(), "--duid-divide-y-reverse: 1;".to_owned());
+    let _ = divide_width.insert("divide-x-reverse-var".to_owned(), "--duid-divide-x-reverse: 1;".to_owned());
 
     divide_width
 }

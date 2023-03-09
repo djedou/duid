@@ -71,7 +71,7 @@ impl StyleContainer {
 
         let selectors_vec: Vec<_> = selectors.iter().collect();
         for style in selectors_vec {
-            let (style_selector, builded_style) = BuildStyle::build(&style, &self.themes.themes);
+            let (style_selector, builded_style) = BuildStyle::build(&style, &self.themes.themes, &self.themes.mode);
 
             match (builded_style.len() != 0, !builded_style.contains("@media")) {
                 (true, true) => {

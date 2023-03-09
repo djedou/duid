@@ -42,7 +42,7 @@ pub fn button_dec_view(button_model: &ButtonModel) -> Node<ButtonMsg> {
         &[
             classes(&new_classes),
             selectors(&[
-                "md:::.bg-btn:::flex m-2 p-6 bg-gradient-to-t from-green-600 via-violet-600 outline outline-offset-2 outline-2 outline-blue-500".to_owned(),
+                "md:::.bg-btn:::flex m-2 p-6 bg-gradient-to-t gradient-via-stops gradient-color-from-var--300-50-38 gradient-color-to-var--60-50-38 gradient-color-via-var--red-50-38 outline outline-offset-2 outline-2 outline-color--210-75-50".to_owned(),
             ]),
             on_click(|_| ButtonMsg::Decrement)
         ],
@@ -60,10 +60,10 @@ pub fn button_inc_view(_button_model: &ButtonModel) -> Node<ButtonMsg> {
             selectors(&[
                 "div > *:::block".to_owned(), 
                 ".btn-item".to_owned(),
-                "lg:::.btn:::flex bg-color-green-600".to_owned(),
-                "md:::.btn:::flex m-2 p-6 bg-color-rose-600".to_owned(),
-                ".btn:::flex bg-color-yellow-200 font-medium".to_owned(),
-                "md:::.btn:hover:::bg-color-green-200".to_owned()
+                "lg:::.btn:::flex bg-color--120-75-50".to_owned(),
+                "md:::.btn:::flex m-2 p-6 bg-color--30-75-50".to_owned(),
+                ".btn:::flex bg-color--60-75-50 font-medium".to_owned(),
+                "md:::.btn:hover:::bg-color--120-100-75".to_owned()
             ]),
             on_click(|_| ButtonMsg::Increment)
         ],
