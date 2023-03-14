@@ -18,7 +18,7 @@ where
     let removed_branches = old_node_pairs.iter().filter(|o| !includes_indexes(&new_node_pairs, &o)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>();
     
     let result = added_branches.iter().filter(|add| {
-        match removed_branches.iter().find(|remove| remove[0].key == add[0].key && remove[1].key != add[1].key) {
+        match removed_branches.iter().find(|remove| remove[0] == add[0] && remove[1] != add[1]) {
             Some(_) => true,
             None => false
         }
