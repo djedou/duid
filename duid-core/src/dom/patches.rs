@@ -7,6 +7,6 @@ use crate::core::{
 pub(crate) enum Patch<MSG> {
     AddedBranches(Vec<Indexes<MSG>>),
     RemovedBranches(Vec<Indexes<MSG>>),
-    AddedNodes(Vec<VirtualNode<MSG>>),
-    RemovedNodes(Vec<VirtualNode<MSG>>)
+    //AddedNodes(Vec<VirtualNode<MSG>>),
+    //RemovedNodes(Vec<VirtualNode<MSG>>)
 }
