@@ -20,6 +20,7 @@ impl ViewBuilder {
         match node {
             Node::Element(el) => {
                 VirtualNode {
+                    key: 0,
                     tag: el.tag,
                     node_type: VirtualNodeType::Element,
                     namespace: el.namespace,
@@ -32,6 +33,7 @@ impl ViewBuilder {
             },
             Node::Fragment(elements) => {
                 VirtualNode {
+                    key: 0,
                     tag: "fragment",
                     node_type: VirtualNodeType::Fragment,
                     namespace: None,
@@ -44,6 +46,7 @@ impl ViewBuilder {
             },
             Node::Text(leaf) => {
                 VirtualNode {
+                    key: 0,
                     tag: leaf.tag,
                     node_type: VirtualNodeType::Text,
                     namespace: leaf.namespace,
@@ -56,6 +59,7 @@ impl ViewBuilder {
             },
             Node::Comment(leaf) => {
                 VirtualNode {
+                    key: 0,
                     tag: leaf.tag,
                     node_type: VirtualNodeType::Comment,
                     namespace: leaf.namespace,
@@ -68,6 +72,7 @@ impl ViewBuilder {
             },
             Node::DocType(leaf) => {
                 VirtualNode {
+                    key: 0,
                     tag: leaf.tag,
                     node_type: VirtualNodeType::DocType,
                     namespace: leaf.namespace,

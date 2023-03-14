@@ -34,6 +34,7 @@ pub(crate) enum VirtualNodeType {
 #[derive(Debug, Clone)]
 pub(crate) struct VirtualNode<MSG>
 {
+    pub(crate) key: usize,
     pub(crate) tag: &'static str,
     pub(crate) node_type: VirtualNodeType,
     pub(crate) namespace: Option<&'static str>,
@@ -44,6 +45,19 @@ pub(crate) struct VirtualNode<MSG>
     pub(crate) children: Vec<VirtualNode<MSG>>
 }
 
+impl<MSG> PartialEq<VirtualNode<MSG>> for VirtualNode<MSG> 
+where
+    MSG: std::fmt::Debug + Clone + PartialEq + 'static 
+{
+    fn eq(&self, other: &VirtualNode<MSG>) -> bool {
+        self.key == other.key &&
+        self.tag == other.tag &&
+        self.node_type == other.node_type &&
+        self.namespace == other.namespace &&
+        self.props == other.props &&
+        self.value == other.value
+    }
+}
 
 impl<MSG> VirtualNode<MSG> 
 where
@@ -51,11 +65,39 @@ where
 {
     pub(crate) fn new() -> Self {
         VirtualNode {
+            key: 0,
             tag: "",
             node_type: VirtualNodeType::Element,
             namespace: None,
             props: Vec::with_capacity(0),
             value: None,
+            real_node: Rc::new(RefCell::new(None)),
+            active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),
+            children: Vec::with_capacity(0)
+        } 
+    }
+
+    pub(crate) fn set_key(&mut self, key: usize) -> usize {
+        let mut local_key = key;
+        self.key = key;
+
+        let mut children = self.children.iter_mut();
+        
+        while let Some(child) = children.next() {
+            local_key = child.set_key(local_key + 1);
+        }
+        
+        local_key
+    }
+
+    pub(crate) fn make_copy(&self) -> Self {
+        VirtualNode {
+            key: self.key.clone(),
+            tag: self.tag.clone(),
+            node_type: self.node_type.clone(),
+            namespace: self.namespace.clone(),
+            props: self.props.clone(),
+            value: self.value.clone(),
             real_node: Rc::new(RefCell::new(None)),
             active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),
             children: Vec::with_capacity(0)

@@ -18,7 +18,7 @@ use std::collections::HashMap;
 
 pub struct Duid<MDL, MSG> 
 where
-    MSG: std::fmt::Debug + Clone + 'static,
+    MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     MDL: Clone + 'static,
 {
     user_app: Rc<RefCell<UserApp<MDL, MSG>>>,
@@ -29,7 +29,7 @@ where
 
 impl<MDL, MSG> Clone for Duid<MDL, MSG> 
 where
-    MSG: std::fmt::Debug + Clone + 'static,
+    MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     MDL: Clone + 'static,
 {
     fn clone(&self) -> Self {
@@ -44,7 +44,7 @@ where
 
 impl<MDL, MSG> Duid<MDL, MSG> 
 where
-    MSG: std::fmt::Debug + Clone + 'static,
+    MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     MDL: Clone + 'static,
 {
     pub fn new(
@@ -82,13 +82,15 @@ where
     
     pub fn mount(&self) {
         let view = self.user_app.borrow().render();
-        let root_node = ViewBuilder::build(view);
+        let mut root_node = ViewBuilder::build(view);
+        let _ = root_node.set_key(1);
         self.dom.borrow_mut().mount(self, root_node);
     }
 
     pub fn render(&self) {
         let view = self.user_app.borrow().render();
-        let root_node = ViewBuilder::build(view);
+        let mut root_node = ViewBuilder::build(view);
+        let _ = root_node.set_key(1);
         self.dom.borrow_mut().render(self, root_node);
     }
 
@@ -111,7 +113,7 @@ where
 
 impl<MDL, MSG> Dispatch<MSG> for Duid<MDL, MSG>
 where
-    MSG: std::fmt::Debug + Clone + 'static,
+    MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     MDL: Clone + 'static,
 {
     #[cfg(feature = "with-request-animation-frame")]
