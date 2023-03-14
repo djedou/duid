@@ -63,6 +63,6 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
     let mut data = indexes_slices.into_iter().flatten().map(|flat| flat.to_owned()).collect::<Vec<VirtualNode<MSG>>>();
-    data.dedup_by(|a, b| a == b);
+    data.dedup();
     data
 }
