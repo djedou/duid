@@ -7,7 +7,7 @@ use super::Patch;
 pub(crate) type Indexes<MSG> = [VirtualNode<MSG>; 2];
 
 
-pub(crate) fn diff<MSG>(old_node: &VirtualNode<MSG>, new_node: &VirtualNode<MSG>) -> usize /*Vec<Patch<MSG>>*/ 
+pub(crate) fn diff<MSG>(old_node: &VirtualNode<MSG>, new_node: &VirtualNode<MSG>) -> Vec<Patch<MSG>>
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
@@ -17,26 +17,13 @@ where
     let added_branches = new_node_pairs.iter().filter(|n| !includes_indexes(&old_node_pairs, &n)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>();
     let removed_branches = old_node_pairs.iter().filter(|o| !includes_indexes(&new_node_pairs, &o)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>();
     
-    let result = added_branches.iter().filter(|add| {
-        match removed_branches.iter().find(|remove| remove[0] == add[0] && remove[1] != add[1]) {
-            Some(_) => true,
-            None => false
-        }
-    })
-    .map(|arg| arg.to_owned())
-    .collect::<Vec<Indexes<MSG>>>();
-
-    crate::console::info!("diff: {:#?}", result);
     
-    /*
     vec![
         Patch::AddedBranches(new_node_pairs.iter().filter(|n| !includes_indexes(&old_node_pairs, &n)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>()),
         Patch::RemovedBranches(old_node_pairs.iter().filter(|o| !includes_indexes(&new_node_pairs, &o)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>()),
         //Patch::AddedNodes(flat_unique(&new_node_pairs).iter().filter(|n| !flat_unique(&old_node_pairs).contains(n)).map(|arg| arg.to_owned()).collect::<Vec<VirtualNode<MSG>>>()),
         //Patch::RemovedNodes(flat_unique(&old_node_pairs).iter().filter(|o| !flat_unique(&new_node_pairs).contains(o)).map(|arg| arg.to_owned()).collect::<Vec<VirtualNode<MSG>>>()),
-    ];
-*/
-    2
+    ]
 }
 
 fn to_indexes_pair<MSG>(node: &VirtualNode<MSG>) -> Vec<Indexes<MSG>> 
