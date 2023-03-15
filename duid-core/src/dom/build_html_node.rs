@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use crate::core::{
+    v_node::VirtualNodeType,
     ActiveClosure, DATA_VDOM_ID, create_unique_identifier,
     events::{Event, Listener},
     duid_events::Dispatch,
@@ -12,7 +13,6 @@ use crate::core::{
 use crate::arena::{ArenaNode, NodeId};
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
-/*
 use web_sys::{
     self, HtmlInputElement,EventTarget, Element, HtmlButtonElement, HtmlDataElement,
     HtmlDetailsElement, HtmlElement, HtmlFieldSetElement,
@@ -21,162 +21,68 @@ use web_sys::{
     HtmlParamElement, HtmlProgressElement, HtmlSelectElement, HtmlStyleElement,
     HtmlTextAreaElement, Node, Document
 };
-*/
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) enum VirtualNodeType {
-    Element,
-    Fragment,
-    Text,
-    Comment,
-    DocType,
-}
-
 
 
 #[derive(Debug, Clone)]
-pub(crate) struct VirtualNode<MSG>
+pub(crate) struct HtmlNodeBuilder;
+
+
+
+impl HtmlNodeBuilder 
+
 {
-    pub(crate) key: usize,
-    pub(crate) tag: &'static str,
-    pub(crate) node_type: VirtualNodeType,
-    pub(crate) namespace: Option<&'static str>,
-    pub(crate) props: Vec<Attribute<MSG>>,
-    pub(crate) value: Option<String>,
-    /*pub(crate) real_node: Rc<RefCell<Option<Node>>>,
-    pub(crate) active_closures: Rc<RefCell<ActiveClosure>>,*/
-    pub(crate) children: Vec<VirtualNode<MSG>>
-}
-
-impl<MSG> PartialEq<VirtualNode<MSG>> for VirtualNode<MSG> 
-where
-    MSG: std::fmt::Debug + Clone + PartialEq + 'static 
-{
-    fn eq(&self, other: &VirtualNode<MSG>) -> bool {
-        self.key == other.key &&
-        self.tag == other.tag &&
-        self.node_type == other.node_type &&
-        self.namespace == other.namespace &&
-        self.props == other.props &&
-        self.value == other.value
-    }
-}
-
-impl<MSG> VirtualNode<MSG> 
-where
-    MSG: std::fmt::Debug + Clone + 'static 
-{
-    pub(crate) fn new() -> Self {
-        VirtualNode {
-            key: 0,
-            tag: "",
-            node_type: VirtualNodeType::Element,
-            namespace: None,
-            props: Vec::with_capacity(0),
-            value: None,
-            /*real_node: Rc::new(RefCell::new(None)),
-            active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),*/
-            children: Vec::with_capacity(0)
-        } 
-    }
-
-    pub(crate) fn set_key(&mut self, key: usize) -> usize {
-        let mut local_key = key;
-        self.key = key;
-
-        let mut children = self.children.iter_mut();
-        
-        while let Some(child) = children.next() {
-            local_key = child.set_key(local_key + 1);
-        }
-        
-        local_key
-    }
-
-    pub(crate) fn make_copy(&self) -> Self {
-        VirtualNode {
-            key: self.key.clone(),
-            tag: self.tag.clone(),
-            node_type: self.node_type.clone(),
-            namespace: self.namespace.clone(),
-            props: self.props.clone(),
-            value: self.value.clone(),
-            /*real_node: Rc::new(RefCell::new(None)),
-            active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),*/
-            children: Vec::with_capacity(0)
-        } 
-    }
-
-    pub(crate) fn into_arena_node(&self) -> ArenaNode<MSG> {
-        ArenaNode {
-            id: NodeId::new(self.key),
-            tag: self.tag.clone(),
-            node_type: self.node_type.clone(),
-            namespace: self.namespace.clone(),
-            props: self.props.clone(),
-            value: self.value.clone(),
-            active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0)))
-        }
-    }
-
-    pub(crate) fn get_arena_node_id(&self) -> NodeId {
-        NodeId {
-            value: self.key
-        }
-    }
-/*
-    pub(crate) fn build_node<DSP>(&self, program: &DSP, doc: &Document, styles_map: &mut HashMap<String, String>, selectors_set: &mut HashMap<usize, HashSet<String>>) 
+    pub(crate) fn build<DSP, MSG>(
+        program: &DSP, 
+        doc: &Document, 
+        arena_node: &mut ArenaNode<MSG>,
+        styles_map: &mut HashMap<String, String>,
+        selectors_set: &mut HashMap<usize, HashSet<String>>
+    ) -> Node
     where
         DSP: Dispatch<MSG> + Clone + 'static,
+        MSG: Clone + 'static 
     {
-        match &self.node_type {
+        match arena_node.node_type {
             VirtualNodeType::Element => {
-                let element = if let Some(namespace) = self.namespace.clone() {
+                let element = if let Some(namespace) = arena_node.namespace.clone() {
                     doc
-                        .create_element_ns(Some(&namespace), &self.tag)
+                        .create_element_ns(Some(&namespace), &arena_node.tag)
                         .expect("Unable to create element")
                 } else {
                     doc
-                        .create_element(&self.tag)
+                        .create_element(&arena_node.tag)
                         .expect("Unable to create element")
                 };
-                let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set);
-                *self.real_node.borrow_mut() = Some(element.unchecked_into::<Node>());
-                self.children.iter().for_each(|child| child.build_node(program, &doc, styles_map, selectors_set));
+                let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
+                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set);
                 
-                if let Some(real_node_parent) = &*self.real_node.borrow() {
-                    self.children.iter().for_each(|child| {
-                        if let Some(real_node_child) = &*child.real_node.borrow() {
-                            let _ = real_node_parent.append_child(&real_node_child);
-                        }
-                    });
-                }
+                element.unchecked_into::<Node>()
             },
             VirtualNodeType::Fragment => {
                 let doc_fragment = doc.create_document_fragment();
-                *self.real_node.borrow_mut() = Some(doc_fragment.unchecked_into::<Node>());
-                self.children.iter().for_each(|child| child.build_node(program, &doc, styles_map, selectors_set));
-                
-                if let Some(real_node_parent) = &*self.real_node.borrow() {
-                    self.children.iter().for_each(|child| {
-                        if let Some(real_node_child) = &*child.real_node.borrow() {
-                            let _ = real_node_parent.append_child(&real_node_child);
-                        }
-                    });
-                }
+
+                doc_fragment.unchecked_into::<Node>()
             },
             VirtualNodeType::Text => {
-                if let Some(value) = &self.value {
-                    let attrs = self.props.iter().map(|attr| attr).collect::<Vec<_>>();
+                if let Some(value) = &arena_node.value {
+                    let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut self.active_closures.borrow_mut(), styles_map, selectors_set);
-                    *self.real_node.borrow_mut() = Some(text_node.unchecked_into::<Node>());
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set);
+                    text_node.unchecked_into::<Node>()
+                }
+                else {
+                    let text_node: Element = doc.create_text_node("").unchecked_into();
+                    text_node.unchecked_into::<Node>() 
                 }
             },
             VirtualNodeType::Comment => {
-                if let Some(value) = &self.value {
+                if let Some(value) = &arena_node.value {
                     let comment_node: Element = doc.create_comment(value).unchecked_into();
-                    *self.real_node.borrow_mut() = Some(comment_node.unchecked_into::<Node>());
+                    comment_node.unchecked_into::<Node>()
+                }
+                else {
+                    let comment_node: Element = doc.create_comment("").unchecked_into();
+                    comment_node.unchecked_into::<Node>()
                 }
             },
             VirtualNodeType::DocType => {
@@ -185,7 +91,7 @@ where
         }
     }
     
-    pub(crate) fn set_element_attributes<DSP>(
+    pub(crate) fn set_element_attributes<DSP, MSG>(
         dispatch: &DSP,
         element: &Element,
         attrs: &[&Attribute<MSG>],
@@ -194,7 +100,8 @@ where
         selectors_set: &mut HashMap<usize, HashSet<String>>
     )
     where
-        DSP: Dispatch<MSG> + Clone + 'static
+        DSP: Dispatch<MSG> + Clone + 'static,
+        MSG: Clone + 'static 
     {
         let attrs = merge_attributes_of_same_name(attrs);
         for att in attrs {
@@ -203,7 +110,7 @@ where
     }
 
     #[track_caller]
-    pub fn set_element_attribute<DSP>(
+    pub fn set_element_attribute<DSP, MSG>(
         dispatch: &DSP,
         element: &Element,
         attr: &Attribute<MSG>,
@@ -212,7 +119,8 @@ where
         selectors_set: &mut HashMap<usize, HashSet<String>>
     )
     where
-        DSP: Dispatch<MSG> + Clone + 'static
+        DSP: Dispatch<MSG> + Clone + 'static,
+        MSG: Clone + 'static 
     {
         let SegregatedAttributes {
             listeners,
@@ -453,10 +361,13 @@ where
         }
     }
 
-    fn set_with_values(
+    fn set_with_values<MSG>(
         element: &Element,
         values: &[&AttributeValue<MSG>],
-    ) {
+    ) 
+    where 
+        MSG: Clone + 'static 
+    {
         let value_i32 = values
             .first()
             .map(|v| v.get_simple().map(|v| v.as_i32()).flatten())
@@ -498,10 +409,9 @@ where
         }
         Ok(())
     }
-    */
 }
 
-/*
+
 pub(crate) fn create_closure_wrap<DSP, MSG>(
     dispatch: &DSP,
     listener: &Listener<MSG>,
@@ -521,5 +431,3 @@ where
         }
     }))
 }
-
-*/

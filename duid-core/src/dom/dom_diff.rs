@@ -1,3 +1,4 @@
+/*
 use std::cmp::Ordering;
 use crate::core::{
     v_node::VirtualNode
@@ -13,10 +14,6 @@ where
 {
     let old_node_pairs = to_indexes_pair(&old_node);
     let new_node_pairs = to_indexes_pair(&new_node);
-    
-    let added_branches = new_node_pairs.iter().filter(|n| !includes_indexes(&old_node_pairs, &n)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>();
-    let removed_branches = old_node_pairs.iter().filter(|o| !includes_indexes(&new_node_pairs, &o)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>();
-    
     
     vec![
         Patch::AddedBranches(new_node_pairs.iter().filter(|n| !includes_indexes(&old_node_pairs, &n)).map(|arg| arg.to_owned()).collect::<Vec<Indexes<MSG>>>()),
@@ -62,7 +59,7 @@ where
         None => false
     }
 }
-/*
+
 fn flat_unique<MSG>(indexes_slices: &[Indexes<MSG>]) -> Vec<VirtualNode<MSG>> 
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 

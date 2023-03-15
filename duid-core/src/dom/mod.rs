@@ -1,9 +1,14 @@
 mod dom_diff;
 mod patches;
+mod build_html_node;
+//mod apply_patches;
 
 pub(crate) use dom_diff::*;
 pub(crate) use patches::*;
+pub(crate) use build_html_node::*;
 
+//pub(crate) use apply_patches::*;
+use crate::arena::ArenaNode;
 use wasm_bindgen::JsCast;
 use std::fmt::Debug;
 use web_sys::{
@@ -14,6 +19,7 @@ use crate::core::{
     util::document,
     duid_events::Dispatch,
 };
+use crate::arena::{Arena, NodeId};
 use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
 
@@ -28,7 +34,9 @@ where
     pub(crate) mount_node: Node,
     pub(crate) replace: bool,
     pub(crate) use_shadow: bool,
-    pub(crate) root_node: VirtualNode<MSG>,
+    pub(crate) arena: Arena<ArenaNode<MSG>>,
+    pub(crate) arena_root: NodeId,
+    pub(crate) real_node: Option<Node>,
     pub(crate) document: Document,
     pub(crate) base_styles: HashMap<String, String>,
     pub(crate) styles: HashMap<String, String>,
@@ -59,9 +67,11 @@ where
         
         Dom::<MSG> {
             mount_node: node,
+            arena: Arena::new(),
+            arena_root: NodeId::default(),
             replace,
             use_shadow, 
-            root_node: VirtualNode::new(),
+            real_node: None,
             document: doc,
             base_styles,
             styles,
@@ -78,11 +88,20 @@ where
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
+        // step 1: build Arena
+        let mut arena = Arena::new_from_virtual_node(&root_node);
+        //crate::console::info!("arena: {:#?}", arena);
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
         let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
-        root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
-        self.root_node = root_node;
-        
+        self.arena_root = arena.get_first_node_id();
+        self.real_node = Some(arena.build_html_node::<DSP>(
+            self.arena_root.clone(), 
+            program, 
+            &self.document, 
+            &mut style_map, 
+            &mut selectors_set
+        ));
+        self.arena = arena;
         let tailwind_styles = self.style_container.build(&selectors_set);
         self.first_mount();
         self.inject_styles(&self.mount_styles(style_map, true));
@@ -93,9 +112,20 @@ where
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
+        // step 1: build a new Arena
+        let arena = Arena::new_from_virtual_node(&new_root_node);
+        // step 2: get levels
+        let arena_root_id = arena.get_first_node_id();
+
+        let mut levels: Vec<(usize, Vec<NodeId>)> = arena.get_nodes_ids_by_levels();
+
+        crate::console::info!("levels: {:#?}", levels);
+        /*
+        let _ = self.root_node.set_key(1);
         let patches = diff(&self.root_node, &new_root_node);
         crate::console::info!("patches: {:#?}", patches);
-        /*
+
+
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
         let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
         new_root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
@@ -108,8 +138,8 @@ where
     }
 
     fn first_mount(&self) {
-        let real_node = self.root_node.real_node.borrow();
-        if let Some(node) = &*real_node {
+        
+        if let Some(node) = &self.real_node {
             if self.replace {
                 let mount_element: &Element = self.mount_node.unchecked_ref();
                 mount_element
@@ -140,9 +170,11 @@ where
                 }
             }
         };
+        
     }
 
     fn render_new_node(&mut self, new_root_node: VirtualNode<MSG>) {
+        /*
         let mut updated = false;
         match (&*self.root_node.real_node.borrow(), &*new_root_node.real_node.borrow()) {
             (Some(old_node), Some(new_node)) => {
@@ -159,6 +191,7 @@ where
         if updated {
             self.root_node = new_root_node;
         }
+        */
     }
 
     fn inject_styles(&self, styles: &[(String, String)]) {

@@ -1,3 +1,4 @@
+/*
 use crate::core::{
     html::{
         attributes::{Attribute}
@@ -100,3 +101,4 @@ impl<MSG> VirtualNode<MSG> {
         changes
     }
 }
+*/
