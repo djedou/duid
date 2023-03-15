@@ -117,9 +117,11 @@ where
         // step 2: get levels
         let arena_root_id = arena.get_first_node_id();
 
-        let mut levels: Vec<(usize, Vec<NodeId>)> = arena.get_nodes_ids_by_levels();
+        let mut old_levels: Vec<(usize, Vec<NodeId>)> = self.arena.get_nodes_ids_by_levels();
+        let mut new_levels: Vec<(usize, Vec<NodeId>)> = arena.get_nodes_ids_by_levels();
 
-        crate::console::info!("levels: {:#?}", levels);
+        crate::console::info!("old_levels: {:#?}", old_levels);
+        crate::console::info!("new_levels: {:#?}", new_levels);
         /*
         let _ = self.root_node.set_key(1);
         let patches = diff(&self.root_node, &new_root_node);
