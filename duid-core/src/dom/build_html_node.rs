@@ -1,5 +1,3 @@
-use std::rc::Rc;
-use std::cell::RefCell;
 use crate::core::{
     v_node::VirtualNodeType,
     ActiveClosure, DATA_VDOM_ID, create_unique_identifier,
@@ -10,7 +8,7 @@ use crate::core::{
         merge_plain_attributes_values, merge_styles_attributes_values, AttributeValue
     }
 };
-use crate::arena::{ArenaNode, NodeId};
+use crate::arena::ArenaNode;
 use std::collections::{HashMap, HashSet};
 use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 use web_sys::{
@@ -36,7 +34,8 @@ impl HtmlNodeBuilder
         doc: &Document, 
         arena_node: &mut ArenaNode<MSG>,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashMap<usize, HashSet<String>>
+        selectors_set: &mut HashMap<usize, HashSet<String>>,
+        duid_id: usize
     ) -> Node
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -54,7 +53,7 @@ impl HtmlNodeBuilder
                         .expect("Unable to create element")
                 };
                 let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set);
+                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, duid_id);
                 
                 element.unchecked_into::<Node>()
             },
@@ -67,7 +66,7 @@ impl HtmlNodeBuilder
                 if let Some(value) = &arena_node.value {
                     let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set);
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, duid_id);
                     text_node.unchecked_into::<Node>()
                 }
                 else {
@@ -97,7 +96,8 @@ impl HtmlNodeBuilder
         attrs: &[&Attribute<MSG>],
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashMap<usize, HashSet<String>>
+        selectors_set: &mut HashMap<usize, HashSet<String>>,
+        duid_id: usize
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -105,7 +105,7 @@ impl HtmlNodeBuilder
     {
         let attrs = merge_attributes_of_same_name(attrs);
         for att in attrs {
-            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, selectors_set);
+            Self::set_element_attribute(dispatch, element, &att, closures, styles_map, selectors_set, duid_id);
         }
     }
 
@@ -116,7 +116,8 @@ impl HtmlNodeBuilder
         attr: &Attribute<MSG>,
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashMap<usize, HashSet<String>>
+        selectors_set: &mut HashMap<usize, HashSet<String>>,
+        duid_id: usize
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -149,6 +150,15 @@ impl HtmlNodeBuilder
                         )
                     });
             } else {
+                element
+                    .set_attribute("duid-id", &format!("{}", duid_id))
+                    .unwrap_or_else(|_| {
+                        panic!(
+                            "Error setting an attribute for {:?}",
+                            element
+                        )
+                    });
+                
                 match attr.name() {
                     "selectors" => {
                         let mut set = HashSet::with_capacity(3);

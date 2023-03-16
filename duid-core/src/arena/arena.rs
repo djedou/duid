@@ -1,10 +1,7 @@
-use web_sys::{Element, Node, Document};
-use std::rc::Rc;
-use std::cell::RefCell;
+use web_sys::{Node, Document};
 use crate::{
     core::{
         v_node::VirtualNode,
-        ActiveClosure,
         duid_events::Dispatch
     },
     dom::HtmlNodeBuilder
@@ -113,7 +110,8 @@ where
                     &doc, 
                     node,
                     styles_map,
-                    selectors_set
+                    selectors_set,
+                    node.id.value
                 );
                 // get children
                 let children_ids = node_id.get_children(&self.node_id_pairs); 

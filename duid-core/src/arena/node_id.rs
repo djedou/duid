@@ -1,12 +1,6 @@
-use web_sys::{Element, Node, Document};
-use std::rc::Rc;
-use std::cell::RefCell;
 use crate::{
-    core::duid_events::Dispatch,
-    arena::{ArenaNode, Arena},
-    dom::HtmlNodeBuilder
+    arena::{ArenaNode, Arena}
 };
-use std::collections::{HashMap, HashSet};
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub(crate) struct NodeId {
@@ -21,12 +15,26 @@ impl NodeId {
         }
     }
 
-    pub(crate) fn get_node_by_id_mut<'a, MSG>(&'a self, arena: &'a mut Arena<ArenaNode<MSG>>) -> Option<&mut ArenaNode<MSG>> {
+    pub(crate) fn get_node_by_id_mut<'a, MSG>(&'a self, arena: &'a mut Arena<ArenaNode<MSG>>) -> Option<&mut ArenaNode<MSG>> 
+    where 
+        MSG: Clone
+    {
         arena.nodes.iter_mut().find(|node| node.id == *self)    
+    }
+
+    pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
+    where 
+        MSG: Clone
+    {
+        arena.nodes.iter().find(|node| node.id == *self)
     }
 
     pub(crate) fn get_children(&self, ids: &[[NodeId; 2]]) -> Vec<NodeId> {
         ids.iter().filter(|id| id[0] == *self).map(|i| i[1].clone()).collect()  
+    }
+
+    pub(crate) fn get_parent(&self, ids: &[[NodeId; 2]]) -> Option<NodeId> {
+        ids.iter().find(|id| id[1] == *self).map(|i| i[0].clone())
     }
 
     pub(crate) fn get_levels(
