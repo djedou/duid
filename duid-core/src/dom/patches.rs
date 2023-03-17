@@ -23,7 +23,6 @@ where
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, &new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
-                            //mark_children_added_state(&[id.clone()], old_arena, &new_arena);
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                         });
                     },
@@ -52,7 +51,6 @@ where
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, &new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
-                            //mark_children_added_state(&[id.clone()], old_arena, &new_arena);
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                         });
                     },
@@ -69,7 +67,6 @@ where
             
             new_levels_clone_vec.iter().for_each(|(level, new_level_ids)| {
                 new_level_ids.iter().for_each(|id| {
-                    //mark_children_added_state(&[id.clone()], old_arena, &new_arena);
                     mark_inserted_state(id.clone(), old_arena, &new_arena);
                 });
             });
@@ -89,7 +86,6 @@ where
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, &new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
-                            //mark_children_added_state(&[id.clone()], old_arena, &new_arena);
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                         });
                     },
@@ -135,11 +131,13 @@ where
                             (true, false) => {
                                 old_node.node_state = ArenaNodeState::IdChanged(new_id.clone());
                             },
-                            (false, _) => {
+                            (false, true) => {
+                                old_node.node_state = ArenaNodeState::ReplaceOnlyData(new_id.clone());
+                                mark_children_remoded_state::<MSG>(&[old_id.clone()], old_arena);
+                            },
+                            (false, false) => {
                                 old_node.node_state = ArenaNodeState::ReplaceBy(new_id.clone());
                                 mark_children_remoded_state::<MSG>(&[old_id.clone()], old_arena);
-                                //mark_children_added_state(&[new_id.clone()], old_arena, &new_arena);
-                                //mark_parent_replace_state(new_id.clone(), old_arena, &new_arena);
                             }
                         }
                     },
@@ -178,57 +176,7 @@ where
             None => {}
         }
 }
-/*
-fn mark_parent_replace_state<MSG>(
-    node: NodeId, 
-    old_arena: &mut Arena<ArenaNode<MSG>>, 
-    new_arena: &Arena<ArenaNode<MSG>>
-) 
-where 
-    MSG: Clone
-{
-        match node.get_parent(&new_arena.node_id_pairs) {
-            Some(parent) => {
-                match node.get_node_by_id(&new_arena) {
-                    Some(child_node) => {
-                        let mut new_child_node = child_node.clone();
-                        new_child_node.node_state = ArenaNodeState::Replacer;
-                        old_arena.nodes.push(new_child_node);
-                        old_arena.node_id_pairs.push([parent.clone(), node.clone()]);
-                    },
-                    None => {}
-                }
-            },
-            None => {}
-        }
-}
 
-fn mark_children_added_state<MSG>(
-    parents_nodes: &[NodeId], 
-    old_arena: &mut Arena<ArenaNode<MSG>>, 
-    new_arena: &Arena<ArenaNode<MSG>>
-) 
-where 
-    MSG: Clone
-{
-    parents_nodes.iter().for_each(|parent| {
-        let children = parent.get_children(&new_arena.node_id_pairs);
-        children.iter().for_each(|child| {
-            match child.get_node_by_id(&new_arena) {
-                Some(child_node) => {
-                    let mut new_child_node = child_node.clone();
-                    new_child_node.node_state = ArenaNodeState::Added;
-                    old_arena.nodes.push(new_child_node);
-                    old_arena.node_id_pairs.push([parent.clone(), child.clone()]);
-                },
-                None => {}
-            }
-        });
-
-        mark_children_added_state::<MSG>(&children, old_arena, new_arena);
-    });
-}
-*/
 fn mark_children_remoded_state<MSG>(parents_nodes: &[NodeId], old_arena: &mut Arena<ArenaNode<MSG>>) 
 where 
     MSG: Clone

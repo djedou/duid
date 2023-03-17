@@ -10,6 +10,7 @@ use crate::core::{
 #[derive(Debug, Clone)]
 pub(crate) enum ArenaNodeState {
     None,
+    ReplaceOnlyData(NodeId),
     ReplaceBy(NodeId),
     Removed,
     Inserted,
