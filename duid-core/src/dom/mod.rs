@@ -1,13 +1,13 @@
 mod dom_diff;
 mod patches;
 mod build_html_node;
-//mod apply_patches;
+mod apply_patches;
 
 pub(crate) use dom_diff::*;
 pub(crate) use patches::*;
 pub(crate) use build_html_node::*;
+pub(crate) use apply_patches::*;
 
-//pub(crate) use apply_patches::*;
 use crate::arena::ArenaNode;
 use wasm_bindgen::JsCast;
 use std::fmt::Debug;
@@ -113,10 +113,19 @@ where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
         // step 1: build a new Arena
-        let arena = Arena::new_from_virtual_node(&new_root_node);
+        let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
         crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &arena);
+        let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
+        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
+        apply_patches(
+            &mut self.arena, 
+            &mut arena, 
+            program, 
+            &self.document, 
+            &mut style_map, 
+            &mut selectors_set);
         crate::console::info!("after patches: {:#?}", self.arena);
         /*
         let _ = self.root_node.set_key(1);
@@ -124,8 +133,6 @@ where
         crate::console::info!("patches: {:#?}", patches);
 
 
-        let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
-        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
         new_root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
 
         self.render_new_node(new_root_node);

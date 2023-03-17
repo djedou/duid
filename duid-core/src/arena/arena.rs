@@ -110,8 +110,7 @@ where
                     &doc, 
                     node,
                     styles_map,
-                    selectors_set,
-                    node.id.value
+                    selectors_set
                 );
                 // get children
                 let children_ids = node_id.get_children(&self.node_id_pairs); 

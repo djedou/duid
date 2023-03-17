@@ -37,6 +37,22 @@ impl NodeId {
         ids.iter().find(|id| id[1] == *self).map(|i| i[0].clone())
     }
 
+    pub(crate) fn get_pair_mut<'a>(&'a self, ids: &'a mut [[NodeId; 2]]) -> Option<&mut [NodeId; 2]> {
+        ids.iter_mut().find(|id| id[1] == *self)
+    }
+
+    pub(crate) fn get_index_in_parent_children(&self, ids: &[[NodeId; 2]]) -> Option<(NodeId, usize)> {
+        let Some(parent_node_id) = self.get_parent(&ids) else {
+            return None;
+        };
+
+        let Some(index) = &parent_node_id.get_children(&ids).iter().position(|r| r == self) else {
+            return None;
+        };
+        
+        Some((parent_node_id, *index))
+    }
+
     pub(crate) fn get_levels(
         &self,
         level: usize, 

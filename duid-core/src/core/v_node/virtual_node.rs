@@ -60,18 +60,6 @@ where
         local_key
     }
 
-    /*pub(crate) fn make_copy(&self) -> Self {
-        VirtualNode {
-            key: self.key.clone(),
-            tag: self.tag.clone(),
-            node_type: self.node_type.clone(),
-            namespace: self.namespace.clone(),
-            props: self.props.clone(),
-            value: self.value.clone(),
-            children: Vec::with_capacity(0)
-        } 
-    }*/
-
     pub(crate) fn into_arena_node(&self) -> ArenaNode<MSG> {
         ArenaNode {
             id: NodeId::new(self.key),
@@ -81,7 +69,7 @@ where
             props: self.props.clone(),
             value: self.value.clone(),
             active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),
-            node_state: ArenaNodeState::None
+            node_state: ArenaNodeState::default()
         }
     }
 

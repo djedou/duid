@@ -7,15 +7,17 @@ use crate::core::{
     html::attributes::Attribute
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) enum ArenaNodeState {
-    None,
     ReplaceOnlyData(NodeId),
     ReplaceBy(NodeId),
     Removed,
     Inserted,
+    Added,
     IdChanged(NodeId),
-    UnChanged
+    UnChanged,
+    #[default]
+    None,
 }
 
 
@@ -51,16 +53,11 @@ impl<MSG> ArenaNode<MSG>
 where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static 
 {
-    pub(crate) fn make_copy(&self) -> Self {
-        ArenaNode {
-            id: self.id.clone(),
-            tag: self.tag.clone(),
-            node_type: self.node_type.clone(),
-            namespace: self.namespace.clone(),
-            props: self.props.clone(),
-            value: self.value.clone(),
-            active_closures: Rc::clone(&self.active_closures),
-            node_state: self.node_state.clone()
-        } 
+    pub(crate) fn update_data_from(&mut self, other: &ArenaNode<MSG>) {
+        self.tag = other.tag.clone();
+        self.node_type = other.node_type.clone();
+        self.namespace = other.namespace.clone();
+        self.props = other.props.clone();
+        self.value = other.value.clone();
     }
 }

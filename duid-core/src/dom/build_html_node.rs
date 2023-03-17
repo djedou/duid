@@ -34,8 +34,7 @@ impl HtmlNodeBuilder
         doc: &Document, 
         arena_node: &mut ArenaNode<MSG>,
         styles_map: &mut HashMap<String, String>,
-        selectors_set: &mut HashMap<usize, HashSet<String>>,
-        duid_id: usize
+        selectors_set: &mut HashMap<usize, HashSet<String>>
     ) -> Node
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -53,7 +52,7 @@ impl HtmlNodeBuilder
                         .expect("Unable to create element")
                 };
                 let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, duid_id);
+                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, arena_node.id.value.clone());
                 
                 element.unchecked_into::<Node>()
             },
@@ -66,7 +65,7 @@ impl HtmlNodeBuilder
                 if let Some(value) = &arena_node.value {
                     let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, duid_id);
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, arena_node.id.value.clone());
                     text_node.unchecked_into::<Node>()
                 }
                 else {
@@ -396,7 +395,7 @@ impl HtmlNodeBuilder
         }
     }
 
-    pub fn remove_element_attribute(
+    pub fn _remove_element_attribute(
         element: &Element,
         attr: &str,
     ) -> Result<(), JsValue> {
