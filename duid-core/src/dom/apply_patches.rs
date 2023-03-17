@@ -66,11 +66,11 @@ where
                                 pair[1] = node_id.clone();
                             }
                             let element: Element = 
-                            doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
-                                .expect("Unable to get element")
-                                .expect("Unable to get element");
+                                doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
+                                    .expect(&format!("Unable to get element with id {}", id.value.clone()))
+                                    .expect(&format!("Unable to get element with id {}", id.value.clone()));
                             
-                            let _ = element.remove_attribute(&format!("[duid-id=\"{}\"]", id.value.clone()));
+                            let _ = element.remove_attribute("duid-id");
                             let _ = element.set_attribute("duid-id", &format!("{}", node_id.value.clone()));
 
                         },
