@@ -65,13 +65,23 @@ where
                             if let Some(pair) = id.clone().get_pair_mut(&mut old_arena.node_id_pairs) {
                                 pair[1] = node_id.clone();
                             }
-                            let element: Element = 
-                                doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
-                                    .expect(&format!("Unable to get element with id {}", id.value.clone()))
-                                    .expect(&format!("Unable to get element with id {}", id.value.clone()));
-                            
-                            let _ = element.remove_attribute("duid-id");
-                            let _ = element.set_attribute("duid-id", &format!("{}", node_id.value.clone()));
+                            match old_node_type {
+                                VirtualNodeType::Text |
+                                VirtualNodeType::Comment |
+                                VirtualNodeType::DocType |
+                                VirtualNodeType::Fragment
+                                => {},
+                                VirtualNodeType::Element => {
+                                    let element: Element = 
+                                        doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
+                                            .expect(&format!("Unable to get element with id {}", id.value.clone()))
+                                            .expect(&format!("Unable to get element with id {}", id.value.clone()));
+                                    
+                                    let _ = element.remove_attribute("duid-id");
+                                    let _ = element.set_attribute("duid-id", &format!("{}", node_id.value.clone()));
+                                }
+
+                            }
 
                         },
                         _ => {}
@@ -153,8 +163,9 @@ fn replace_node(
                         .expect("Could not append child to mount");
                 }
             }
-        }
-        _ => {
+        },
+        VirtualNodeType::Fragment => {},
+        VirtualNodeType::Element => {
             let old_element: Element = 
                     doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
                     .expect("Unable to get element")
