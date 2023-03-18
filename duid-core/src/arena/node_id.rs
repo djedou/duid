@@ -1,5 +1,5 @@
 use crate::{
-    arena::{ArenaNode, Arena}
+    arena::{ArenaNode, Arena, ArenaNodeState}
 };
 
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -20,6 +20,17 @@ impl NodeId {
         MSG: Clone
     {
         arena.nodes.iter_mut().find(|node| node.id == *self)    
+    }
+
+    pub(crate) fn get_node_by_id_to_patch_mut<'a, MSG>(&'a self, arena: &'a mut Arena<ArenaNode<MSG>>) -> Option<&mut ArenaNode<MSG>> 
+    where 
+        MSG: Clone
+    {
+        arena.nodes.iter_mut().find(|node| 
+            node.id == *self &&
+            (node.node_state != ArenaNodeState::Removed ||
+            node.node_state != ArenaNodeState::UnChanged)
+        ) 
     }
 
     pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 

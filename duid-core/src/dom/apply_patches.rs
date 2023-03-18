@@ -1,4 +1,4 @@
-use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState};
+use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, DataState};
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use web_sys::{Document, Element, Node};
@@ -14,8 +14,7 @@ use wasm_bindgen::JsCast;
 
 
 pub(crate) fn apply_patches<DSP, MSG>(
-    old_arena: &mut Arena<ArenaNode<MSG>>, 
-    new_arena: &mut Arena<ArenaNode<MSG>>,
+    old_arena: &mut Arena<ArenaNode<MSG>>,
     program: &DSP,
     doc: &Document, 
     styles_map: &mut HashMap<String, String>, 
@@ -26,47 +25,25 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
-    crate::console::info!("levels after patches: {:#?}", old_levels);
-    /*
-    old_levels.iter().for_each(|(level, ids)| {
+    
+    old_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
-            match id.get_node_by_id_mut(old_arena) {
+            match id.get_node_by_id_to_patch_mut(old_arena) {
                 Some(old_node) => {
                     let old_node_type = old_node.node_type.clone();
                     match &old_node.node_state.clone() {
-                        ArenaNodeState::ReplaceOnlyData(new_node_id) => {
-                            let new_html_node = new_arena.build_html_node(
+                        ArenaNodeState::ReplaceBy(new_node_id) => {
+                            let new_html_node = old_arena.build_html_node(
                                 new_node_id.clone(),
                                 program,
                                 &doc, 
-                                styles_map, 
+                                styles_map,
                                 selectors_set
                             );
 
-                            if let Some(new_node) = new_node_id.get_node_by_id(&new_arena) {
-                                old_node.update_data_from(&new_node);
-                            };
-                            //mark_children_added_state::<MSG>(&[new_node_id.clone()], old_arena, new_arena);
                             replace_node(&old_node_type, &id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
-                        ArenaNodeState::ReplaceBy(node_id) => {
-                            let new_html_node = new_arena.build_html_node(
-                                node_id.clone(),
-                                program,
-                                &doc, 
-                                styles_map, 
-                                selectors_set
-                            );
-
-                            //mark_inserted_state(node_id.clone(), old_arena, &new_arena);
-                            //mark_children_added_state::<MSG>(&[node_id.clone()], old_arena, new_arena);
-                            replace_node(&old_node_type, &id, &old_arena.node_id_pairs, &doc, &new_html_node);
-                        },
-                        ArenaNodeState::IdChanged(node_id) => {
-                            old_node.id = node_id.clone();
-                            if let Some(pair) = id.clone().get_pair_mut(&mut old_arena.node_id_pairs) {
-                                pair[1] = node_id.clone();
-                            }
+                        ArenaNodeState::IdChanged(old_id, node_id) => {
                             match old_node_type {
                                 VirtualNodeType::Text |
                                 VirtualNodeType::Comment |
@@ -75,9 +52,9 @@ where
                                 => {},
                                 VirtualNodeType::Element => {
                                     let element: Element = 
-                                        doc.query_selector(&format!("[duid-id=\"{}\"]", id.value.clone()))
-                                            .expect(&format!("Unable to get element with id {}", id.value.clone()))
-                                            .expect(&format!("Unable to get element with id {}", id.value.clone()));
+                                        doc.query_selector(&format!("[duid-id=\"{}\"]", old_id.value.clone()))
+                                            .expect(&format!("Unable to get element with id {}", old_id.value.clone()))
+                                            .expect(&format!("Unable to get element with id {}", old_id.value.clone()));
                                     
                                     let _ = element.remove_attribute("duid-id");
                                     let _ = element.set_attribute("duid-id", &format!("{}", node_id.value.clone()));
@@ -85,27 +62,58 @@ where
                             }
 
                         },
-                        ArenaNodeState::Inserted(node_id) => {
-                            let new_html_node = new_arena.build_html_node(
-                                node_id.clone(),
+                        ArenaNodeState::Inserted => {
+                            let new_html_node = old_arena.build_html_node(
+                                id.clone(),
                                 program,
                                 &doc, 
                                 styles_map, 
                                 selectors_set
                             );
 
-                            //mark_children_added_state::<MSG>(&[node_id.clone()], old_arena, new_arena);
                             append_child_node(&id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
+                        ArenaNodeState::DataChanged(changed) => {
+                            match changed {
+                                DataState::Props => {
+
+                                },
+                                DataState::Value => {
+                                    if let Some((parent_id, index)) = id.get_index_in_parent_children(&old_arena.node_id_pairs) {
+                                        let parent_element: Element = 
+                                            doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.value.clone()))
+                                            .expect("Unable to get element")
+                                            .expect("Unable to get element");
+                                        
+                                        let Some(old_node_text) = id.get_node_by_id(&old_arena) else {
+                                            panic!("we did not get id {} node's", id.value.clone());
+                                        };
+                                        let Some(ref old_node_value) = old_node_text.update_value else {
+                                            panic!("we did not get id {} node's value", id.value.clone());
+                                        };
+
+                                        let text_node: Element = doc.create_text_node(&old_node_value).unchecked_into();
+                                        
+                                        if let Some(old_text_node) = parent_element.child_nodes().get(index as u32) {
+                                            let old_text_element: Element = old_text_node.unchecked_into();
+                                            let _ = old_text_element
+                                                .replace_with_with_node_1(&text_node)
+                                                .expect("Could not append child to mount");
+                                        }
+                                    }
+                                },
+                                _ => {}
+                            }
+                        }
                         _ => {}
                     }
                 },
                 None => {}
             }
         });
-    });*/
+    });
 }
-/*
+
 fn replace_node(
     node_type: &VirtualNodeType, 
     id: &NodeId, 
@@ -160,5 +168,3 @@ fn append_child_node(
         let _ = parent_element.append_child(&html_node);
     }
 }
-
-*/

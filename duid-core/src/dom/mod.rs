@@ -117,7 +117,6 @@ where
         patches(&mut self.arena, &mut arena);
         apply_patches(
             &mut self.arena, 
-            &mut arena, 
             program, 
             &self.document, 
             &mut style_map, 

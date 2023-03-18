@@ -10,7 +10,6 @@ where
     
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels();
     let new_levels: Vec<(usize, Vec<NodeId>)> = new_arena.get_nodes_ids_by_levels();
-    crate::console::info!("levels before patches: {:#?}", old_levels);
 
     match old_levels.len().cmp(&new_levels.len()) {
         Ordering::Equal => { // Same size of levels or same size of deep from root node

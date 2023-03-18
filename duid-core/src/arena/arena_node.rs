@@ -12,14 +12,14 @@ pub(crate) enum ArenaNodeState {
     /*
     ReplaceOnlyData(NodeId),
     */
-    Inserted,
-    Added,
-    Replacing(NodeId),
-    ReplaceBy(NodeId),
-    Removed,
-    UnChanged,
-    DataChanged(DataState),
-    IdChanged(NodeId, NodeId), // (old, new)
+    Inserted, // root; fait
+    Added, // skip
+    Replacing(NodeId), // skip
+    ReplaceBy(NodeId), // root; fait
+    Removed, // skip
+    UnChanged, // skip
+    DataChanged(DataState), // root
+    IdChanged(NodeId, NodeId), // (old, new); fait
     #[default]
     None,
 }
