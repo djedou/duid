@@ -68,6 +68,9 @@ impl NodeId {
             local_level_nodes.extend_from_slice(&node.get_children(&ids));
         });
 
+        local_level_nodes.sort_by(|a, b| a.value.cmp(&b.value));
+        local_level_nodes.dedup();
+
         if local_level_nodes.len() > 0 {
             self.get_levels(
                 level + 1, 
