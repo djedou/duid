@@ -15,7 +15,6 @@ use super::{NodeId, ArenaNode};
 pub struct Arena<T> {
     pub(crate) nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
-    pub(crate) last_node_id: NodeId,
     pub(crate) node_id_pairs: Vec<[NodeId; 2]>
 }
 
@@ -27,13 +26,8 @@ where
         Arena {
             nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
-            last_node_id: NodeId::default(),
             node_id_pairs: Vec::with_capacity(0)
         }
-    }
-
-    pub(crate) fn get_first_node_id(&self) -> NodeId {
-        self.first_node_id.clone()
     }
 
     pub(crate) fn new_from_virtual_node(virtual_node: &VirtualNode<MSG>) -> Arena<ArenaNode<MSG>> {
@@ -42,18 +36,6 @@ where
         arena.node_id_pairs = Arena::to_indexes_pair(&virtual_node);
         Arena::to_nodes(&virtual_node, &mut arena);
         arena
-    }
-
-    pub(crate) fn get_nodes_ids_by_levels(&self) -> Vec<(usize, Vec<NodeId>)> {
-        let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
-        self.first_node_id.get_levels(
-            1, 
-            &[self.first_node_id.clone()], 
-            &mut levels,
-            &self.node_id_pairs
-        );
-
-        levels
     }
 
     fn to_nodes(node: &VirtualNode<MSG>, arena: &mut Arena<ArenaNode<MSG>>) {
@@ -66,7 +48,7 @@ where
             Arena::to_nodes(child, arena);
         }
     }
-    
+
     fn to_indexes_pair(node: &VirtualNode<MSG>) -> Vec<[NodeId; 2]> {
         let result: Vec<_> = node.children.iter().map(|child| {
             let mut indexes: Vec<[NodeId; 2]> = vec![[node.get_arena_node_id(), child.get_arena_node_id()]];
@@ -89,6 +71,10 @@ where
         });
 
         res
+    }
+
+    pub(crate) fn get_first_node_id(&self) -> NodeId {
+        self.first_node_id.clone()
     }
 
     pub(crate) fn build_html_node<DSP>(
@@ -131,6 +117,27 @@ where
             None => todo!()
         }
     }
+    
+    pub(crate) fn get_nodes_ids_by_levels(&self) -> Vec<(usize, Vec<NodeId>)> {
+        let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
+        self.first_node_id.get_levels(
+            1, 
+            &[self.first_node_id.clone()], 
+            &mut levels,
+            &self.node_id_pairs
+        );
+    
+        levels
+    }
+/*
+
+
+
+    
+    
+    
+
+    
 
     pub(crate) fn clean_patches(&mut self) {
         
@@ -146,5 +153,5 @@ where
             }
         });
         self.node_id_pairs.dedup();
-    }
+    }*/
 }

@@ -35,7 +35,6 @@ where
     pub(crate) replace: bool,
     pub(crate) use_shadow: bool,
     pub(crate) arena: Arena<ArenaNode<MSG>>,
-    pub(crate) arena_root: NodeId,
     pub(crate) real_node: Option<Node>,
     pub(crate) document: Document,
     pub(crate) base_styles: HashMap<String, String>,
@@ -68,7 +67,6 @@ where
         Dom::<MSG> {
             mount_node: node,
             arena: Arena::new(),
-            arena_root: NodeId::default(),
             replace,
             use_shadow, 
             real_node: None,
@@ -88,14 +86,12 @@ where
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
-        // step 1: build Arena
-        let mut arena = Arena::new_from_virtual_node(&root_node);
-        //crate::console::info!("arena: {:#?}", arena);
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0); 
         let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
-        self.arena_root = arena.get_first_node_id();
+        // step 1: build Arena
+        let mut arena = Arena::new_from_virtual_node(&root_node);
         self.real_node = Some(arena.build_html_node::<DSP>(
-            self.arena_root.clone(), 
+            arena.get_first_node_id(), 
             program, 
             &self.document, 
             &mut style_map, 
@@ -112,13 +108,13 @@ where
     where
         DSP: Dispatch<MSG> + Clone + 'static,
     {
+        let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
+        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
         //crate::console::info!("before patches: {:#?}", self.arena);
-        patches(&mut self.arena, &arena);
-        let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
-        let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
+        patches(&mut self.arena, &mut arena);
         apply_patches(
             &mut self.arena, 
             &mut arena, 
@@ -126,11 +122,12 @@ where
             &self.document, 
             &mut style_map, 
             &mut selectors_set);
-        
+            
+        /*
         self.arena.clean_patches();
             
         crate::console::info!("after patches: {:#?}", self.arena);
-        /*
+        
         let _ = self.root_node.set_key(1);
         let patches = diff(&self.root_node, &new_root_node);
         crate::console::info!("patches: {:#?}", patches);

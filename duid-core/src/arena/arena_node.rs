@@ -9,13 +9,28 @@ use crate::core::{
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) enum ArenaNodeState {
+    /*
     ReplaceOnlyData(NodeId),
-    ReplaceBy(NodeId),
-    Removed,
+    */
     Inserted,
     Added,
-    IdChanged(NodeId),
+    Replacing(NodeId),
+    ReplaceBy(NodeId),
+    Removed,
     UnChanged,
+    DataChanged(DataState),
+    IdChanged(NodeId, NodeId), // (old, new)
+    #[default]
+    None,
+}
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub(crate) enum DataState {
+    Tag,
+    NodeType,
+    Namespace,
+    Props,
+    Value,
     #[default]
     None,
 }
@@ -33,7 +48,9 @@ where
     pub(crate) props: Vec<Attribute<MSG>>,
     pub(crate) value: Option<String>,
     pub(crate) active_closures: Rc<RefCell<ActiveClosure>>,
-    pub(crate) node_state: ArenaNodeState
+    pub(crate) node_state: ArenaNodeState,
+    pub(crate) update_props: Vec<Attribute<MSG>>,
+    pub(crate) update_value: Option<String>,
 }
 
 impl<MSG> PartialEq<ArenaNode<MSG>> for ArenaNode<MSG> 
@@ -55,7 +72,6 @@ where
 {
     pub(crate) fn update_data_from(&mut self, other: &ArenaNode<MSG>) {
         self.tag = other.tag.clone();
-        self.node_type = other.node_type.clone();
         self.namespace = other.namespace.clone();
         self.props = other.props.clone();
         self.value = other.value.clone();
