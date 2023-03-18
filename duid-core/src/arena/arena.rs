@@ -117,7 +117,7 @@ where
             None => todo!()
         }
     }
-    
+
     pub(crate) fn get_nodes_ids_by_levels(&self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
         self.first_node_id.get_levels(
@@ -125,6 +125,28 @@ where
             &[self.first_node_id.clone()], 
             &mut levels,
             &self.node_id_pairs
+        );
+    
+        levels
+    }
+
+    pub(crate) fn get_nodes_ids_by_levels_for_patching(&self) -> Vec<(usize, Vec<NodeId>)> {
+        let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
+        let mut node_id_pairs = self.node_id_pairs.clone();
+
+        node_id_pairs.sort_by(|a, b| {
+            match a[0].value.cmp(&b[0].value).is_lt() {
+                true => Ordering::Less,
+                false => a[1].value.cmp(&b[1].value)
+            }
+        });
+        node_id_pairs.dedup();
+
+        self.first_node_id.get_levels(
+            1, 
+            &[self.first_node_id.clone()], 
+            &mut levels,
+            &node_id_pairs
         );
     
         levels

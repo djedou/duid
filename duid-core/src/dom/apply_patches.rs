@@ -25,7 +25,7 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     DSP: Dispatch<MSG> + Clone + 'static
 {
-    let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels();
+    let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
     crate::console::info!("levels after patches: {:#?}", old_levels);
     /*
     old_levels.iter().for_each(|(level, ids)| {
