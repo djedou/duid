@@ -131,4 +131,20 @@ where
             None => todo!()
         }
     }
+
+    pub(crate) fn clean_patches(&mut self) {
+        
+        
+        self.reorder_pairs();
+    }
+
+    pub(crate) fn reorder_pairs(&mut self) {
+        self.node_id_pairs.sort_by(|a, b| {
+            match a[0].value.cmp(&b[0].value).is_lt() {
+                true => Ordering::Less,
+                false => a[1].value.cmp(&b[1].value)
+            }
+        });
+        self.node_id_pairs.dedup();
+    }
 }

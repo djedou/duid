@@ -80,7 +80,6 @@ where
                                     let _ = element.remove_attribute("duid-id");
                                     let _ = element.set_attribute("duid-id", &format!("{}", node_id.value.clone()));
                                 }
-
                             }
 
                         },

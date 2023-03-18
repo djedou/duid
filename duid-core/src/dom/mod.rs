@@ -115,7 +115,7 @@ where
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
-        crate::console::info!("before patches: {:#?}", self.arena);
+        //crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &arena);
         let mut style_map: HashMap<String, String> = HashMap::with_capacity(0);
         let mut selectors_set: HashMap<usize, HashSet<String>> = HashMap::with_capacity(0);
@@ -126,6 +126,9 @@ where
             &self.document, 
             &mut style_map, 
             &mut selectors_set);
+        
+        self.arena.clean_patches();
+            
         crate::console::info!("after patches: {:#?}", self.arena);
         /*
         let _ = self.root_node.set_key(1);
