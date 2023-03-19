@@ -160,6 +160,9 @@ where
             data.iter().for_each(|id| {
                 match id.get_node_by_id_mut(self) {
                     Some(node) => {
+                        if node.node_state == ArenaNodeState::Inserted {
+                            
+                        }
                         node.node_state = ArenaNodeState::default();
                         node.update_props = Vec::with_capacity(0);
                         node.update_value = None;

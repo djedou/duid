@@ -15,7 +15,6 @@ pub(crate) enum ArenaNodeState {
     Inserted, // root; fait
     Added, // skip
     Replacing(NodeId), // skip
-    ReplaceBy(NodeId), // root; fait
     Removed, // skip
     UnChanged, // skip
     DataChanged(DataState), // root

@@ -145,9 +145,10 @@ where
                                 }
                             },
                             (false, true) => {
+                                
                                 match get_data_changed(&old_node.clone(), &new_node.clone()) {
                                     DataState::Tag | DataState::NodeType | DataState::Namespace => {
-                                        old_node.node_state = ArenaNodeState::ReplaceBy(new_id.clone());
+                                        old_node.node_state = ArenaNodeState::Removed;
                                         mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                         mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                                         mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
@@ -164,7 +165,7 @@ where
                                 }
                             },
                             (false, false) => {
-                                old_node.node_state = ArenaNodeState::ReplaceBy(new_id.clone());
+                                old_node.node_state = ArenaNodeState::Removed;
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                 mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);

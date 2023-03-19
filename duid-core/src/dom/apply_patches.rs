@@ -32,16 +32,16 @@ where
                 Some(old_node) => {
                     let old_node_type = old_node.node_type.clone();
                     match &old_node.node_state.clone() {
-                        ArenaNodeState::ReplaceBy(new_node_id) => {
+                        ArenaNodeState::Replacing(old_id) => {
                             let new_html_node = old_arena.build_html_node(
-                                new_node_id.clone(),
+                                id.clone(),
                                 program,
                                 &doc, 
                                 styles_map,
                                 selectors_set
                             );
 
-                            replace_node(&old_node_type, &id, &old_arena.node_id_pairs, &doc, &new_html_node);
+                            replace_node(&old_node_type, &old_id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
                         ArenaNodeState::IdChanged(old_id, node_id) => {
                             match old_node_type {
