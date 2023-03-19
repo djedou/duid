@@ -1,4 +1,5 @@
 use web_sys::{Node, Document};
+use crate::arena::{ArenaNodeState};
 use crate::{
     core::{
         v_node::VirtualNode,
@@ -151,23 +152,25 @@ where
     
         levels
     }
-/*
-
-
-
-    
-    
-    
-
-    
 
     pub(crate) fn clean_patches(&mut self) {
         
-        
-        self.reorder_pairs();
+        let levels = self.get_nodes_ids_by_levels_for_patching();
+        levels.iter().for_each(|(l, data)| {
+            data.iter().for_each(|id| {
+                match id.get_node_by_id_mut(self) {
+                    Some(node) => {
+                        node.node_state = ArenaNodeState::default();
+                        node.update_props = Vec::with_capacity(0);
+                        node.update_value = None;
+                    },
+                    None => {}
+                }
+            });
+        });
     }
 
-    pub(crate) fn reorder_pairs(&mut self) {
+    /*pub(crate) fn reorder_pairs(&mut self) {
         self.node_id_pairs.sort_by(|a, b| {
             match a[0].value.cmp(&b[0].value).is_lt() {
                 true => Ordering::Less,
