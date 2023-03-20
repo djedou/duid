@@ -87,10 +87,17 @@ where
         },
         Ordering::Greater => {
             crate::console::info!("old_levels Greater");
+            let mut old_levels_clone = old_levels.clone();
+            let old_levels_clone_vec = old_levels_clone.split_off(new_levels.len());
+
+            crate::console::info!("under old_levels: {:#?}", old_levels_clone.len());
+            crate::console::info!("corespon new_levels: {:#?}", new_levels.len());
+
+            crate::console::info!("remain old_levels: {:#?}", old_levels_clone_vec.len());
+
             crate::console::info!("old_levels: {:#?}", old_levels);
             crate::console::info!("new_levels: {:#?}", new_levels);
-            /*let mut old_levels_clone = old_levels.clone();
-            let old_levels_clone_vec = old_levels_clone.split_off(new_levels.len());
+            /*
             
             old_levels_clone.iter().zip(new_levels.iter()).for_each(|(old_level, new_level)| {
                 match old_level.1.len().cmp(&new_level.1.len()) {
