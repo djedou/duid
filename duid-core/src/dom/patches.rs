@@ -10,46 +10,37 @@ where
     
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels();
     let new_levels: Vec<(usize, Vec<NodeId>)> = new_arena.get_nodes_ids_by_levels();
-
-    crate::console::info!("old len: {:#?}", old_levels.len());
-    crate::console::info!("new len: {:#?}", new_levels.len());
     
     match old_levels.len().cmp(&new_levels.len()) {
         Ordering::Equal => { // Same size of levels or same size of deep from root node
-            crate::console::info!("old_levels Equal");
-            crate::console::info!("old_levels: {:#?}", old_levels);
-            crate::console::info!("new_levels: {:#?}", new_levels);
             old_levels.iter().zip(new_levels.iter()).for_each(|(old_level, new_level)| { // for each level
                 match old_level.1.len().cmp(&new_level.1.len()) { // check size of nodes for this level
                     Ordering::Equal => {
-                        //patch_node(&old_level.1, &new_level.1, old_arena, new_arena);
+                        patch_node(&old_level.1, &new_level.1, old_arena, new_arena);
                     },
                     Ordering::Less => {
-                        /*let mut new_level_vec = new_level.1.clone();
+                        let mut new_level_vec = new_level.1.clone();
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                             mark_children_added_state::<MSG>(&[id.clone()], old_arena, new_arena);
-                        });*/
+                        });
                     },
                     Ordering::Greater => {
-                        /*let mut old_level_vec = old_level.1.clone();
+                        let mut old_level_vec = old_level.1.clone();
                         let old_level_vec_remains = old_level_vec.split_off(new_level.1.len());
                         patch_node(&old_level_vec, &new_level.1, old_arena, new_arena);
                         old_level_vec_remains.iter().for_each(|id| {
                             mark_parent_removed_state(id.clone(), old_arena);
                             mark_children_removed_state::<MSG>(&[id.clone()], old_arena);
-                        });*/
+                        });
                     }
                 }
             })
         },
         Ordering::Less => {
-            crate::console::info!("old_levels Less");
-            crate::console::info!("old_levels: {:#?}", old_levels);
-            crate::console::info!("new_levels: {:#?}", new_levels);
-            /*let mut new_levels_clone = new_levels.clone();
+            let mut new_levels_clone = new_levels.clone();
             let new_levels_clone_vec = new_levels_clone.split_off(old_levels.len());
 
             old_levels.iter().zip(new_levels_clone.iter()).for_each(|(old_level, new_level)| {
@@ -83,20 +74,11 @@ where
                     mark_inserted_state(id.clone(), old_arena, &new_arena);
                     mark_children_added_state::<MSG>(&[id.clone()], old_arena, new_arena);
                 });
-            });*/
+            });
         },
         Ordering::Greater => {
-            crate::console::info!("old_levels Greater");
             let mut old_levels_clone = old_levels.clone();
             let old_levels_clone_vec = old_levels_clone.split_off(new_levels.len());
-
-            /*crate::console::info!("under old_levels: {:#?}", old_levels_clone.len());
-            crate::console::info!("corespon new_levels: {:#?}", new_levels.len());
-
-            crate::console::info!("remain old_levels: {:#?}", old_levels_clone_vec.len());
-
-            crate::console::info!("old_levels: {:#?}", old_levels);
-            crate::console::info!("new_levels: {:#?}", new_levels);*/
 
             old_levels_clone.iter().zip(new_levels.iter()).for_each(|(old_level, new_level)| {
                 match old_level.1.len().cmp(&new_level.1.len()) {
