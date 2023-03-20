@@ -15,11 +15,11 @@ use super::{NodeId, ArenaNode};
 #[derive(Debug, Clone)]
 pub struct Arena<T> {
     pub(crate) nodes: Vec<T>,
-    pub(crate) new_nodes: Vec<T>,
+    //pub(crate) new_nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
     pub(crate) node_id_pairs: Vec<[NodeId; 2]>,
-    pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
-    pub(crate) removed_ids: Vec<NodeId>
+    //pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
+    //pub(crate) removed_ids: Vec<NodeId>
 }
 
 impl<MSG> Arena<ArenaNode<MSG>> 
@@ -29,11 +29,11 @@ where
     pub(crate) fn new() -> Arena<ArenaNode<MSG>> {
         Arena {
             nodes: Vec::with_capacity(0),
-            new_nodes: Vec::with_capacity(0),
+            //new_nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
             node_id_pairs: Vec::with_capacity(0),
-            new_node_id_pairs: Vec::with_capacity(0),
-            removed_ids: Vec::with_capacity(0)
+            //new_node_id_pairs: Vec::with_capacity(0),
+            //removed_ids: Vec::with_capacity(0)
         }
     }
 
@@ -141,6 +141,7 @@ where
     pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
 
+        /*
         self.node_id_pairs.retain(|value| !self.removed_ids.contains(&value[1]));
         self.node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
         
@@ -157,15 +158,16 @@ where
             &mut levels,
             &self.node_id_pairs
         );
+        */
 
         levels
     }
 
     pub(crate) fn clean_patches(&mut self) {
         
-        self.new_nodes = vec![];
-        self.new_node_id_pairs = vec![];
-        self.removed_ids = vec![];
+        //self.new_nodes = vec![];
+        //self.new_node_id_pairs = vec![];
+        //self.removed_ids = vec![];
 
         self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
         

@@ -139,13 +139,14 @@ where
                             (true, false) => {
                                 // we need to update duid-id to the new_id in html node
                                 old_node.node_state = ArenaNodeState::IdChanged(old_id.clone(), new_id.clone());
+                                old_node.id = new_id.clone();
                                 if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                                     pair[1] = new_id.clone();
                                 }
                             },
                             (false, _) => {
                                 old_node.node_state = ArenaNodeState::Removed;
-                                old_arena.removed_ids.push(old_id.clone());
+                                //old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, new_arena);
                                 mark_children_state::<MSG>(&ArenaNodeState::ReplacingChild, &[new_id.clone()], old_arena, new_arena);
@@ -198,7 +199,7 @@ where
     match node.get_node_by_id_mut(old_arena) {
         Some(child_node) => {
             child_node.node_state = ArenaNodeState::Removed;
-            old_arena.removed_ids.push(node.clone());
+            //old_arena.removed_ids.push(node.clone());
         },
         None => {}
     }
@@ -242,7 +243,7 @@ where
             match child.get_node_by_id_mut(old_arena) {
                 Some(child_node) => {
                     child_node.node_state = ArenaNodeState::Removed;
-                    old_arena.removed_ids.push(child.clone());
+                    //old_arena.removed_ids.push(child.clone());
                 },
                 None => {}
             }
