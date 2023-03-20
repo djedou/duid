@@ -31,9 +31,11 @@ where
         ids.iter().for_each(|id| {
             match id.get_node_by_id_to_patch(&old_arena) {
                 Some(old_node) => {
+                    crate::console::info!("id {:#?}; old_node: {:#?}", id, old_node);
                     let old_node_type = old_node.node_type.clone();
                     match &old_node.node_state.clone() {
                         ArenaNodeState::Replacing(old_id) => {
+                            crate::console::info!("check parent and children Here");
                             let new_html_node = old_arena.build_html_node(
                                 id.clone(),
                                 program,
@@ -109,7 +111,9 @@ where
                         _ => {}
                     }
                 },
-                None => {}
+                None => {
+                    crate::console::info!("old_node id to patch: {:#?} not found", id);
+                }
             }
         });
     });
