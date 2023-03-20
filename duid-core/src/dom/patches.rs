@@ -179,7 +179,9 @@ where
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Props);
                                         old_node.update_props.extend_from_slice(&new_node.props)
                                     },
-                                    DataState::None => {}
+                                    DataState::None => {
+                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
+                                    }
                                 }
                             },
                             (false, false) => {
