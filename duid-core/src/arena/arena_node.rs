@@ -9,18 +9,15 @@ use crate::core::{
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) enum ArenaNodeState {
-    /*
-    ReplaceOnlyData(NodeId),
-    */
-    Inserted, // root; fait
-    Added, // skip
-    Replacing(NodeId), // skip
-    Removed, // skip
-    UnChanged, // skip
-    DataChanged(DataState), // root
-    IdChanged(NodeId, NodeId), // (old, new); fait
+    IdChanged(NodeId, NodeId),
+    DataChanged(DataState),
+    Inserted,
+    Removed,
+    Added,
+    Replacing(NodeId),
+    UnChanged,
     #[default]
-    None,
+    None
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]

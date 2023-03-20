@@ -15,8 +15,11 @@ use super::{NodeId, ArenaNode};
 #[derive(Debug, Clone)]
 pub struct Arena<T> {
     pub(crate) nodes: Vec<T>,
+    pub(crate) new_nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
-    pub(crate) node_id_pairs: Vec<[NodeId; 2]>
+    pub(crate) node_id_pairs: Vec<[NodeId; 2]>,
+    pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
+    pub(crate) removed_ids: Vec<NodeId>
 }
 
 impl<MSG> Arena<ArenaNode<MSG>> 
@@ -26,8 +29,11 @@ where
     pub(crate) fn new() -> Arena<ArenaNode<MSG>> {
         Arena {
             nodes: Vec::with_capacity(0),
+            new_nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
-            node_id_pairs: Vec::with_capacity(0)
+            node_id_pairs: Vec::with_capacity(0),
+            new_node_id_pairs: Vec::with_capacity(0),
+            removed_ids: Vec::with_capacity(0)
         }
     }
 
@@ -161,7 +167,7 @@ where
                 match id.get_node_by_id_mut(self) {
                     Some(node) => {
                         if node.node_state == ArenaNodeState::Inserted {
-                            
+
                         }
                         node.node_state = ArenaNodeState::default();
                         node.update_props = Vec::with_capacity(0);

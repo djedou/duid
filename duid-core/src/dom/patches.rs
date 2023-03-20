@@ -145,30 +145,31 @@ where
                                 }
                             },
                             (false, true) => {
-                                
                                 match get_data_changed(&old_node.clone(), &new_node.clone()) {
+                                    DataState::Value => {
+                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
+                                        old_node.update_value = new_node.value.clone();
+                                    },
                                     DataState::Tag | DataState::NodeType | DataState::Namespace => {
                                         old_node.node_state = ArenaNodeState::Removed;
+                                        old_arena.removed_ids.push(old_id.clone());
                                         mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
-                                        mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                                         mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
+                                        mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                                     },
                                     DataState::Props => {
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Props);
                                         old_node.update_props.extend_from_slice(&new_node.props)
-                                    },
-                                    DataState::Value => {
-                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
-                                        old_node.update_value = new_node.value.clone();
                                     },
                                     DataState::None => {}
                                 }
                             },
                             (false, false) => {
                                 old_node.node_state = ArenaNodeState::Removed;
+                                old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
-                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
+                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                             }
                         }
                     },
@@ -198,8 +199,8 @@ where
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
                         new_child_node.node_state = ArenaNodeState::Inserted;
-                        old_arena.nodes.push(new_child_node);
-                        old_arena.node_id_pairs.push([parent.clone(), node.clone()]);
+                        old_arena.new_nodes.push(new_child_node);
+                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                     },
                     None => {}
                 }
@@ -218,6 +219,7 @@ where
     match node.get_node_by_id_mut(old_arena) {
         Some(child_node) => {
             child_node.node_state = ArenaNodeState::Removed;
+            old_arena.removed_ids.push(node.clone());
         },
         None => {}
     }
@@ -238,8 +240,8 @@ where
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
                         new_child_node.node_state = ArenaNodeState::Replacing(old_id.clone());
-                        old_arena.nodes.push(new_child_node);
-                        old_arena.node_id_pairs.push([parent.clone(), node.clone()]);
+                        old_arena.new_nodes.push(new_child_node);
+                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                     },
                     None => {}
                 }
@@ -258,6 +260,7 @@ where
             match child.get_node_by_id_mut(old_arena) {
                 Some(child_node) => {
                     child_node.node_state = ArenaNodeState::Removed;
+                    old_arena.removed_ids.push(child.clone());
                 },
                 None => {}
             }
@@ -277,8 +280,8 @@ where
             match child.get_node_by_id_mut(new_arena) {
                 Some(child_node) => {
                     child_node.node_state = ArenaNodeState::Added;
-                    old_arena.nodes.push(child_node.clone());
-                    old_arena.node_id_pairs.push([parent.clone(), child.clone()]);
+                    old_arena.new_nodes.push(child_node.clone());
+                    old_arena.new_node_id_pairs.push([parent.clone(), child.clone()]);
                 },
                 None => {}
             }
@@ -292,6 +295,9 @@ fn get_data_changed<MSG>(old: &ArenaNode<MSG>, new: &ArenaNode<MSG>) -> DataStat
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
+    if old.value != new.value {
+        return DataState::Value;
+    }
 
     if old.tag != new.tag {
         return DataState::Tag;
@@ -307,10 +313,6 @@ where
 
     if old.props != new.props {
         return DataState::Props;
-    }
-
-    if old.value != new.value {
-        return DataState::Value;
     }
 
     DataState::None

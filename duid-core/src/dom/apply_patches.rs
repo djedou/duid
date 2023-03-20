@@ -24,6 +24,7 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     DSP: Dispatch<MSG> + Clone + 'static
 {
+    /*
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
     
     old_levels.iter().for_each(|(_, ids)| {
@@ -112,6 +113,7 @@ where
             }
         });
     });
+    */
 }
 
 fn replace_node(
