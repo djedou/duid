@@ -146,17 +146,17 @@ where
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
                                         old_node.update_value = new_node.value.clone();
                                     },
-                                    DataState::Tag | DataState::NodeType | DataState::Namespace => {
+                                    DataState::Tag | DataState::NodeType | DataState::Namespace | DataState::Props => {
                                         old_node.node_state = ArenaNodeState::Removed;
                                         old_arena.removed_ids.push(old_id.clone());
                                         mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                         mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
                                         mark_children_state::<MSG>(&ArenaNodeState::ReplacingChild, &[new_id.clone()], old_arena, new_arena);
                                     },
-                                    DataState::Props => {
+                                    /*DataState::Props => {
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Props);
                                         old_node.update_props.extend_from_slice(&new_node.props)
-                                    },
+                                    },*/
                                     DataState::None => {
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
                                     }
