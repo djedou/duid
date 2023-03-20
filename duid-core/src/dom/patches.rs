@@ -130,7 +130,7 @@ where
         match (old_id.get_node_by_id_mut(old_arena), new_id.get_node_by_id(&new_arena)) {
             (Some(old_node), Some(new_node)) => {
                 // check if already passed
-                match &old_node.node_state {
+                match (&old_node.node_state, &new_node.node_state) {
                     (&ArenaNodeState::None, &ArenaNodeState::None) => {
                         match (old_node == new_node, old_id == new_id) {
                             (true, true) => {
