@@ -149,7 +149,7 @@ where
         
         let mut node_id_pairs = self.node_id_pairs.clone();
         removed_id_pairs_index.iter().for_each(|index| {
-            let _ = node_id_pairs.swap_remove(*index);
+            let _ = node_id_pairs.remove(*index);
         });
         node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
         
@@ -187,6 +187,10 @@ where
             node.node_state = ArenaNodeState::default();
             node.update_props = Vec::with_capacity(0);
             node.update_value = None;
+        });
+
+        remove_indexs.iter().for_each(|index| {
+            let _ = self.nodes.swap_remove(*index);
         });
     }
 }
