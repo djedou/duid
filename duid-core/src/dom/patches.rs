@@ -139,7 +139,7 @@ where
                             (true, false) => {
                                 // we need to update duid-id to the new_id in html node
                                 old_node.node_state = ArenaNodeState::IdChanged(old_id.clone(), new_id.clone());
-                                old_node.id = new_id.clone();
+                                //old_node.id = new_id.clone();
                                 if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                                     pair[1] = new_id.clone();
                                 }
