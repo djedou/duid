@@ -12,9 +12,10 @@ pub(crate) enum ArenaNodeState {
     IdChanged(NodeId, NodeId),
     DataChanged(DataState),
     Inserted,
+    InsertedChild,
     Removed,
-    Added,
     Replacing(NodeId),
+    ReplacingChild,
     UnChanged,
     #[default]
     None

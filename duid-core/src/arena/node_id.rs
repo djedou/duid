@@ -29,7 +29,6 @@ impl NodeId {
         arena.nodes.iter().find(|node| 
             node.id == *self &&
             (node.node_state != ArenaNodeState::Removed ||
-            node.node_state != ArenaNodeState::Added ||
             node.node_state != ArenaNodeState::UnChanged)
         ) 
     }
