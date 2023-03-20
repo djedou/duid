@@ -137,10 +137,22 @@ where
         levels
     }
 
-    pub(crate) fn get_nodes_ids_by_levels_for_patching(&self) -> Vec<(usize, Vec<NodeId>)> {
+    pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
+        let mut removed_id_pairs_index = vec![];
+        self.node_id_pairs.iter().enumerate()
+            .for_each(|(index, [_, node_id])| {
+                if self.removed_ids.contains(node_id) {
+                    removed_id_pairs_index.push(index);
+                }
+            });
+        
         let mut node_id_pairs = self.node_id_pairs.clone();
-
+        removed_id_pairs_index.iter().for_each(|index| {
+            let _ = node_id_pairs.swap_remove(*index);
+        });
+        node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
+        
         node_id_pairs.sort_by(|a, b| {
             match a[0].value.cmp(&b[0].value).is_lt() {
                 true => Ordering::Less,
@@ -155,37 +167,26 @@ where
             &mut levels,
             &node_id_pairs
         );
-    
+
+        self.node_id_pairs = node_id_pairs;
         levels
     }
 
     pub(crate) fn clean_patches(&mut self) {
         
-        let levels = self.get_nodes_ids_by_levels_for_patching();
-        levels.iter().for_each(|(l, data)| {
-            data.iter().for_each(|id| {
-                match id.get_node_by_id_mut(self) {
-                    Some(node) => {
-                        if node.node_state == ArenaNodeState::Inserted {
+        self.new_nodes = vec![];
+        self.new_node_id_pairs = vec![];
+        self.removed_ids = vec![];
+        
+        let mut remove_indexs = vec![];
 
-                        }
-                        node.node_state = ArenaNodeState::default();
-                        node.update_props = Vec::with_capacity(0);
-                        node.update_value = None;
-                    },
-                    None => {}
-                }
-            });
+        self.nodes.iter_mut().enumerate().for_each(|(index, node)| {
+            if node.node_state == ArenaNodeState::Removed {
+                remove_indexs.push(index);
+            }
+            node.node_state = ArenaNodeState::default();
+            node.update_props = Vec::with_capacity(0);
+            node.update_value = None;
         });
     }
-
-    /*pub(crate) fn reorder_pairs(&mut self) {
-        self.node_id_pairs.sort_by(|a, b| {
-            match a[0].value.cmp(&b[0].value).is_lt() {
-                true => Ordering::Less,
-                false => a[1].value.cmp(&b[1].value)
-            }
-        });
-        self.node_id_pairs.dedup();
-    }*/
 }

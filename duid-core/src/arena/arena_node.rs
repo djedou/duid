@@ -61,7 +61,7 @@ where
         self.value == other.value
     }
 }
-
+/*
 impl<MSG> ArenaNode<MSG> 
 where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static 
@@ -72,4 +72,4 @@ where
         self.props = other.props.clone();
         self.value = other.value.clone();
     }
-}
+}*/

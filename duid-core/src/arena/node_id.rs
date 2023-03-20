@@ -22,13 +22,14 @@ impl NodeId {
         arena.nodes.iter_mut().find(|node| node.id == *self)    
     }
 
-    pub(crate) fn get_node_by_id_to_patch_mut<'a, MSG>(&'a self, arena: &'a mut Arena<ArenaNode<MSG>>) -> Option<&mut ArenaNode<MSG>> 
+    pub(crate) fn get_node_by_id_to_patch<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
     where 
         MSG: Clone
     {
-        arena.nodes.iter_mut().find(|node| 
+        arena.nodes.iter().find(|node| 
             node.id == *self &&
             (node.node_state != ArenaNodeState::Removed ||
+            node.node_state != ArenaNodeState::Added ||
             node.node_state != ArenaNodeState::UnChanged)
         ) 
     }

@@ -24,12 +24,12 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     DSP: Dispatch<MSG> + Clone + 'static
 {
-    /*
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
-    
+    old_arena.nodes.extend_from_slice(&old_arena.new_nodes);
+
     old_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
-            match id.get_node_by_id_to_patch_mut(old_arena) {
+            match id.get_node_by_id_to_patch(&old_arena) {
                 Some(old_node) => {
                     let old_node_type = old_node.node_type.clone();
                     match &old_node.node_state.clone() {
@@ -113,7 +113,6 @@ where
             }
         });
     });
-    */
 }
 
 fn replace_node(
