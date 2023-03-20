@@ -95,7 +95,8 @@ where
             program, 
             &self.document, 
             &mut style_map, 
-            &mut selectors_set
+            &mut selectors_set,
+            false
         ));
         self.arena = arena;
         let tailwind_styles = self.style_container.build(&selectors_set);

@@ -41,10 +41,11 @@ where
                             program,
                             &doc, 
                             styles_map,
-                            selectors_set
+                            selectors_set,
+                            true
                         );
 
-                        replace_node(&old_node_type, &old_id, &old_arena.node_id_pairs, &doc, &new_html_node);
+                        replace_node(&old_node_type, &old_id, &old_arena.new_node_id_pairs, &doc, &new_html_node);
                     },
                     _ => {}
                 }

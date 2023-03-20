@@ -90,7 +90,8 @@ where
         program: &DSP,
         doc: &Document, 
         styles_map: &mut HashMap<String, String>, 
-        selectors_set: &mut HashMap<usize, HashSet<String>>
+        selectors_set: &mut HashMap<usize, HashSet<String>>,
+        new_pairs: bool,
     ) -> Node
     where
         DSP: Dispatch<MSG> + Clone + 'static
@@ -106,13 +107,21 @@ where
                     selectors_set
                 );
                 // get children
-                let children_ids = node_id.get_children(&self.node_id_pairs); 
+                let children_ids = 
+                    if new_pairs {
+                        node_id.get_children(&self.new_node_id_pairs)
+                    }
+                    else {
+                        node_id.get_children(&self.node_id_pairs)
+                    };
+                    
                 let children_nodes: Vec<_> = children_ids.iter().map(|child| self.build_html_node(
                     child.clone(),
                     program,
                     &doc, 
                     styles_map,
-                    selectors_set
+                    selectors_set,
+                    new_pairs
                 ))
                 .collect();
 
