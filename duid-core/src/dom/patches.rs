@@ -19,28 +19,28 @@ where
                         patch_node(&old_level.1, &new_level.1, old_arena, new_arena);
                     },
                     Ordering::Less => {
-                        let mut new_level_vec = new_level.1.clone();
+                        /*let mut new_level_vec = new_level.1.clone();
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                             mark_children_added_state::<MSG>(&[id.clone()], old_arena, new_arena);
-                        });
+                        });*/
                     },
                     Ordering::Greater => {
-                        let mut old_level_vec = old_level.1.clone();
+                        /*let mut old_level_vec = old_level.1.clone();
                         let old_level_vec_remains = old_level_vec.split_off(new_level.1.len());
                         patch_node(&old_level_vec, &new_level.1, old_arena, new_arena);
                         old_level_vec_remains.iter().for_each(|id| {
                             mark_parent_removed_state(id.clone(), old_arena);
                             mark_children_removed_state::<MSG>(&[id.clone()], old_arena);
-                        });
+                        });*/
                     }
                 }
             })
         },
         Ordering::Less => {
-            let mut new_levels_clone = new_levels.clone();
+            /*let mut new_levels_clone = new_levels.clone();
             let new_levels_clone_vec = new_levels_clone.split_off(old_levels.len());
 
             old_levels.iter().zip(new_levels_clone.iter()).for_each(|(old_level, new_level)| {
@@ -74,9 +74,10 @@ where
                     mark_inserted_state(id.clone(), old_arena, &new_arena);
                     mark_children_added_state::<MSG>(&[id.clone()], old_arena, new_arena);
                 });
-            });
+            });*/
         },
         Ordering::Greater => {
+            /*
             let mut old_levels_clone = old_levels.clone();
             let old_levels_clone_vec = old_levels_clone.split_off(new_levels.len());
             
@@ -111,7 +112,7 @@ where
                     mark_parent_removed_state(id.clone(), old_arena);
                     mark_children_removed_state::<MSG>(&[id.clone()], old_arena);
                 });
-            });
+            });*/
         }
     }
 }
