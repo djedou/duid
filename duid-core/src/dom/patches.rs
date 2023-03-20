@@ -163,7 +163,7 @@ where
                                 }*/
                             },
                             (false, true) => {
-                                /*match get_data_changed(&old_node.clone(), &new_node.clone()) {
+                                match get_data_changed(&old_node.clone(), &new_node.clone()) {
                                     DataState::Value => {
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
                                         old_node.update_value = new_node.value.clone();
@@ -180,14 +180,14 @@ where
                                         old_node.update_props.extend_from_slice(&new_node.props)
                                     },
                                     DataState::None => {}
-                                }*/
+                                }
                             },
                             (false, false) => {
-                                /*old_node.node_state = ArenaNodeState::Removed;
+                                old_node.node_state = ArenaNodeState::Removed;
                                 old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
-                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);*/
+                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
                             }
                         }
                     },
