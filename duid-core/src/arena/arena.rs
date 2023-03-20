@@ -139,18 +139,20 @@ where
 
     pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
-        let mut removed_id_pairs_index = vec![];
-        self.node_id_pairs.iter().enumerate()
+
+        let mut node_id_pairs = self.node_id_pairs.clone();
+        while let Some(remove) = self.removed_ids.iter().next() {
+            let mut index_to_remove = 0;
+            node_id_pairs.iter().enumerate()
             .for_each(|(index, [_, node_id])| {
-                if self.removed_ids.contains(node_id) {
-                    removed_id_pairs_index.push(index);
+                if remove == node_id {
+                    index_to_remove = index;
                 }
             });
-        
-        let mut node_id_pairs = self.node_id_pairs.clone();
-        removed_id_pairs_index.iter().for_each(|index| {
-            let _ = node_id_pairs.remove(*index);
-        });
+            
+            let _ = node_id_pairs.swap_remove(index_to_remove);
+        }
+
         node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
         
         node_id_pairs.sort_by(|a, b| {
@@ -177,20 +179,24 @@ where
         self.new_nodes = vec![];
         self.new_node_id_pairs = vec![];
         self.removed_ids = vec![];
-        
-        let mut remove_indexs = vec![];
 
-        self.nodes.iter_mut().enumerate().for_each(|(index, node)| {
-            if node.node_state == ArenaNodeState::Removed {
-                remove_indexs.push(index);
-            }
+        let removed_nodes: Vec<_> = self.nodes.iter().filter(|node| node.node_state == ArenaNodeState::Removed).map(|node| node.clone()).collect();
+        while let Some(remove) = removed_nodes.iter().next() {
+            let mut index_to_remove = 0;
+            self.nodes.iter().enumerate()
+            .for_each(|(index, node)| {
+                if remove.id == node.id {
+                    index_to_remove = index;
+                }
+            });
+            
+            let _ = self.nodes.swap_remove(index_to_remove);
+        }
+
+        self.nodes.iter_mut().for_each(|node| {
             node.node_state = ArenaNodeState::default();
             node.update_props = Vec::with_capacity(0);
             node.update_value = None;
-        });
-
-        remove_indexs.iter().for_each(|index| {
-            let _ = self.nodes.swap_remove(*index);
         });
     }
 }
