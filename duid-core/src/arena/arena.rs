@@ -150,7 +150,13 @@ where
                 }
             });
             
-            let _ = node_id_pairs.swap_remove(index_to_remove);
+            
+            if index_to_remove == 0 {
+                //let _ = node_id_pairs.swap_remove(index_to_remove);
+            }
+            else {
+                let _ = node_id_pairs.swap_remove(index_to_remove); 
+            }
         }
 
         node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
@@ -189,8 +195,12 @@ where
                     index_to_remove = index;
                 }
             });
-            
-            let _ = self.nodes.swap_remove(index_to_remove);
+            if index_to_remove == 0 {
+                //let _ = self.nodes.swap_remove(index_to_remove);
+            }
+            else {
+                let _ = self.nodes.swap_remove(index_to_remove); 
+            }
         }
 
         self.nodes.iter_mut().for_each(|node| {
