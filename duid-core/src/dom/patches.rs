@@ -90,41 +90,40 @@ where
             let mut old_levels_clone = old_levels.clone();
             let old_levels_clone_vec = old_levels_clone.split_off(new_levels.len());
 
-            crate::console::info!("under old_levels: {:#?}", old_levels_clone.len());
+            /*crate::console::info!("under old_levels: {:#?}", old_levels_clone.len());
             crate::console::info!("corespon new_levels: {:#?}", new_levels.len());
 
             crate::console::info!("remain old_levels: {:#?}", old_levels_clone_vec.len());
 
             crate::console::info!("old_levels: {:#?}", old_levels);
-            crate::console::info!("new_levels: {:#?}", new_levels);
-            /*
-            
+            crate::console::info!("new_levels: {:#?}", new_levels);*/
+
             old_levels_clone.iter().zip(new_levels.iter()).for_each(|(old_level, new_level)| {
                 match old_level.1.len().cmp(&new_level.1.len()) {
                     Ordering::Equal => {
                         patch_node(&old_level.1, &new_level.1, old_arena, new_arena);
                     },
                     Ordering::Less => {
-                        let mut new_level_vec = new_level.1.clone();
+                        /*let mut new_level_vec = new_level.1.clone();
                         let new_level_vec_remains = new_level_vec.split_off(old_level.1.len());
                         patch_node(&old_level.1, &new_level_vec, old_arena, new_arena);
                         new_level_vec_remains.iter().for_each(|id| {
                             mark_inserted_state(id.clone(), old_arena, &new_arena);
                             mark_children_added_state::<MSG>(&[id.clone()], old_arena, new_arena);
-                        });
+                        });*/
                     },
                     Ordering::Greater => {
-                        let mut old_level_vec = old_level.1.clone();
+                        /*let mut old_level_vec = old_level.1.clone();
                         let old_level_vec_remains = old_level_vec.split_off(new_level.1.len());
                         patch_node(&old_level_vec, &new_level.1, old_arena, new_arena);
                         old_level_vec_remains.iter().for_each(|id| {
                             mark_parent_removed_state(id.clone(), old_arena);
                             mark_children_removed_state::<MSG>(&[id.clone()], old_arena);
-                        });
+                        });*/
                     }
                 }
             });
-
+/*
             old_levels_clone_vec.iter().for_each(|(level, old_level_ids)| {
                 old_level_ids.iter().for_each(|id| {
                     mark_parent_removed_state(id.clone(), old_arena);
@@ -158,13 +157,13 @@ where
                             (true, false) => {
                                 // we need to update duid-id to the new_id in html node
                                 old_node.node_state = ArenaNodeState::IdChanged(old_id.clone(), new_id.clone());
-                                old_node.id = new_id.clone();
+                                /*old_node.id = new_id.clone();
                                 if let Some(old_pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                                     old_pair[1] = new_id.clone();
-                                }
+                                }*/
                             },
                             (false, true) => {
-                                match get_data_changed(&old_node.clone(), &new_node.clone()) {
+                                /*match get_data_changed(&old_node.clone(), &new_node.clone()) {
                                     DataState::Value => {
                                         old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
                                         old_node.update_value = new_node.value.clone();
@@ -181,14 +180,14 @@ where
                                         old_node.update_props.extend_from_slice(&new_node.props)
                                     },
                                     DataState::None => {}
-                                }
+                                }*/
                             },
                             (false, false) => {
-                                old_node.node_state = ArenaNodeState::Removed;
+                                /*old_node.node_state = ArenaNodeState::Removed;
                                 old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
-                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);
+                                mark_children_added_state::<MSG>(&[new_id.clone()], old_arena, new_arena);*/
                             }
                         }
                     },

@@ -113,9 +113,9 @@ where
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
-        //crate::console::info!("before patches: {:#?}", self.arena);
+        crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &mut arena);
-        //crate::console::info!("after patches: {:#?}", self.arena);   
+        crate::console::info!("after patches: {:#?}", self.arena);   
         apply_patches(
             &mut self.arena, 
             program, 
