@@ -25,6 +25,8 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
+    crate::console::info!("get_nodes_ids_by_levels_for_patching");
+    crate::console::info!("old_levels: {:#?}", old_levels);
     old_arena.nodes.extend_from_slice(&old_arena.new_nodes);
 
     old_levels.iter().for_each(|(_, ids)| {

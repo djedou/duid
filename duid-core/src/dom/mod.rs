@@ -113,7 +113,7 @@ where
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
-        crate::console::info!("before patches: {:#?}", self.arena);
+        //crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &mut arena);
         apply_patches(
             &mut self.arena, 
@@ -121,7 +121,7 @@ where
             &self.document, 
             &mut style_map, 
             &mut selectors_set);
-        crate::console::info!("after patches: {:#?}", self.arena);   
+        //crate::console::info!("after patches: {:#?}", self.arena);   
         self.arena.clean_patches();
         //crate::console::info!("clean_patches: {:#?}", self.arena); 
         /*
