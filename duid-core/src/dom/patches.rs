@@ -127,7 +127,7 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
     old_level.iter().zip(new_level.iter()).for_each(|(old_id, new_id)| {
-        match (old_id.get_node_by_id_mut(old_arena), new_id.get_node_by_id(&new_arena)) {
+        match (old_id.get_node_by_id_mut(old_arena), new_id.get_node_by_id_mut(new_arena)) {
             (Some(old_node), Some(new_node)) => {
                 // check if already passed
                 match (&old_node.node_state, &new_node.node_state) {
@@ -139,34 +139,15 @@ where
                             (true, false) => {
                                 // we need to update duid-id to the new_id in html node
                                 old_node.node_state = ArenaNodeState::IdChanged(old_id.clone(), new_id.clone());
-                            },
-                            (false, true) => {
-                                match get_data_changed(&old_node.clone(), &new_node.clone()) {
-                                    DataState::Value => {
-                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
-                                        old_node.update_value = new_node.value.clone();
-                                    },
-                                    DataState::Tag | DataState::NodeType | DataState::Namespace | DataState::Props => {
-                                        old_node.node_state = ArenaNodeState::Removed;
-                                        old_arena.removed_ids.push(old_id.clone());
-                                        mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
-                                        mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
-                                        mark_children_state::<MSG>(&ArenaNodeState::ReplacingChild, &[new_id.clone()], old_arena, new_arena);
-                                    },
-                                    /*DataState::Props => {
-                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Props);
-                                        old_node.update_props.extend_from_slice(&new_node.props)
-                                    },*/
-                                    DataState::None => {
-                                        old_node.node_state = ArenaNodeState::DataChanged(DataState::Value);
-                                    }
+                                if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
+                                    pair[1] = new_id.clone();
                                 }
                             },
-                            (false, false) => {
+                            (false, _) => {
                                 old_node.node_state = ArenaNodeState::Removed;
                                 old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
-                                mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, &new_arena);
+                                mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, new_arena);
                                 mark_children_state::<MSG>(&ArenaNodeState::ReplacingChild, &[new_id.clone()], old_arena, new_arena);
                             }
                         }
@@ -197,12 +178,12 @@ where
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
                         new_child_node.node_state = ArenaNodeState::Inserted;
-                        old_arena.new_nodes.push(new_child_node);
-                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
+                        old_arena.nodes.push(new_child_node);
+                        old_arena.node_id_pairs.push([parent.clone(), node.clone()]);
                     },
                     None => {}
                 }
-            },
+            },  
             None => {}
         }
 }
@@ -227,19 +208,22 @@ fn mark_replacing_state<MSG>(
     node: NodeId,
     old_id: NodeId,
     old_arena: &mut Arena<ArenaNode<MSG>>, 
-    new_arena: &Arena<ArenaNode<MSG>>
+    new_arena: &mut Arena<ArenaNode<MSG>>
 ) 
 where 
     MSG: Clone
 {
         match node.get_parent(&new_arena.node_id_pairs) {
             Some(parent) => {
-                match node.get_node_by_id(&new_arena) {
+                match node.get_node_by_id_mut(new_arena) {
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
                         new_child_node.node_state = ArenaNodeState::Replacing(old_id.clone());
-                        old_arena.new_nodes.push(new_child_node);
-                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
+                        old_arena.nodes.push(new_child_node);
+
+                        if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
+                            pair[1] = node.clone();
+                        }
                     },
                     None => {}
                 }
@@ -278,8 +262,8 @@ where
             match child.get_node_by_id_mut(new_arena) {
                 Some(child_node) => {
                     child_node.node_state = state.clone();
-                    old_arena.new_nodes.push(child_node.clone());
-                    old_arena.new_node_id_pairs.push([parent.clone(), child.clone()]);
+                    old_arena.nodes.push(child_node.clone());
+                    old_arena.node_id_pairs.push([parent.clone(), child.clone()]);
                 },
                 None => {}
             }
@@ -288,7 +272,7 @@ where
         mark_children_state::<MSG>(&state, &children, old_arena, new_arena);
     });
 }
-
+/*
 fn get_data_changed<MSG>(old: &ArenaNode<MSG>, new: &ArenaNode<MSG>) -> DataState 
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
@@ -315,3 +299,4 @@ where
 
     DataState::None
 }
+*/

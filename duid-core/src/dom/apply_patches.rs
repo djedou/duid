@@ -30,7 +30,7 @@ where
 
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
     old_arena.nodes.extend_from_slice(&old_arena.new_nodes);
-    old_arena.new_node_id_pairs.clone().iter().for_each(|pair| {
+    old_arena.node_id_pairs.clone().iter().for_each(|pair| {
         match pair[1].get_node_by_id_to_patch(&old_arena) {
             Some(node) => {
                 let old_node_type = node.node_type.clone();
@@ -41,11 +41,10 @@ where
                             program,
                             &doc, 
                             styles_map,
-                            selectors_set,
-                            true
+                            selectors_set
                         );
 
-                        replace_node(&old_node_type, &old_id, &old_arena.new_node_id_pairs, &doc, &new_html_node);
+                        replace_node(&old_node_type, &old_id, &old_arena.node_id_pairs, &doc, &new_html_node);
                     },
                     _ => {}
                 }

@@ -95,8 +95,7 @@ where
             program, 
             &self.document, 
             &mut style_map, 
-            &mut selectors_set,
-            false
+            &mut selectors_set
         ));
         self.arena = arena;
         let tailwind_styles = self.style_container.build(&selectors_set);
@@ -124,6 +123,7 @@ where
             &mut style_map, 
             &mut selectors_set);
         self.arena.clean_patches();
+        
         //crate::console::info!("clean_patches: {:#?}", self.arena); 
         /*
             
