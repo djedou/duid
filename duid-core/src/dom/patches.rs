@@ -131,7 +131,7 @@ where
             (Some(old_node), Some(new_node)) => {
                 // check if already passed
                 match &old_node.node_state {
-                    &ArenaNodeState::None => {
+                    (&ArenaNodeState::None, &ArenaNodeState::None) => {
                         match (old_node == new_node, old_id == new_id) {
                             (true, true) => {
                                 old_node.node_state = ArenaNodeState::UnChanged;
