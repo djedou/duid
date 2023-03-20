@@ -32,7 +32,7 @@ impl NodeId {
             node.node_state != ArenaNodeState::UnChanged)
         ) 
     }
-
+    
     pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
     where 
         MSG: Clone
