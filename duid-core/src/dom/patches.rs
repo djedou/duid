@@ -145,6 +145,7 @@ where
                                 old_node.id = new_id.clone();
                                 if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                                     pair[1] = new_id.clone();
+                                    old_arena.new_node_id_pairs.push([pair[0].clone(), new_id.clone()]);
                                 }
                             },
                             (false, _) => {
@@ -230,6 +231,7 @@ where
                         old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                         if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                             pair[1] = node.clone();
+                            old_arena.new_node_id_pairs.push([pair[0].clone(), node.clone()]);
                         }
                     },
                     None => {}
