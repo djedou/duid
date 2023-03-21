@@ -157,19 +157,3 @@ fn replace_node(
         }
     }
 }
-
-fn append_child_node(
-    id: &NodeId, 
-    ids: &[[NodeId; 2]], 
-    doc: &Document,
-    html_node: &Node) 
-{
-    if let Some(parent_id) = id.get_parent(&ids) {
-        let parent_element: Element = 
-            doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.value.clone()))
-            .expect("Unable to get element")
-            .expect("Unable to get element");
-        
-        let _ = parent_element.append_child(&html_node);
-    }
-}

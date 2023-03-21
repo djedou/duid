@@ -19,7 +19,12 @@ impl NodeId {
     where 
         MSG: Clone
     {
-        arena.nodes.iter_mut().find(|node| node.id == *self && node.node_state != ArenaNodeState::Removed)    
+        arena.nodes.iter_mut().find(|node| 
+            node.id == *self && 
+            node.node_state != ArenaNodeState::Removed && 
+            node.node_state != ArenaNodeState::InsertedChild && 
+            node.node_state != ArenaNodeState::ReplacingChild
+        )    
     }
 
     pub(crate) fn get_node_by_id_to_patch<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
@@ -29,7 +34,9 @@ impl NodeId {
         arena.nodes.iter().find(|node| 
             node.id == *self &&
             (node.node_state != ArenaNodeState::Removed ||
-            node.node_state != ArenaNodeState::UnChanged)
+            node.node_state != ArenaNodeState::UnChanged ||
+            node.node_state != ArenaNodeState::InsertedChild || 
+            node.node_state != ArenaNodeState::ReplacingChild)
         ) 
     }
     
@@ -37,7 +44,12 @@ impl NodeId {
     where 
         MSG: Clone
     {
-        arena.nodes.iter().find(|node| node.id == *self&& node.node_state != ArenaNodeState::Removed)
+        arena.nodes.iter().find(|node| 
+            node.id == *self && 
+            node.node_state != ArenaNodeState::Removed &&
+            node.node_state != ArenaNodeState::InsertedChild && 
+            node.node_state != ArenaNodeState::ReplacingChild
+        )
     }
 
     pub(crate) fn get_children(&self, ids: &[[NodeId; 2]]) -> Vec<NodeId> {
