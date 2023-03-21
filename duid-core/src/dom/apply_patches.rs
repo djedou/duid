@@ -25,40 +25,10 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     let updated_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
-    crate::console::info!("updated level: {:#?}", updated_levels);
-    /*
-    old_arena.nodes.extend_from_slice(&old_arena.new_nodes);
-    old_arena.node_id_pairs.clone().iter().for_each(|pair| {
-        match pair[1].get_node_by_id_to_patch(&old_arena) {
-            Some(node) => {
-                let old_node_type = node.node_type.clone();
-                match &node.node_state.clone() {
-                    ArenaNodeState::Replacing(old_id) => {
-                        let new_html_node = old_arena.build_html_node(
-                            pair[1].clone(),
-                            program,
-                            &doc, 
-                            styles_map,
-                            selectors_set
-                        );
-
-                        replace_node(&old_node_type, &old_id, &old_arena.node_id_pairs, &doc, &new_html_node);
-                    },
-                    _ => {}
-                }
-            },
-            None => {}
-        }
-    });
-
-    let levels = old_arena.get_nodes_ids_by_levels_for_patching();
-    crate::console::info!("levels: {:#?}", levels);
-*/
-
-    /*
-    old_levels.iter().for_each(|(_, ids)| {
+    
+    updated_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
-            match id.get_node_by_id_to_patch(&old_arena) {
+            match id.get_node_by_id(&old_arena) {
                 Some(old_node) => {
                     let old_node_type = old_node.node_type.clone();
                     match &old_node.node_state.clone() {
@@ -103,7 +73,7 @@ where
 
                             append_child_node(&id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
-                        ArenaNodeState::DataChanged(changed) => {
+                        /*ArenaNodeState::DataChanged(changed) => {
                             match changed {
                                 DataState::Props => {
 
@@ -134,7 +104,7 @@ where
                                 },
                                 _ => {}
                             }
-                        }
+                        },*/
                         _ => {}
                     }
                 },
@@ -142,7 +112,6 @@ where
             }
         });
     });
-    */
 }
 
 fn replace_node(
