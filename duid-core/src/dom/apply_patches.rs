@@ -62,7 +62,7 @@ where
                             }
 
                         },
-                        ArenaNodeState::Inserted(parent_id) => {
+                        /*ArenaNodeState::Inserted(parent_id) => {
                             let new_html_node = old_arena.build_html_node(
                                 id.clone(),
                                 program,
@@ -77,7 +77,7 @@ where
                             
                             let _ = parent_element.append_child(&new_html_node);
                             //append_child_node(&id, &old_arena.node_id_pairs, &doc, &new_html_node);
-                        },
+                        },*/
                         /*ArenaNodeState::DataChanged(changed) => {
                             match changed {
                                 DataState::Props => {

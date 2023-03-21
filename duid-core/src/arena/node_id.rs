@@ -21,9 +21,7 @@ impl NodeId {
     {
         arena.nodes.iter_mut().find(|node| 
             node.id == *self && 
-            node.node_state != ArenaNodeState::Removed && 
-            node.node_state != ArenaNodeState::InsertedChild && 
-            node.node_state != ArenaNodeState::ReplacingChild
+            node.node_state != ArenaNodeState::Removed
         )    
     }
 
@@ -34,9 +32,7 @@ impl NodeId {
         arena.nodes.iter().find(|node| 
             node.id == *self &&
             (node.node_state != ArenaNodeState::Removed ||
-            node.node_state != ArenaNodeState::UnChanged ||
-            node.node_state != ArenaNodeState::InsertedChild || 
-            node.node_state != ArenaNodeState::ReplacingChild)
+            node.node_state != ArenaNodeState::UnChanged)
         ) 
     }
     
@@ -46,9 +42,7 @@ impl NodeId {
     {
         arena.nodes.iter().find(|node| 
             node.id == *self && 
-            node.node_state != ArenaNodeState::Removed &&
-            node.node_state != ArenaNodeState::InsertedChild && 
-            node.node_state != ArenaNodeState::ReplacingChild
+            node.node_state != ArenaNodeState::Removed
         )
     }
 
