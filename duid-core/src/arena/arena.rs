@@ -162,10 +162,9 @@ where
     }
 
     pub(crate) fn clean_patches(&mut self) {
-        
-        //self.new_nodes = vec![];
-        //self.new_node_id_pairs = vec![];
-        //self.removed_ids = vec![];
+
+        self.new_node_id_pairs = vec![];
+        self.removed_ids = vec![];
 
         self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
         
