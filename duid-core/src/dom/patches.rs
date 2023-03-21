@@ -3,7 +3,10 @@ use std::cmp::Ordering;
 
 
 
-pub(crate) fn patches<MSG>(old_arena: &mut Arena<ArenaNode<MSG>>, new_arena: &mut Arena<ArenaNode<MSG>>) 
+pub(crate) fn patches<MSG>(
+    old_arena: &mut Arena<ArenaNode<MSG>>, 
+    new_arena: &mut Arena<ArenaNode<MSG>>
+) 
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
@@ -139,7 +142,7 @@ where
                             (true, false) => {
                                 // we need to update duid-id to the new_id in html node
                                 old_node.node_state = ArenaNodeState::IdChanged(old_id.clone(), new_id.clone());
-                                //old_node.id = new_id.clone();
+                                old_node.id = new_id.clone();
                                 if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                                     pair[1] = new_id.clone();
                                 }
@@ -198,8 +201,9 @@ where
 {
     match node.get_node_by_id_mut(old_arena) {
         Some(child_node) => {
-            child_node.node_state = ArenaNodeState::Removed;
-            //old_arena.removed_ids.push(node.clone());
+            if child_node.node_state == ArenaNodeState::None {
+                child_node.node_state = ArenaNodeState::Removed;
+            }
         },
         None => {}
     }
@@ -219,6 +223,7 @@ where
                 match node.get_node_by_id_mut(new_arena) {
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
+                        new_child_node.id = node.clone();
                         new_child_node.node_state = ArenaNodeState::Replacing(old_id.clone());
                         old_arena.nodes.push(new_child_node);
 
@@ -242,8 +247,9 @@ where
         children.iter().for_each(|child| {
             match child.get_node_by_id_mut(old_arena) {
                 Some(child_node) => {
-                    child_node.node_state = ArenaNodeState::Removed;
-                    //old_arena.removed_ids.push(child.clone());
+                    if child_node.node_state == ArenaNodeState::None {
+                        child_node.node_state = ArenaNodeState::Removed;
+                    }
                 },
                 None => {}
             }

@@ -117,13 +117,14 @@ where
         patches(&mut self.arena, &mut arena);
         crate::console::info!("after patches: {:#?}", self.arena);   
         apply_patches(
-            &mut self.arena, 
+            &mut self.arena,
             program, 
             &self.document, 
             &mut style_map, 
             &mut selectors_set);
-        self.arena.clean_patches();
-        
+            
+        //self.arena.clean_patches();
+
         //crate::console::info!("clean_patches: {:#?}", self.arena); 
         /*
             
