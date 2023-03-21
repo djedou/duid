@@ -183,7 +183,7 @@ where
                         let mut new_child_node = child_node.clone();
                         new_child_node.node_state = ArenaNodeState::Inserted;
                         old_arena.nodes.push(new_child_node);
-                        old_arena.node_id_pairs.push([parent.clone(), node.clone()]);
+                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                     },
                     None => {}
                 }
@@ -226,7 +226,7 @@ where
                         new_child_node.id = node.clone();
                         new_child_node.node_state = ArenaNodeState::Replacing(old_id.clone());
                         old_arena.nodes.push(new_child_node);
-
+                        old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                         if let Some(pair) = old_id.get_pair_mut(&mut old_arena.node_id_pairs) {
                             pair[1] = node.clone();
                         }
@@ -270,7 +270,7 @@ where
                 Some(child_node) => {
                     child_node.node_state = state.clone();
                     old_arena.nodes.push(child_node.clone());
-                    old_arena.node_id_pairs.push([parent.clone(), child.clone()]);
+                    old_arena.new_node_id_pairs.push([parent.clone(), child.clone()]);
                 },
                 None => {}
             }

@@ -25,6 +25,9 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     // Step 1: merge nodes.
+    
+    
+    
     //old_arena.nodes.extend_from_slice(&old_arena.new_nodes);
     // Step 2: update replacing nodes and their children
 /*

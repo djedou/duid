@@ -18,7 +18,7 @@ pub struct Arena<T> {
     //pub(crate) new_nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
     pub(crate) node_id_pairs: Vec<[NodeId; 2]>,
-    //pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
+    pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
     //pub(crate) removed_ids: Vec<NodeId>
 }
 
@@ -32,7 +32,7 @@ where
             //new_nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
             node_id_pairs: Vec::with_capacity(0),
-            //new_node_id_pairs: Vec::with_capacity(0),
+            new_node_id_pairs: Vec::with_capacity(0),
             //removed_ids: Vec::with_capacity(0)
         }
     }
