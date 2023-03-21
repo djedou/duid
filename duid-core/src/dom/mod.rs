@@ -115,7 +115,6 @@ where
         // step 2: patches
         crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &mut arena);
-        crate::console::info!("after patches: {:#?}", self.arena);   
         apply_patches(
             &mut self.arena,
             program, 
@@ -123,6 +122,7 @@ where
             &mut style_map, 
             &mut selectors_set);
             
+        crate::console::info!("after patches: {:#?}", self.arena);   
         //self.arena.clean_patches();
 
         //crate::console::info!("clean_patches: {:#?}", self.arena); 

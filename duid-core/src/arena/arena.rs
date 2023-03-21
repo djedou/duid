@@ -19,7 +19,7 @@ pub struct Arena<T> {
     pub(crate) first_node_id: NodeId,
     pub(crate) node_id_pairs: Vec<[NodeId; 2]>,
     pub(crate) new_node_id_pairs: Vec<[NodeId; 2]>,
-    //pub(crate) removed_ids: Vec<NodeId>
+    pub(crate) removed_ids: Vec<NodeId>
 }
 
 impl<MSG> Arena<ArenaNode<MSG>> 
@@ -33,7 +33,7 @@ where
             first_node_id: NodeId::default(),
             node_id_pairs: Vec::with_capacity(0),
             new_node_id_pairs: Vec::with_capacity(0),
-            //removed_ids: Vec::with_capacity(0)
+            removed_ids: Vec::with_capacity(0)
         }
     }
 
@@ -141,10 +141,9 @@ where
     pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
 
-        /*
         self.node_id_pairs.retain(|value| !self.removed_ids.contains(&value[1]));
         self.node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
-        
+
         self.node_id_pairs.sort_by(|a, b| {
             match a[0].value.cmp(&b[0].value).is_lt() {
                 true => Ordering::Less,
@@ -158,7 +157,6 @@ where
             &mut levels,
             &self.node_id_pairs
         );
-        */
 
         levels
     }

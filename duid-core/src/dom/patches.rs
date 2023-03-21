@@ -149,7 +149,7 @@ where
                             },
                             (false, _) => {
                                 old_node.node_state = ArenaNodeState::Removed;
-                                //old_arena.removed_ids.push(old_id.clone());
+                                old_arena.removed_ids.push(old_id.clone());
                                 mark_children_removed_state::<MSG>(&[old_id.clone()], old_arena);
                                 mark_replacing_state(new_id.clone(), old_id.clone(), old_arena, new_arena);
                                 mark_children_state::<MSG>(&ArenaNodeState::ReplacingChild, &[new_id.clone()], old_arena, new_arena);
@@ -203,6 +203,7 @@ where
         Some(child_node) => {
             if child_node.node_state == ArenaNodeState::None {
                 child_node.node_state = ArenaNodeState::Removed;
+                old_arena.removed_ids.push(node.clone());
             }
         },
         None => {}
@@ -249,6 +250,7 @@ where
                 Some(child_node) => {
                     if child_node.node_state == ArenaNodeState::None {
                         child_node.node_state = ArenaNodeState::Removed;
+                        old_arena.removed_ids.push(child.clone());
                     }
                 },
                 None => {}
