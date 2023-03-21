@@ -40,7 +40,7 @@ where
                                 styles_map,
                                 selectors_set
                             );
-
+                            crate::console::info!("Replacing: {:#?} By {:#?}", old_id, new_html_node);
                             replace_node(&old_node_type, &old_id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
                         ArenaNodeState::IdChanged(old_id, node_id) => {
