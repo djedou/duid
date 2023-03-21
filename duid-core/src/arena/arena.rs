@@ -107,7 +107,7 @@ where
                 );
                 // get children
                 let children_ids = node_id.get_children(&self.node_id_pairs);
-
+                crate::console::info!("children of {:#?} are {:#?}", node_id, children_ids);
                 let children_nodes: Vec<_> = children_ids.iter().map(|child| self.build_html_node(
                     child.clone(),
                     program,
