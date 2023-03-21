@@ -184,7 +184,7 @@ where
                 match node.get_node_by_id(&new_arena) {
                     Some(child_node) => {
                         let mut new_child_node = child_node.clone();
-                        new_child_node.node_state = ArenaNodeState::Inserted;
+                        new_child_node.node_state = ArenaNodeState::Inserted(parent.clone());
                         old_arena.nodes.push(new_child_node);
                         old_arena.new_node_id_pairs.push([parent.clone(), node.clone()]);
                     },

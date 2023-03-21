@@ -25,7 +25,7 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     let updated_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
-    
+
     updated_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
             match id.get_node_by_id(&old_arena) {
@@ -62,7 +62,7 @@ where
                             }
 
                         },
-                        ArenaNodeState::Inserted => {
+                        ArenaNodeState::Inserted(parent_id) => {
                             let new_html_node = old_arena.build_html_node(
                                 id.clone(),
                                 program,
@@ -70,8 +70,13 @@ where
                                 styles_map, 
                                 selectors_set
                             );
-
-                            append_child_node(&id, &old_arena.node_id_pairs, &doc, &new_html_node);
+                            let parent_element: Element = 
+                                doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.value.clone()))
+                                .expect("Unable to get parent element")
+                                .expect("Unable to get parent element");
+                            
+                            let _ = parent_element.append_child(&new_html_node);
+                            //append_child_node(&id, &old_arena.node_id_pairs, &doc, &new_html_node);
                         },
                         /*ArenaNodeState::DataChanged(changed) => {
                             match changed {

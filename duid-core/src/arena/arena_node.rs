@@ -11,7 +11,7 @@ use crate::core::{
 pub(crate) enum ArenaNodeState {
     IdChanged(NodeId, NodeId),
     //DataChanged(DataState),
-    Inserted,
+    Inserted(NodeId),
     InsertedChild,
     Removed,
     Replacing(NodeId),
