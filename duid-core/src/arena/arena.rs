@@ -150,7 +150,7 @@ where
                 false => a[1].value.cmp(&b[1].value)
             }
         });
-
+        self.node_id_pairs.dedup();
         self.first_node_id.get_levels(
             1, 
             &[self.first_node_id.clone()], 
