@@ -140,9 +140,18 @@ where
 
     pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
+        
+        let mut new_node_id_pairs = self.new_node_id_pairs.clone();
+        new_node_id_pairs.sort_by(|a, b| {
+            match a[0].value.cmp(&b[0].value).is_lt() {
+                true => Ordering::Less,
+                false => a[1].value.cmp(&b[1].value)
+            }
+        });
+        new_node_id_pairs.dedup();
 
         self.node_id_pairs.retain(|value| !self.removed_ids.contains(&value[1]));
-        self.node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
+        self.node_id_pairs.extend_from_slice(&new_node_id_pairs);
 
         self.node_id_pairs.sort_by(|a, b| {
             match a[0].value.cmp(&b[0].value).is_lt() {
