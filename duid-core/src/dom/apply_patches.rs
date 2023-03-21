@@ -25,7 +25,7 @@ where
     DSP: Dispatch<MSG> + Clone + 'static
 {
     let updated_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
-
+    crate::console::info!("updated_levels: {:#?}", updated_levels);
     updated_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
             match id.get_node_by_id(&old_arena) {
