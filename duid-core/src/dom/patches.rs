@@ -136,8 +136,9 @@ fn patch_node<MSG>(
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
-    let old_binding = new_arena.nodes_ids.clone();
-    let mut finded_new_id: Vec<_> = old_binding.iter().collect();
+    let old_binding = old_arena.nodes_ids.clone();
+    let new_binding = new_arena.nodes_ids.clone();
+    let mut finded_new_id: Vec<_> = new_binding.iter().collect();
     
     match finded_new_id.iter_mut()
                 .find(|new| 

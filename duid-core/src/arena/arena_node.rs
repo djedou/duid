@@ -15,7 +15,7 @@ pub(crate) enum ArenaNodeState {
     Visited,
     Removed,
     Replacing(NodeId),
-    //Updated,
+    Updated,
     UnChanged,
     #[default]
     None

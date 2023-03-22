@@ -156,6 +156,20 @@ where
         }
     }
 
+    pub(crate) fn clean_patches(&mut self) {
+
+        self.new_node_id_pairs = HashSet::with_capacity(0);
+        self.removed_ids = HashSet::with_capacity(0);
+
+        self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
+        
+        self.nodes.iter_mut().for_each(|node| {
+            node.node_state = ArenaNodeState::default();
+            node.update_props = Vec::with_capacity(0);
+            node.update_value = None;
+        });
+    }
+
 /*
     pub(crate) fn get_nodes_ids_by_levels(&self) -> Vec<(usize, Vec<NodeId>)> {
         let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
@@ -192,18 +206,6 @@ where
         levels
     }
 
-    pub(crate) fn clean_patches(&mut self) {
-
-        self.new_node_id_pairs = vec![];
-        self.removed_ids = vec![];
-
-        self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
-        
-        self.nodes.iter_mut().for_each(|node| {
-            node.node_state = ArenaNodeState::default();
-            node.update_props = Vec::with_capacity(0);
-            node.update_value = None;
-        });
-    }
+    
     */
 }

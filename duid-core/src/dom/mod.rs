@@ -1,12 +1,12 @@
 mod dom_diff;
 mod patches;
 mod build_html_node;
-//mod apply_patches;
+mod apply_patches;
 
 pub(crate) use dom_diff::*;
 pub(crate) use patches::*;
 pub(crate) use build_html_node::*;
-//pub(crate) use apply_patches::*;
+pub(crate) use apply_patches::*;
 
 use crate::arena::ArenaNode;
 use wasm_bindgen::JsCast;
@@ -113,18 +113,19 @@ where
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
-        crate::console::info!("before patches: {:#?}", self.arena);
+        //crate::console::info!("before patches: {:#?}", self.arena);
         patches(&mut self.arena, &mut arena);
-        crate::console::info!("after patches: {:#?}", self.arena);   
-        /*
+        //crate::console::info!("after patches: {:#?}", self.arena);   
+        
         apply_patches(
             &mut self.arena,
             program, 
             &self.document, 
             &mut style_map, 
             &mut selectors_set);
-            
+        
         self.arena.clean_patches();
+        /*  
 
         //crate::console::info!("clean_patches: {:#?}", self.arena); 
             

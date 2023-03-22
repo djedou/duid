@@ -95,9 +95,7 @@ impl NodeId {
     where 
         MSG: Clone
     {
-        arena.nodes.iter_mut().find(|node| 
-            node.id == *self
-        )    
+        arena.nodes.iter_mut().find(|node| node.id == *self && node.node_state != ArenaNodeState::Removed)    
     }
 
     pub(crate) fn get_children(&self, ids: &HashSet<Pairs>) -> Vec<NodeId> {
@@ -115,6 +113,25 @@ impl NodeId {
         ids.iter().find(|id| id.child == *self).map(|i| i.parent.clone())
     }
 
+    pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
+    where 
+        MSG: Clone
+    {
+        arena.nodes.iter().find(|node| node.id == *self && node.node_state != ArenaNodeState::Removed)
+    }
+
+    pub(crate) fn get_index_in_parent_children(&self, ids: &HashSet<Pairs>) -> Option<(NodeId, usize)> {
+        let Some(parent_node_id) = self.get_parent(&ids) else {
+            return None;
+        };
+
+        let Some(index) = &parent_node_id.get_children(&ids).iter().position(|r| r == self) else {
+            return None;
+        };
+        
+        Some((parent_node_id, *index))
+    }
+
 /*
 
     pub(crate) fn get_node_by_id_to_patch<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
@@ -127,31 +144,11 @@ impl NodeId {
             node.node_state != ArenaNodeState::UnChanged)
         ) 
     }
-    
-    pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
-    where 
-        MSG: Clone
-    {
-        arena.nodes.iter().find(|node| 
-            node.id == *self && 
-            node.node_state != ArenaNodeState::Removed
-        )
-    }
 
     pub(crate) fn get_pair_mut<'a>(&'a self, ids: &'a mut [[NodeId; 2]]) -> Option<&mut [NodeId; 2]> {
         ids.iter_mut().find(|id| id[1] == *self)
     }
 
-    pub(crate) fn get_index_in_parent_children(&self, ids: &[[NodeId; 2]]) -> Option<(NodeId, usize)> {
-        let Some(parent_node_id) = self.get_parent(&ids) else {
-            return None;
-        };
-
-        let Some(index) = &parent_node_id.get_children(&ids).iter().position(|r| r == self) else {
-            return None;
-        };
-        
-        Some((parent_node_id, *index))
-    }
+    
     */
 }
