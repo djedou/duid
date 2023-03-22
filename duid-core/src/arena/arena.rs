@@ -16,7 +16,11 @@ use super::{NodeId, ArenaNode};
 pub struct Arena<T> {
     pub(crate) nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
-    pub(crate) nodes_ids: HashSet<Pairs>
+    pub(crate) last_node_id: NodeId,
+    pub(crate) nodes_ids: HashSet<Pairs>,
+    pub(crate) removed_ids: HashSet<NodeId>,
+    pub(crate) new_node_id_pairs: HashSet<Pairs>,
+    
 }
 
 impl<MSG> Arena<ArenaNode<MSG>> 
@@ -27,12 +31,19 @@ where
         Arena {
             nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
-            nodes_ids: HashSet::with_capacity(0)
+            last_node_id: NodeId::default(),
+            nodes_ids: HashSet::with_capacity(0),
+            removed_ids: HashSet::with_capacity(0),
+            new_node_id_pairs: HashSet::with_capacity(0),
         }
     }
 
     pub(crate) fn get_first_id(&self) -> NodeId {
         self.first_node_id.clone()
+    }
+
+    pub(crate) fn get_last_id(&self) -> NodeId {
+        self.last_node_id.clone()
     }
 
     pub(crate) fn new_from_virtual_node(virtual_node: &VirtualNode<MSG>) -> Arena<ArenaNode<MSG>> {
@@ -47,10 +58,29 @@ where
         NodeId::set_node_id(2, &[root], &mut nodes_ids, &index_pairs_vec,);
         Arena::to_nodes(&virtual_node, &mut arena, &nodes_ids);
         
+        arena.last_node_id = Arena::<ArenaNode<MSG>>::last_id(&nodes_ids);
         arena.nodes_ids = nodes_ids;
         arena.first_node_id = first_node_id.clone();
 
         arena
+    }
+
+    fn last_id(nodes: &HashSet<Pairs>) -> NodeId {
+        let mut levels: Vec<_> = nodes.iter().map(|pairs| pairs.child.level.clone()).collect();
+        let Some(max_level) = levels.iter().max() else {
+            return NodeId::default();
+        };
+        let mut last_nodes: Vec<_> = nodes.iter()
+            .filter(|pairs| pairs.child.level == *max_level)
+            .map(|pairs| pairs.child.clone())
+            .collect();
+        last_nodes.sort_by(|a, b| a.global_index.cmp(&b.global_index));
+
+        match last_nodes.last() {
+            Some(node) => node.clone(),
+            None => NodeId::default()
+        }
+        
     }
 
     fn to_nodes(node: &VirtualNode<MSG>, arena: &mut Arena<ArenaNode<MSG>>, nodes_ids: &HashSet<Pairs>) {

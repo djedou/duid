@@ -96,8 +96,7 @@ impl NodeId {
         MSG: Clone
     {
         arena.nodes.iter_mut().find(|node| 
-            node.id == *self && 
-            node.node_state != ArenaNodeState::Removed
+            node.id == *self
         )    
     }
 
@@ -110,6 +109,10 @@ impl NodeId {
         children.sort_by(|a, b| a.global_index.cmp(&b.global_index));
 
         children
+    }
+
+    pub(crate) fn get_parent(&self, ids: &HashSet<Pairs>) -> Option<NodeId> {
+        ids.iter().find(|id| id.child == *self).map(|i| i.parent.clone())
     }
 
 /*
@@ -133,10 +136,6 @@ impl NodeId {
             node.id == *self && 
             node.node_state != ArenaNodeState::Removed
         )
-    }
-
-    pub(crate) fn get_parent(&self, ids: &[[NodeId; 2]]) -> Option<NodeId> {
-        ids.iter().find(|id| id[1] == *self).map(|i| i[0].clone())
     }
 
     pub(crate) fn get_pair_mut<'a>(&'a self, ids: &'a mut [[NodeId; 2]]) -> Option<&mut [NodeId; 2]> {
