@@ -62,7 +62,7 @@ where
 
     pub(crate) fn into_arena_node(&self) -> ArenaNode<MSG> {
         ArenaNode {
-            id: NodeId::new(self.key),
+            id: NodeId::from_global_index(self.key),
             tag: self.tag.clone(),
             node_type: self.node_type.clone(),
             namespace: self.namespace.clone(),
@@ -75,9 +75,7 @@ where
         }
     }
 
-    pub(crate) fn get_arena_node_id(&self) -> NodeId {
-        NodeId {
-            value: self.key
-        }
+    pub(crate) fn get_node_id(&self) -> NodeId {
+        NodeId::from_global_index(self.key)
     }
 }

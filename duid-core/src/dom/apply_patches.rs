@@ -24,6 +24,7 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     DSP: Dispatch<MSG> + Clone + 'static
 {
+    /*
     let updated_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
     updated_levels.iter().for_each(|(_, ids)| {
         ids.iter().for_each(|id| {
@@ -115,7 +116,7 @@ where
                 None => {}
             }
         });
-    });
+    });*/
 }
 
 fn replace_node(
@@ -129,7 +130,7 @@ fn replace_node(
         VirtualNodeType::Comment |
         VirtualNodeType::DocType
         => {
-            if let Some((parent_id, index)) = id.get_index_in_parent_children(&ids) {
+            /*if let Some((parent_id, index)) = id.get_index_in_parent_children(&ids) {
                 let parent_element: Element = 
                     doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.value.clone()))
                     .expect("Unable to get element")
@@ -141,7 +142,7 @@ fn replace_node(
                         .replace_with_with_node_1(&html_node)
                         .expect("Could not append child to mount");
                 }
-            }
+            }*/
         },
         VirtualNodeType::Fragment => {},
         VirtualNodeType::Element => {

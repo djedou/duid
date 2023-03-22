@@ -52,25 +52,28 @@ impl HtmlNodeBuilder
                         .expect("Unable to create element")
                 };
                 let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
-                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, arena_node.id.value.clone());
+                Self::set_element_attributes(program, &element, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, &arena_node.id.get_duid_id());
                 
                 element.unchecked_into::<Node>()
             },
             VirtualNodeType::Fragment => {
-                let doc_fragment = doc.create_document_fragment();
-
+                let doc_fragment: Element = doc.create_document_fragment().unchecked_into();
+                let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
+                Self::set_element_attributes(program, &doc_fragment, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, &arena_node.id.get_duid_id());
                 doc_fragment.unchecked_into::<Node>()
             },
             VirtualNodeType::Text => {
                 if let Some(value) = &arena_node.value {
                     let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node(value).unchecked_into();
-                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, arena_node.id.value.clone());
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, &arena_node.id.get_duid_id());
                     text_node.unchecked_into::<Node>()
                 }
                 else {
+                    let attrs = arena_node.props.iter().map(|attr| attr).collect::<Vec<_>>();
                     let text_node: Element = doc.create_text_node("").unchecked_into();
-                    text_node.unchecked_into::<Node>() 
+                    Self::set_element_attributes(program, &text_node, &attrs, &mut arena_node.active_closures.borrow_mut(), styles_map, selectors_set, &arena_node.id.get_duid_id());
+                    text_node.unchecked_into::<Node>()
                 }
             },
             VirtualNodeType::Comment => {
@@ -96,7 +99,7 @@ impl HtmlNodeBuilder
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
         selectors_set: &mut HashMap<usize, HashSet<String>>,
-        duid_id: usize
+        duid_id: &str
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -116,7 +119,7 @@ impl HtmlNodeBuilder
         closures: &mut ActiveClosure,
         styles_map: &mut HashMap<String, String>,
         selectors_set: &mut HashMap<usize, HashSet<String>>,
-        duid_id: usize
+        duid_id: &str
     )
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -150,7 +153,7 @@ impl HtmlNodeBuilder
                     });
             } else {
                 element
-                    .set_attribute("duid-id", &format!("{}", duid_id))
+                    .set_attribute("duid-id", &duid_id)
                     .unwrap_or_else(|_| {
                         panic!(
                             "Error setting an attribute for {:?}",

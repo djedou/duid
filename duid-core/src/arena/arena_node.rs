@@ -56,21 +56,8 @@ where
 {
     fn eq(&self, other: &ArenaNode<MSG>) -> bool {
         self.tag == other.tag &&
-        self.node_type == other.node_type &&
         self.namespace == other.namespace &&
         self.props == other.props &&
         self.value == other.value
     }
 }
-/*
-impl<MSG> ArenaNode<MSG> 
-where
-    MSG: std::fmt::Debug + Clone + PartialEq + 'static 
-{
-    pub(crate) fn update_data_from(&mut self, other: &ArenaNode<MSG>) {
-        self.tag = other.tag.clone();
-        self.namespace = other.namespace.clone();
-        self.props = other.props.clone();
-        self.value = other.value.clone();
-    }
-}*/

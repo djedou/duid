@@ -1,4 +1,4 @@
-use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, DataState};
+use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, DataState, ArenaIterator};
 use std::cmp::Ordering;
 
 
@@ -10,7 +10,13 @@ pub(crate) fn patches<MSG>(
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
-    
+    let arena_iterator = ArenaIterator::new(old_arena.nodes_ids.clone());
+
+    for node in &arena_iterator {
+        crate::console::info!("iter node: {:#?}", node);
+        //break;
+    }
+    /*
     let old_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels();
     let new_levels: Vec<(usize, Vec<NodeId>)> = new_arena.get_nodes_ids_by_levels();
     
@@ -116,7 +122,7 @@ where
                 });
             });
         }
-    }
+    }*/
 }
 
 
@@ -129,6 +135,7 @@ fn patch_node<MSG>(
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
+    /*
     old_level.iter().zip(new_level.iter()).for_each(|(old_id, new_id)| {
         match (old_id.get_node_by_id_mut(old_arena), new_id.get_node_by_id_mut(new_arena)) {
             (Some(old_node), Some(new_node)) => {
@@ -170,7 +177,7 @@ where
                 // we should not reach here
             }
         }
-    });
+    });*/
 }
 
 fn mark_inserted_state<MSG>(
@@ -181,6 +188,7 @@ fn mark_inserted_state<MSG>(
 where 
     MSG: Clone
 {
+    /*
         match node.get_parent(&new_arena.node_id_pairs) {
             Some(parent) => {
                 match node.get_node_by_id(&new_arena) {
@@ -196,7 +204,7 @@ where
                 }
             },  
             None => {}
-        }
+        }*/
 }
 
 fn mark_parent_removed_state<MSG>(
@@ -206,6 +214,7 @@ fn mark_parent_removed_state<MSG>(
 where 
     MSG: Clone
 {
+    /*
     match node.get_node_by_id_mut(old_arena) {
         Some(child_node) => {
             if child_node.node_state == ArenaNodeState::None {
@@ -214,7 +223,7 @@ where
             }
         },
         None => {}
-    }
+    }*/
 }
 
 fn mark_replacing_state<MSG>(
@@ -226,6 +235,7 @@ fn mark_replacing_state<MSG>(
 where 
     MSG: Clone
 {
+    /*
         match node.get_parent(&new_arena.node_id_pairs) {
             Some(parent) => {
                 match node.get_node_by_id_mut(new_arena) {
@@ -245,14 +255,14 @@ where
                 }
             },
             None => {}
-        }
+        }*/
 }
 
 fn mark_children_removed_state<MSG>(parents_nodes: &[NodeId], old_arena: &mut Arena<ArenaNode<MSG>>) 
 where 
     MSG: Clone
 {
-    parents_nodes.iter().for_each(|parent| {
+    /*parents_nodes.iter().for_each(|parent| {
         let children = parent.get_children(&old_arena.node_id_pairs);
         children.iter().for_each(|child| {
             match child.get_node_by_id_mut(old_arena) {
@@ -267,13 +277,14 @@ where
         });
 
         mark_children_removed_state::<MSG>(&children, old_arena);
-    });
+    });*/
 }
 
 fn mark_children_state<MSG>(state: &ArenaNodeState, parents_nodes: &[NodeId], old_arena: &mut Arena<ArenaNode<MSG>>, new_arena: &mut Arena<ArenaNode<MSG>>) 
 where 
     MSG: Clone
 {
+    /*
     parents_nodes.iter().for_each(|parent| {
         let children = parent.get_children(&new_arena.node_id_pairs);
         children.iter().for_each(|child| {
@@ -291,6 +302,7 @@ where
         
         mark_children_state::<MSG>(&state, &children, old_arena, new_arena);
     });
+    */
 }
 /*
 fn get_data_changed<MSG>(old: &ArenaNode<MSG>, new: &ArenaNode<MSG>) -> DataState 
