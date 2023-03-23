@@ -1,14 +1,11 @@
-use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, ArenaIterator, Pairs};
+use crate::arena::{Arena, ArenaNode};
 use super::Patch;
-use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
-use web_sys::{Document, Element, Node};
+use web_sys::{Document, Element};
 use crate::{
     core::{
         duid_events::Dispatch,
-        v_node::VirtualNodeType,
     },
-    dom::HtmlNodeBuilder
 };
 use wasm_bindgen::JsCast;
 
@@ -46,9 +43,6 @@ where
                         .expect("Unable to get element")
                         .expect("Unable to get element");
                     
-                    let Some(old_node_text) = id.get_node_by_id(&old_arena) else {
-                        panic!("we did not get id {} node's", id.get_duid_id());
-                    };
                     let Some(ref new_value) = value else {
                         panic!("we did not get id {} node's value", id.get_duid_id());
                     };
@@ -82,25 +76,6 @@ where
             let _ = old_element
                 .replace_with_with_node_1(&new_html_node)
                 .expect("Could not append child to mount");
-            },
-            Patch::PropsChanged(old_id, props) => {
-                let old_element: Element = 
-                    doc.query_selector(&format!("[duid-id=\"{}\"]", old_id.get_duid_id()))
-                    .expect(&format!("Unable to get element with id: {}", old_id.get_duid_id()))
-                    .expect(&format!("Unable to get element with id: {}", old_id.get_duid_id()));
-
-                if let Some(old_node) = old_id.get_node_by_id_mut(old_arena) {
-                    let props_ref: Vec<_> = props.iter().collect();
-                    HtmlNodeBuilder::set_element_attributes(
-                        program,
-                        &old_element,
-                        &props_ref,
-                        &mut old_node.active_closures.borrow_mut(),
-                        styles_map,
-                        selectors_set,
-                        &old_id.get_duid_id()
-                    );
-                }
             },
             _ => {}
         }

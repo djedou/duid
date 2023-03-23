@@ -20,7 +20,7 @@ use crate::core::{
     util::document,
     duid_events::Dispatch,
 };
-use crate::arena::{Arena, NodeId};
+use crate::arena::Arena;
 use crate::tailwindcss_system::builder::StyleContainer;
 use std::collections::{HashMap, HashSet};
 
@@ -124,25 +124,11 @@ where
             &mut style_map, 
             &mut selectors_set);
         
-        //crate::console::info!("after apply patches: {:#?}", self.arena); 
         self.arena.clean_patches();
-/*
-        //crate::console::info!("clean_patches: {:#?}", self.arena); 
-            
-        crate::console::info!("after patches: {:#?}", self.arena);
         
-        let _ = self.root_node.set_key(1);
-        let patches = diff(&self.root_node, &new_root_node);
-        crate::console::info!("patches: {:#?}", patches);
-
-
-        new_root_node.build_node(program, &self.document, &mut style_map, &mut selectors_set);
-
-        self.render_new_node(new_root_node);
         let tailwind_styles = self.style_container.build(&selectors_set);
         self.inject_styles(&self.mount_styles(style_map, false));
         self.inject_styles(&tailwind_styles);
-        */
     }
 
     fn first_mount(&self) {
@@ -179,27 +165,6 @@ where
             }
         };
         
-    }
-
-    fn render_new_node(&mut self, new_root_node: VirtualNode<MSG>) {
-        /*
-        let mut updated = false;
-        match (&*self.root_node.real_node.borrow(), &*new_root_node.real_node.borrow()) {
-            (Some(old_node), Some(new_node)) => {
-                let mount_element: &Element = old_node.unchecked_ref();
-                mount_element
-                    .replace_with_with_node_1(new_node)
-                    .expect("Could not append child to mount");
-
-                    updated = true;
-                },
-                _ => {}
-            };
-            
-        if updated {
-            self.root_node = new_root_node;
-        }
-        */
     }
 
     fn inject_styles(&self, styles: &[(String, String)]) {

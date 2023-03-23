@@ -11,7 +11,6 @@ use crate::core::{
 pub(crate) enum ArenaNodeState {
     Visited,
     Removed,
-    Updated,
     #[default]
     None
 }

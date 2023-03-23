@@ -1,8 +1,5 @@
-use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, ArenaIterator, Pairs};
+use crate::arena::{ArenaNode, NodeId, Pairs};
 use std::collections::HashSet;
-use crate::core::{
-    html::attributes::Attribute
-};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -14,8 +11,6 @@ where
     Replacing(NodeId, NodeId, HashSet<Pairs>, Vec<ArenaNode<MSG>>),
     // (old_id, value)
     ValueChanged(NodeId, Option<String>),
-    // (old_id, new_id, props)
-    PropsChanged(NodeId, Vec<Attribute<MSG>>),
     Removed(NodeId)
 }
 

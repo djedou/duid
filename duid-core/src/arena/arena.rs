@@ -8,8 +8,6 @@ use crate::{
     dom::HtmlNodeBuilder
 };
 use std::collections::{HashMap, HashSet};
-
-use std::cmp::Ordering;
 use super::{NodeId, ArenaNode};
 
 #[derive(Debug, Clone)]
@@ -72,7 +70,7 @@ where
     }
 
     fn last_id(nodes: &HashSet<Pairs>) -> NodeId {
-        let mut levels: Vec<_> = nodes.iter().map(|pairs| pairs.child.level.clone()).collect();
+        let levels: Vec<_> = nodes.iter().map(|pairs| pairs.child.level.clone()).collect();
         let Some(max_level) = levels.iter().max() else {
             return NodeId::default();
         };

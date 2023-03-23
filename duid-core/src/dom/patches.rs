@@ -1,6 +1,5 @@
 use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, ArenaIterator, Pairs};
 use super::{Patch, DataState};
-use std::cmp::Ordering;
 use std::collections::HashSet;
 
 
@@ -71,7 +70,7 @@ where
 
                                     let mut new_nodes_ids_tag = HashSet::with_capacity(0);
                                     let mut new_nodes = vec![];
-                                    mark_replacing_state(new_id.child.clone(), old_id.clone(), &mut new_nodes_ids_tag, &mut new_nodes, new_arena); 
+                                    mark_replacing_state(new_id.child.clone(), &mut new_nodes_ids_tag, &mut new_nodes, new_arena); 
                                     mark_children_state(&[new_id.child.clone()], &mut new_nodes_ids_tag, &mut new_nodes, new_arena);
                                     patches.push(Patch::Replacing(old_id.clone(), new_id.child.clone(), new_nodes_ids_tag, new_nodes));
                                 },
@@ -105,7 +104,6 @@ where
 
 fn mark_replacing_state<MSG>(
     node: NodeId,
-    old_id: NodeId,
     new_nodes_ids: &mut HashSet<Pairs>,
     new_nodes: &mut Vec<ArenaNode<MSG>>,
     new_arena: &mut Arena<ArenaNode<MSG>>
@@ -209,23 +207,6 @@ where
     if old.value != new.value {
         return DataState::Value;
     }
-
-    /*if old.namespace != new.namespace {
-        return DataState::Tag;
-    }
-
-    if old.props != new.props {
-        return DataState::Tag;
-    }
-
-    if old_children_len != new_children_len {
-        return DataState::Tag;
-    }
-
-    if old_global_index != new_global_index {
-        return DataState::Tag;
-    }*/
-
 
     DataState::None
 }

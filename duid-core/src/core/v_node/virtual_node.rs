@@ -35,18 +35,6 @@ impl<MSG> VirtualNode<MSG>
 where
     MSG: std::fmt::Debug + Clone + 'static 
 {
-    pub(crate) fn new() -> Self {
-        VirtualNode {
-            key: 0,
-            tag: "",
-            node_type: VirtualNodeType::Element,
-            namespace: None,
-            props: Vec::with_capacity(0),
-            value: None,
-            children: Vec::with_capacity(0)
-        } 
-    }
-
     pub(crate) fn set_key(&mut self, key: usize) -> usize {
         let mut local_key = key;
         self.key = key;

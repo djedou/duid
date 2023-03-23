@@ -9,7 +9,6 @@ pub(crate) use arena_node::*;
 pub(crate) use arena_iterator::*;
 
 use std::hash::{Hash, Hasher};
-use std::collections::HashSet;
 
 
 #[derive(Default, Debug, Clone)]
