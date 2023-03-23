@@ -64,7 +64,7 @@ where
                                 &old_node, 
                                 &new_node
                             ) {
-                                DataState::Tag | DataState::Namespace | DataState::ChildrenSize => {
+                                DataState::Tag | DataState::Namespace | DataState::ChildrenSize | DataState::GlobalIndex => {
                                     old_node.node_state = ArenaNodeState::Removed;
                                     patches.push(Patch::Removed(old_id.clone()));
                                     mark_children_removed_state(&[old_id.clone()], old_arena, patches);
@@ -85,13 +85,13 @@ where
                                     new_node.node_state = ArenaNodeState::Visited;
                                     patches.push(Patch::PropsChanged(old_id.clone(), new_id.child.clone(), new_node.props.clone()));
                                 },
-                                DataState::GlobalIndex => {
+                                /*DataState::GlobalIndex => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
                                     if let Some(pairs) = old_id.get_pairs(&old_nodes_ids) {
                                         patches.push(Patch::IdChanged(old_id.clone(), new_id.child.clone(), pairs));
                                     }
-                                },
+                                },*/
                                 DataState::None => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
