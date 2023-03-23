@@ -83,15 +83,8 @@ where
                                 DataState::Props => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
-                                    patches.push(Patch::PropsChanged(old_id.clone(), new_id.child.clone(), new_node.props.clone()));
+                                    patches.push(Patch::PropsChanged(old_id.clone(), new_node.props.clone()));
                                 },
-                                /*DataState::GlobalIndex => {
-                                    old_node.node_state = ArenaNodeState::Visited;
-                                    new_node.node_state = ArenaNodeState::Visited;
-                                    if let Some(pairs) = old_id.get_pairs(&old_nodes_ids) {
-                                        patches.push(Patch::IdChanged(old_id.clone(), new_id.child.clone(), pairs));
-                                    }
-                                },*/
                                 DataState::None => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
@@ -132,7 +125,7 @@ where
                         let mut new_child_node = child_node.clone();
                         child_node.node_state = ArenaNodeState::Visited;
 
-                        new_child_node.node_state = ArenaNodeState::Visited;//Replacing(old_id.clone());
+                        new_child_node.node_state = ArenaNodeState::Visited;
                         new_nodes.push(new_child_node);
                         new_nodes_ids.insert(Pairs::new(parent.clone(), node.clone()));
                     },

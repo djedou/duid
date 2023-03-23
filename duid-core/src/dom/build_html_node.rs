@@ -111,7 +111,7 @@ impl HtmlNodeBuilder
         }
     }
 
-    #[track_caller]
+    #[track_caller] // built-in attribute
     pub fn set_element_attribute<DSP, MSG>(
         dispatch: &DSP,
         element: &Element,

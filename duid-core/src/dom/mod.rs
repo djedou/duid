@@ -1,10 +1,9 @@
-mod dom_diff;
 mod patches;
 mod build_html_node;
 mod apply_patches;
 mod patches_data;
 
-pub(crate) use dom_diff::*;
+
 pub(crate) use patches::*;
 pub(crate) use build_html_node::*;
 pub(crate) use apply_patches::*;
@@ -115,9 +114,7 @@ where
         // step 1: build a new Arena
         let mut arena = Arena::new_from_virtual_node(&new_root_node);
         // step 2: patches
-        //crate::console::info!("before patches: {:#?}", self.arena);
-        let new_patches = patches(&mut self.arena, &mut arena);
-        //crate::console::info!("after patches: {:#?}", self.arena);   
+        let new_patches = patches(&mut self.arena, &mut arena); 
          
         apply_patches(
             &mut self.arena,

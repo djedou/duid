@@ -9,15 +9,13 @@ use crate::core::{
 pub(crate) enum Patch<MSG> 
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
-{   
-    // (old, new)
-    IdChanged(NodeId, NodeId, Pairs), 
+{
     // (old_id, new_id, new_nodes_ids, new_nodes)
     Replacing(NodeId, NodeId, HashSet<Pairs>, Vec<ArenaNode<MSG>>),
     // (old_id, value)
     ValueChanged(NodeId, Option<String>),
     // (old_id, new_id, props)
-    PropsChanged(NodeId, NodeId, Vec<Attribute<MSG>>),
+    PropsChanged(NodeId, Vec<Attribute<MSG>>),
     Removed(NodeId)
 }
 

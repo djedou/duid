@@ -163,49 +163,8 @@ where
     }
 
     pub(crate) fn clean_patches(&mut self) {
-        self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
-        
         self.nodes.iter_mut().for_each(|node| {
             node.node_state = ArenaNodeState::default();
         });
     }
-
-/*
-    pub(crate) fn get_nodes_ids_by_levels(&self) -> Vec<(usize, Vec<NodeId>)> {
-        let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
-        self.first_node_id.get_levels(
-            1, 
-            &[self.first_node_id.clone()], 
-            &mut levels,
-            &self.node_id_pairs
-        );
-    
-        levels
-    }
-
-    pub(crate) fn get_nodes_ids_by_levels_for_patching(&mut self) -> Vec<(usize, Vec<NodeId>)> {
-        let mut levels: Vec<(usize, Vec<NodeId>)> = vec![];
-
-        self.node_id_pairs.retain(|value| !self.removed_ids.contains(&value[1]));
-        self.node_id_pairs.extend_from_slice(&self.new_node_id_pairs);
-
-        self.node_id_pairs.sort_by(|a, b| {
-            match a[0].value.cmp(&b[0].value).is_lt() {
-                true => Ordering::Less,
-                false => a[1].value.cmp(&b[1].value)
-            }
-        });
-        self.node_id_pairs.dedup();
-        self.first_node_id.get_levels(
-            1, 
-            &[self.first_node_id.clone()], 
-            &mut levels,
-            &self.node_id_pairs
-        );
-
-        levels
-    }
-
-    
-    */
 }

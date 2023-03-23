@@ -135,24 +135,4 @@ impl NodeId {
         
         Some((parent_node_id, *index))
     }
-
-/*
-
-    pub(crate) fn get_node_by_id_to_patch<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
-    where 
-        MSG: Clone
-    {
-        arena.nodes.iter().find(|node| 
-            node.id == *self &&
-            (node.node_state != ArenaNodeState::Removed ||
-            node.node_state != ArenaNodeState::UnChanged)
-        ) 
-    }
-
-    pub(crate) fn get_pair_mut<'a>(&'a self, ids: &'a mut [[NodeId; 2]]) -> Option<&mut [NodeId; 2]> {
-        ids.iter_mut().find(|id| id[1] == *self)
-    }
-
-    
-    */
 }
