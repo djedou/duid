@@ -69,9 +69,7 @@ where
             props: self.props.clone(),
             value: self.value.clone(),
             active_closures: Rc::new(RefCell::new(ActiveClosure::with_capacity(0))),
-            node_state: ArenaNodeState::default(),
-            update_props: Vec::with_capacity(0),
-            update_value: None
+            node_state: ArenaNodeState::default()
         }
     }
 

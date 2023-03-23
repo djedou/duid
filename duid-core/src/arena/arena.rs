@@ -18,8 +18,8 @@ pub struct Arena<T> {
     pub(crate) first_node_id: NodeId,
     pub(crate) last_node_id: NodeId,
     pub(crate) nodes_ids: HashSet<Pairs>,
-    pub(crate) removed_ids: HashSet<NodeId>,
-    pub(crate) new_node_id_pairs: HashSet<Pairs>,
+    //pub(crate) removed_ids: HashSet<NodeId>,
+    //pub(crate) new_node_id_pairs: HashSet<Pairs>,
     
 }
 
@@ -32,10 +32,13 @@ where
             nodes: Vec::with_capacity(0),
             first_node_id: NodeId::default(),
             last_node_id: NodeId::default(),
-            nodes_ids: HashSet::with_capacity(0),
-            removed_ids: HashSet::with_capacity(0),
-            new_node_id_pairs: HashSet::with_capacity(0),
+            nodes_ids: HashSet::with_capacity(0)
         }
+    }
+
+    pub(crate) fn remove(&mut self, node_id: &NodeId) {
+        self.nodes.retain(|node| node.id != *node_id);
+        self.nodes_ids.retain(|node| node.child != *node_id);
     }
 
     pub(crate) fn get_first_id(&self) -> NodeId {
@@ -157,16 +160,10 @@ where
     }
 
     pub(crate) fn clean_patches(&mut self) {
-
-        self.new_node_id_pairs = HashSet::with_capacity(0);
-        self.removed_ids = HashSet::with_capacity(0);
-
         self.nodes.retain(|node| node.node_state != ArenaNodeState::Removed);
         
         self.nodes.iter_mut().for_each(|node| {
             node.node_state = ArenaNodeState::default();
-            node.update_props = Vec::with_capacity(0);
-            node.update_value = None;
         });
     }
 

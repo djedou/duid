@@ -13,7 +13,6 @@ pub(crate) enum ArenaNodeState {
     //DataChanged(DataState),
     //Inserted(NodeId),
     Visited,
-    RemovedRoot,
     Removed,
     //Replacing(NodeId),
     Updated,
@@ -35,9 +34,7 @@ where
     pub(crate) props: Vec<Attribute<MSG>>,
     pub(crate) value: Option<String>,
     pub(crate) active_closures: Rc<RefCell<ActiveClosure>>,
-    pub(crate) node_state: ArenaNodeState,
-    pub(crate) update_props: Vec<Attribute<MSG>>,
-    pub(crate) update_value: Option<String>,
+    pub(crate) node_state: ArenaNodeState
 }
 
 impl<MSG> PartialEq<ArenaNode<MSG>> for ArenaNode<MSG> 

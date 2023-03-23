@@ -17,7 +17,6 @@ where
     ValueChanged(NodeId, NodeId, Option<String>),
     // (old_id, new_id, props)
     PropsChanged(NodeId, NodeId, Vec<Attribute<MSG>>),
-    RemovedRoot(NodeId),
     Removed(NodeId),
 }
 

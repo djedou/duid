@@ -1,4 +1,5 @@
 use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, ArenaIterator, Pairs};
+use super::Patch;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use web_sys::{Document, Element, Node};
@@ -15,6 +16,7 @@ use wasm_bindgen::JsCast;
 
 pub(crate) fn apply_patches<DSP, MSG>(
     old_arena: &mut Arena<ArenaNode<MSG>>,
+    patches: &[Patch<MSG>],
     program: &DSP,
     doc: &Document, 
     styles_map: &mut HashMap<String, String>, 
@@ -24,10 +26,20 @@ where
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
     DSP: Dispatch<MSG> + Clone + 'static
 {
+    // Step 1: delete all removed
+    patches.iter().for_each(|patch| {
+        match patch {
+            Patch::Removed(node_id) => {
+                old_arena.remove(node_id);
+            },
+            _ => {}
+        }
+    });
+    /*
     old_arena.nodes_ids.retain(|value| !old_arena.removed_ids.contains(&value.child));
     old_arena.nodes_ids.extend(old_arena.new_node_id_pairs.iter().cloned());
     crate::console::info!("patching: {:#?}", old_arena);   
-    /*let arena_iterator = ArenaIterator::new(old_arena.nodes_ids.clone());
+    let arena_iterator = ArenaIterator::new(old_arena.nodes_ids.clone());
 
     for node in &arena_iterator {
         apply_node_patch(&node, old_arena, program, doc, styles_map, selectors_set);

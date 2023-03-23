@@ -7,7 +7,7 @@ use std::collections::HashSet;
 pub(crate) fn patches<MSG>(
     old_arena: &mut Arena<ArenaNode<MSG>>, 
     new_arena: &mut Arena<ArenaNode<MSG>>
-) 
+) -> Vec<Patch<MSG>>
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
@@ -25,7 +25,7 @@ where
     let last_node = old_arena.get_last_id();
     patch_node(&last_node, old_arena, new_arena, &old_binding, &new_binding, &mut finded_new_ids, &mut patches);
 
-    crate::console::info!("patches: {:#?}", patches);
+    patches
 }
 
 
@@ -65,8 +65,8 @@ where
                                 &new_node
                             ) {
                                 DataState::Tag | DataState::Namespace | DataState::ChildrenSize => {
-                                    old_node.node_state = ArenaNodeState::RemovedRoot;
-                                    patches.push(Patch::RemovedRoot(old_id.clone()));
+                                    old_node.node_state = ArenaNodeState::Removed;
+                                    patches.push(Patch::Removed(old_id.clone()));
                                     mark_children_removed_state(&[old_id.clone()], old_arena, patches);
 
                                     let mut new_nodes_ids = HashSet::with_capacity(0);
@@ -103,8 +103,8 @@ where
             None => {
                 match old_id.get_node_by_id_mut(old_arena) {
                     Some(old_node) => {
-                        old_node.node_state = ArenaNodeState::RemovedRoot;
-                        patches.push(Patch::RemovedRoot(old_id.clone()));
+                        old_node.node_state = ArenaNodeState::Removed;
+                        patches.push(Patch::Removed(old_id.clone()));
                         mark_children_removed_state(&[old_id.clone()], old_arena, patches);
                     },
                     _ => {}
