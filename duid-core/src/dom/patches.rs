@@ -69,16 +69,16 @@ where
                                     patches.push(Patch::Removed(old_id.clone()));
                                     mark_children_removed_state(&[old_id.clone()], old_arena, patches);
 
-                                    let mut new_nodes_ids = HashSet::with_capacity(0);
+                                    let mut new_nodes_ids_tag = HashSet::with_capacity(0);
                                     let mut new_nodes = vec![];
-                                    mark_replacing_state(new_id.child.clone(), old_id.clone(), &mut new_nodes_ids, &mut new_nodes, new_arena); 
-                                    mark_children_state(&[new_id.child.clone()], &mut new_nodes_ids, &mut new_nodes, new_arena);
-                                    patches.push(Patch::Replacing(old_id.clone(), new_id.child.clone(), new_nodes_ids, new_nodes));
+                                    mark_replacing_state(new_id.child.clone(), old_id.clone(), &mut new_nodes_ids_tag, &mut new_nodes, new_arena); 
+                                    mark_children_state(&[new_id.child.clone()], &mut new_nodes_ids_tag, &mut new_nodes, new_arena);
+                                    patches.push(Patch::Replacing(old_id.clone(), new_id.child.clone(), new_nodes_ids_tag, new_nodes));
                                 },
                                 DataState::Value => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
-                                    patches.push(Patch::ValueChanged(old_id.clone(), new_id.child.clone(), new_node.value.clone()));
+                                    patches.push(Patch::ValueChanged(old_id.clone(), new_node.value.clone()));
                                 },
                                 DataState::Props => {
                                     old_node.node_state = ArenaNodeState::Visited;
@@ -88,7 +88,9 @@ where
                                 DataState::GlobalIndex => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
-                                    patches.push(Patch::IdChanged(old_id.clone(), new_id.child.clone()));
+                                    if let Some(pairs) = old_id.get_pairs(&old_nodes_ids) {
+                                        patches.push(Patch::IdChanged(old_id.clone(), new_id.child.clone(), pairs));
+                                    }
                                 },
                                 DataState::None => {
                                     old_node.node_state = ArenaNodeState::Visited;

@@ -4,20 +4,21 @@ use crate::core::{
     html::attributes::Attribute
 };
 
+
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Patch<MSG> 
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static,
 {   
     // (old, new)
-    IdChanged(NodeId, NodeId), 
+    IdChanged(NodeId, NodeId, Pairs), 
     // (old_id, new_id, new_nodes_ids, new_nodes)
     Replacing(NodeId, NodeId, HashSet<Pairs>, Vec<ArenaNode<MSG>>),
-    // (old_id, new_id, value)
-    ValueChanged(NodeId, NodeId, Option<String>),
+    // (old_id, value)
+    ValueChanged(NodeId, Option<String>),
     // (old_id, new_id, props)
     PropsChanged(NodeId, NodeId, Vec<Attribute<MSG>>),
-    Removed(NodeId),
+    Removed(NodeId)
 }
 
 

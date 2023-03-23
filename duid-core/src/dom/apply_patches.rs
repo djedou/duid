@@ -35,6 +35,83 @@ where
             _ => {}
         }
     });
+
+    // 
+    patches.iter().for_each(|patch| {
+        match patch {
+            Patch::IdChanged(old_id, new_id, pairs) => {
+                let mut pairs_mut = pairs.clone();
+                pairs_mut.child = new_id.clone();
+                let _ = old_arena.nodes_ids.remove(&pairs);
+                let _ = old_arena.nodes_ids.insert(pairs_mut);
+                
+                if let Some(node) = old_id.get_node_by_id_mut(old_arena) {
+                    node.id = new_id.clone();
+                    match node.node_type {
+                        VirtualNodeType::Text |
+                        VirtualNodeType::Comment |
+                        VirtualNodeType::DocType |
+                        VirtualNodeType::Fragment
+                        => {},
+                        VirtualNodeType::Element => {
+                            let element: Element = 
+                                doc.query_selector(&format!("[duid-id=\"{}\"]", old_id.get_duid_id()))
+                                    .expect(&format!("Unable to get element with id {}", old_id.get_duid_id()))
+                                    .expect(&format!("Unable to get element with id {}", old_id.get_duid_id()));
+                            
+                            let _ = element.remove_attribute("duid-id");
+                            let _ = element.set_attribute("duid-id", &format!("{}", new_id.get_duid_id()));
+                        }
+                    }
+                }
+            },
+            Patch::ValueChanged(id, value) => {
+                if let Some((parent_id, index)) = id.get_index_in_parent_children(&old_arena.nodes_ids) {
+                    let parent_element: Element = 
+                        doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.get_duid_id()))
+                        .expect("Unable to get element")
+                        .expect("Unable to get element");
+                    
+                    let Some(old_node_text) = id.get_node_by_id(&old_arena) else {
+                        panic!("we did not get id {} node's", id.get_duid_id());
+                    };
+                    let Some(ref new_value) = value else {
+                        panic!("we did not get id {} node's value", id.get_duid_id());
+                    };
+
+                    let text_node: Element = doc.create_text_node(&new_value).unchecked_into();
+                    
+                    if let Some(old_text_node) = parent_element.child_nodes().get(index as u32) {
+                        let old_text_element: Element = old_text_node.unchecked_into();
+                        let _ = old_text_element
+                            .replace_with_with_node_1(&text_node)
+                            .expect("Could not append child to mount");
+                    }
+                }
+            },
+            Patch::Replacing(old_id, new_id, pairs, nodes) => {
+                old_arena.add(pairs.to_owned(), &nodes);
+
+                let new_html_node = old_arena.build_html_node(
+                    new_id.clone(),
+                    program,
+                    &doc, 
+                    styles_map,
+                    selectors_set
+                );
+
+                let old_element: Element = 
+                    doc.query_selector(&format!("[duid-id=\"{}\"]", old_id.get_duid_id()))
+                    .expect("Unable to get element")
+                    .expect("Unable to get element");
+                
+            let _ = old_element
+                .replace_with_with_node_1(&new_html_node)
+                .expect("Could not append child to mount");
+            },
+            _ => {}
+        }
+    });
     /*
     old_arena.nodes_ids.retain(|value| !old_arena.removed_ids.contains(&value.child));
     old_arena.nodes_ids.extend(old_arena.new_node_id_pairs.iter().cloned());
@@ -142,7 +219,7 @@ where
         });
     });*/
 }
-
+/*
 fn apply_node_patch<DSP, MSG>(
     id: &NodeId,
     old_arena: &mut Arena<ArenaNode<MSG>>,
@@ -159,7 +236,7 @@ where
         Some(old_node) => {
             let old_node_type = old_node.node_type.clone();
             match &old_node.node_state.clone() {
-                /*ArenaNodeState::Replacing(old_id) => {
+                ArenaNodeState::Replacing(old_id) => {
                     let new_html_node = old_arena.build_html_node(
                         id.clone(),
                         program,
@@ -169,8 +246,8 @@ where
                     );
                     replace_node(&old_node_type, &old_id, &old_arena.nodes_ids, &doc, &new_html_node);
                     //mark_children_state::<MSG>(&[id.clone()], old_arena);
-                },*/
-                /*ArenaNodeState::IdChanged(old_id, node_id) => {
+                },
+                ArenaNodeState::IdChanged(old_id, node_id) => {
                     match old_node_type {
                         VirtualNodeType::Text |
                         VirtualNodeType::Comment |
@@ -236,14 +313,15 @@ where
                         },
                         _ => {}
                     }
-                },*/
+                },
                 _ => {}
             }
         },
         None => {}
     }
 }
-/*
+
+
 fn replace_node(
     node_type: &VirtualNodeType, 
     id: &NodeId, 
@@ -257,16 +335,25 @@ fn replace_node(
         => {
             if let Some((parent_id, index)) = id.get_index_in_parent_children(&ids) {
                 let parent_element: Element = 
-                    doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.get_duid_id()))
-                    .expect("Unable to get element")
-                    .expect("Unable to get element");
-                
-                if let Some(old_text_node) = parent_element.child_nodes().get(index as u32) {
-                    let old_text_element: Element = old_text_node.unchecked_into();
-                    let _ = old_text_element
-                        .replace_with_with_node_1(&html_node)
-                        .expect("Could not append child to mount");
-                }
+                        doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.get_duid_id()))
+                        .expect("Unable to get element")
+                        .expect("Unable to get element");
+                    
+                    let Some(old_node_text) = id.get_node_by_id(&old_arena) else {
+                        panic!("we did not get id {} node's", id.get_duid_id());
+                    };
+                    let Some(ref new_value) = value else {
+                        panic!("we did not get id {} node's value", id.get_duid_id());
+                    };
+
+                    let text_node: Element = doc.create_text_node(&new_value).unchecked_into();
+                    
+                    if let Some(old_text_node) = parent_element.child_nodes().get(index as u32) {
+                        let old_text_element: Element = old_text_node.unchecked_into();
+                        let _ = old_text_element
+                            .replace_with_with_node_1(&text_node)
+                            .expect("Could not append child to mount");
+                    }
             }
         },
         VirtualNodeType::Fragment => {},

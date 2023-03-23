@@ -113,6 +113,10 @@ impl NodeId {
         ids.iter().find(|id| id.child == *self).map(|i| i.parent.clone())
     }
 
+    pub(crate) fn get_pairs(&self, ids: &HashSet<Pairs>) -> Option<Pairs> {
+        ids.iter().find(|id| id.child == *self).map(|p| p.clone())
+    }
+
     pub(crate) fn get_node_by_id<'a, MSG>(&'a self, arena: &'a Arena<ArenaNode<MSG>>) -> Option<&ArenaNode<MSG>> 
     where 
         MSG: Clone

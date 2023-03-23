@@ -17,9 +17,7 @@ pub struct Arena<T> {
     pub(crate) nodes: Vec<T>,
     pub(crate) first_node_id: NodeId,
     pub(crate) last_node_id: NodeId,
-    pub(crate) nodes_ids: HashSet<Pairs>,
-    //pub(crate) removed_ids: HashSet<NodeId>,
-    //pub(crate) new_node_id_pairs: HashSet<Pairs>,
+    pub(crate) nodes_ids: HashSet<Pairs>
     
 }
 
@@ -39,6 +37,11 @@ where
     pub(crate) fn remove(&mut self, node_id: &NodeId) {
         self.nodes.retain(|node| node.id != *node_id);
         self.nodes_ids.retain(|node| node.child != *node_id);
+    }
+
+    pub(crate) fn add(&mut self, nodes_ids: HashSet<Pairs>, nodes: &[ArenaNode<MSG>]) {
+        self.nodes.extend_from_slice(&nodes);
+        self.nodes_ids.extend(nodes_ids);
     }
 
     pub(crate) fn get_first_id(&self) -> NodeId {
