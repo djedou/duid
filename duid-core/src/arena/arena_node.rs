@@ -13,23 +13,13 @@ pub(crate) enum ArenaNodeState {
     //DataChanged(DataState),
     //Inserted(NodeId),
     Visited,
+    RemovedRoot,
     Removed,
-    Replacing(NodeId),
+    //Replacing(NodeId),
     Updated,
-    UnChanged,
+    //UnChanged,
     #[default]
     None
-}
-
-#[derive(Debug, Clone, Default, PartialEq)]
-pub(crate) enum DataState {
-    Tag,
-    NodeType,
-    Namespace,
-    Props,
-    Value,
-    #[default]
-    None,
 }
 
 

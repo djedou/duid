@@ -1,4 +1,4 @@
-use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, DataState, ArenaIterator, Pairs};
+use crate::arena::{Arena, ArenaNode, NodeId, ArenaNodeState, ArenaIterator, Pairs};
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use web_sys::{Document, Element, Node};
@@ -26,15 +26,15 @@ where
 {
     old_arena.nodes_ids.retain(|value| !old_arena.removed_ids.contains(&value.child));
     old_arena.nodes_ids.extend(old_arena.new_node_id_pairs.iter().cloned());
-    //crate::console::info!("patching: {:#?}", old_arena);   
-    let arena_iterator = ArenaIterator::new(old_arena.nodes_ids.clone());
+    crate::console::info!("patching: {:#?}", old_arena);   
+    /*let arena_iterator = ArenaIterator::new(old_arena.nodes_ids.clone());
 
     for node in &arena_iterator {
         apply_node_patch(&node, old_arena, program, doc, styles_map, selectors_set);
     }
     let last_node = old_arena.get_last_id();
     apply_node_patch(&last_node, old_arena, program, doc, styles_map, selectors_set);
-
+*/
 
     /*
     let updated_levels: Vec<(usize, Vec<NodeId>)> = old_arena.get_nodes_ids_by_levels_for_patching();
@@ -147,7 +147,7 @@ where
         Some(old_node) => {
             let old_node_type = old_node.node_type.clone();
             match &old_node.node_state.clone() {
-                ArenaNodeState::Replacing(old_id) => {
+                /*ArenaNodeState::Replacing(old_id) => {
                     let new_html_node = old_arena.build_html_node(
                         id.clone(),
                         program,
@@ -156,8 +156,8 @@ where
                         selectors_set
                     );
                     replace_node(&old_node_type, &old_id, &old_arena.nodes_ids, &doc, &new_html_node);
-                    mark_children_state::<MSG>(&[id.clone()], old_arena);
-                },
+                    //mark_children_state::<MSG>(&[id.clone()], old_arena);
+                },*/
                 /*ArenaNodeState::IdChanged(old_id, node_id) => {
                     match old_node_type {
                         VirtualNodeType::Text |
@@ -231,7 +231,7 @@ where
         None => {}
     }
 }
-
+/*
 fn replace_node(
     node_type: &VirtualNodeType, 
     id: &NodeId, 
@@ -289,4 +289,4 @@ where
 
         mark_children_state::<MSG>(&children, old_arena);
     });
-}
+}*/
