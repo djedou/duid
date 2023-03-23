@@ -64,11 +64,7 @@ where
                                 &old_node, 
                                 &new_node
                             ) {
-                                DataState::Tag | 
-                                DataState::Namespace | 
-                                DataState::ChildrenSize | 
-                                DataState::GlobalIndex |
-                                DataState::Props => {
+                                DataState::Tag => {
                                     old_node.node_state = ArenaNodeState::Removed;
                                     patches.push(Patch::Removed(old_id.clone()));
                                     mark_children_removed_state(&[old_id.clone()], old_arena, patches);
@@ -84,11 +80,6 @@ where
                                     new_node.node_state = ArenaNodeState::Visited;
                                     patches.push(Patch::ValueChanged(old_id.clone(), new_node.value.clone()));
                                 },
-                                /*DataState::Props => {
-                                    old_node.node_state = ArenaNodeState::Visited;
-                                    new_node.node_state = ArenaNodeState::Visited;
-                                    patches.push(Patch::PropsChanged(old_id.clone(), new_node.props.clone()));
-                                },*/
                                 DataState::None => {
                                     old_node.node_state = ArenaNodeState::Visited;
                                     new_node.node_state = ArenaNodeState::Visited;
@@ -206,7 +197,12 @@ fn get_data_changed<MSG>(
 where 
     MSG: std::fmt::Debug + Clone + PartialEq + 'static, 
 {
-    if old.tag != new.tag {
+    if  old.tag != new.tag ||
+        old.namespace != new.namespace ||
+        old.props != new.props ||
+        old_children_len != new_children_len ||
+        old_global_index != new_global_index
+    {
         return DataState::Tag;
     }
 
@@ -214,21 +210,21 @@ where
         return DataState::Value;
     }
 
-    if old.namespace != new.namespace {
-        return DataState::Namespace;
+    /*if old.namespace != new.namespace {
+        return DataState::Tag;
     }
 
     if old.props != new.props {
-        return DataState::Props;
+        return DataState::Tag;
     }
 
     if old_children_len != new_children_len {
-        return DataState::ChildrenSize;
+        return DataState::Tag;
     }
 
     if old_global_index != new_global_index {
-        return DataState::GlobalIndex;
-    }
+        return DataState::Tag;
+    }*/
 
 
     DataState::None

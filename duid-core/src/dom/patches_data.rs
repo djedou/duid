@@ -24,10 +24,6 @@ where
 pub(crate) enum DataState {
     Tag,
     Value,
-    Namespace,
-    Props,
-    ChildrenSize,
-    GlobalIndex,
     #[default]
     None,
 }
