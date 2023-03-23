@@ -103,7 +103,7 @@ where
                 let old_element: Element = 
                     doc.query_selector(&format!("[duid-id=\"{}\"]", old_id.get_duid_id()))
                     .expect(&format!("Unable to get element with id: {} to be replace with: {}", old_id.get_duid_id(), new_id.get_duid_id()))
-                    .expect(&format!("Unable to get element with id: {}", old_id.get_duid_id()));
+                    .expect(&format!("Unable to get element with id: {} to be replace with: {}", old_id.get_duid_id(), new_id.get_duid_id()));
                 
             let _ = old_element
                 .replace_with_with_node_1(&new_html_node)
