@@ -39,6 +39,7 @@ pub(crate) fn cursor() -> HashMap<String, String> {
     let _ = cursor.insert("cursor-nwse-resize".to_owned(), "cursor: nwse-resize;".to_owned());
     let _ = cursor.insert("cursor-zoom-in".to_owned(), "cursor: zoom-in;".to_owned());
     let _ = cursor.insert("cursor-zoom-out".to_owned(), "cursor: zoom-out;".to_owned());
+    let _ = cursor.insert("cursor-inherit".to_owned(), "cursor: inherit;".to_owned());
 
     cursor
 }
