@@ -51,7 +51,7 @@ impl StyleContainer {
         }
 
 
-        for chunk in full_styles.chunks(40) {
+        for chunk in full_styles.chunks(30) {
             let chunk_styles: Vec<_> = chunk.iter().map(|(_, v)| v.to_owned()).collect();
             let chunk_keys: Vec<_> = chunk.iter().map(|(k, _)| k.to_string()).collect();
 
