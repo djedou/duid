@@ -301,6 +301,7 @@ pub(crate) fn top_right_bottom_left() -> HashMap<String, String> {
     let _ = top_right_bottom_left.insert("left-96".to_owned(), "left: 24rem;".to_owned());
 
     let _ = top_right_bottom_left.insert("inset-auto".to_owned(), "top: auto;right: auto;bottom: auto;left: auto;".to_owned());
+    let _ = top_right_bottom_left.insert("inset-0".to_owned(), "top: 0%;right: 0%;bottom: 0%;left: 0%;".to_owned());
     let _ = top_right_bottom_left.insert("inset-1/2".to_owned(), "top: 50%;right: 50%;bottom: 50%;left: 50%;".to_owned());
     let _ = top_right_bottom_left.insert("inset-1/3".to_owned(), "top: 33.333333%;right: 33.333333%;bottom: 33.333333%;left: 33.333333%;".to_owned());
     let _ = top_right_bottom_left.insert("inset-2/3".to_owned(), "top: 66.666667%;right: 66.666667%;bottom: 66.666667%;left: 66.666667%;".to_owned());
