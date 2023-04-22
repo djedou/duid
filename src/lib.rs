@@ -7,3 +7,4 @@
 pub use duid_core::core::*;
 pub use duid_core::console;
 pub use duid_core::web_sys;
+pub use duid_core::duid_nuts;
