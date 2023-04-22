@@ -108,19 +108,13 @@ impl<MSG> Cmd<MSG> {
         }
     }
 
-    pub fn grpc(msg: MSG) -> Self {
-
+    pub fn grpc<F>(f: F) -> Self 
+    where 
+        F: Fn(),
+    {
+        (f)();
         Self {
-            messages: vec![(CmdType::Grpc, msg)]
-        }
-    }
-
-    pub fn grpc_batch(
-        messages: impl IntoIterator<Item = MSG>
-    ) -> Self {
-
-        Self {
-            messages: messages.into_iter().map(|msg| (CmdType::Grpc, msg)).collect()
+            messages: Vec::with_capacity(0)
         }
     }
 

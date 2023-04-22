@@ -13,7 +13,7 @@ use crate::{
 use wasm_bindgen::{closure::Closure};
 use wasm_bindgen::JsCast;
 use std::collections::HashMap;
-
+use crate::duid_nuts::NutsActivityMsg;
 
 
 pub struct Duid<MDL, MSG> 
@@ -76,6 +76,13 @@ where
         }));
         
         let program = Self::new(mount_node, virtual_dom, base_styles, styles, true, false);
+        let activity = nuts::new_activity(program.clone());
+        activity.subscribe(
+            |_activity, n: &NutsActivityMsg|
+            
+            println!("Subscriber received {:#?}", n)
+        );
+
         program.mount();
         program
     }
