@@ -68,7 +68,7 @@ where
         virtual_dom: UserApp<MDL, MSG>,
         base_styles: HashMap<String, String>,
         styles: HashMap<String, String>
-    ) -> Self
+    ) //-> Self
     {
         console_log::init_with_level(tracing::log::Level::Debug).unwrap();
         std::panic::set_hook(Box::new(|info| {
@@ -76,15 +76,14 @@ where
         }));
         
         let program = Self::new(mount_node, virtual_dom, base_styles, styles, true, false);
-        let activity = nuts::new_activity(program.clone());
+        
+        program.mount();
+        let activity = nuts::new_activity(program);
         activity.subscribe(
             |_activity, n: &NutsActivityMsg|
             
             println!("Subscriber received {:#?}", n)
         );
-
-        program.mount();
-        program
     }
     
     pub fn mount(&self) {
