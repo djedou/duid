@@ -2,6 +2,7 @@ use crate::core::duid_events::{CmdType, Cmd, Dispatch};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Effects;
+use wasm_bindgen_futures::spawn_local;
 
 impl Effects {
     pub(crate) fn new() -> Self {
@@ -20,6 +21,13 @@ impl Effects {
                 CmdType::Normal => {
                     messages.push(msg);
                 },
+                CmdType::Grpc(grpc_fn) => {
+                    let local_dispatch = dispatch.clone();
+                    spawn_local(async move {
+                        let res = grpc_fn.await;
+                        local_dispatch.dispatch_multiple(vec![res]);
+                    });
+                }
                 _ => ()
             }
         }

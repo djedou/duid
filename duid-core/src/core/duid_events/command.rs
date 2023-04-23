@@ -1,26 +1,27 @@
 use std::convert::From;
 use super::subscribe::Sub;
+use std::future::Future;
+use std::pin::Pin;
 
 
-#[derive(Debug)]
-pub enum CmdType {
+pub enum CmdType<MSG> {
     Normal,
     Browser,
     WebSocket,
     Http,
     JavaScript,
-    Grpc,
+    Grpc(Pin<Box<dyn Future<Output = MSG>>>),
     GraphQL
 }
 
-#[derive(Debug)]
+
 pub struct Cmd<MSG> {
-    pub messages: Vec<(CmdType, MSG)>
+    pub messages: Vec<(CmdType<MSG>, MSG)>
 }
 
 impl<MSG> Cmd<MSG> {
     fn new(
-        messages: impl IntoIterator<Item = (CmdType, MSG)>
+        messages: impl IntoIterator<Item = (CmdType<MSG>, MSG)>
     ) -> Self {
 
         Self {
@@ -108,13 +109,10 @@ impl<MSG> Cmd<MSG> {
         }
     }
 
-    pub fn grpc<F>(f: F) -> Self 
-    where 
-        F: Fn(),
+    pub fn grpc(f: Pin<Box<dyn Future<Output = MSG>>>, msg: MSG) -> Self 
     {
-        (f)();
         Self {
-            messages: Vec::with_capacity(0)
+            messages: vec![(CmdType::Grpc(f), msg)]
         }
     }
 
@@ -143,20 +141,36 @@ impl<MSG> Cmd<MSG> {
     pub fn map_cmd_msg<MSG2>(self) -> Cmd<MSG2>
     where
         MSG: 'static,
-        MSG2: From<MSG>,
+        MSG2: From<MSG>
     {
         let Cmd {
             messages
         } = self;
 
         Cmd {
-            messages: messages.into_iter().map(|(cmd_type, msg)| (cmd_type, MSG2::from(msg))).collect()
+            messages: messages.into_iter().map(|(cmd_type, msg)| {
+                let local_cmd_type = match cmd_type {
+                    CmdType::Grpc(gr) => {
+                        CmdType::Grpc(Box::pin(async {
+                            MSG2::from(gr.await)
+                        }))
+                    },
+                    CmdType::Normal => CmdType::<MSG2>::Normal,
+                    CmdType::Browser => CmdType::<MSG2>::Browser,
+                    CmdType::WebSocket => CmdType::<MSG2>::WebSocket,
+                    CmdType::Http => CmdType::<MSG2>::Http,
+                    CmdType::JavaScript => CmdType::<MSG2>::JavaScript,
+                    CmdType::GraphQL => CmdType::<MSG2>::GraphQL,
+                };
+
+                (local_cmd_type, MSG2::from(msg))
+            }).collect()
         }
     }
 
     pub fn append_cmd(
         mut self,
-        messages: impl IntoIterator<Item = (CmdType, MSG)>
+        messages: impl IntoIterator<Item = (CmdType<MSG>, MSG)>
     ) -> Self {
         self.messages.extend(messages);
         self
@@ -172,7 +186,7 @@ impl<MSG> Cmd<MSG> {
     
     pub fn extend(
         mut self,
-        messages: impl IntoIterator<Item = (CmdType, MSG)>
+        messages: impl IntoIterator<Item = (CmdType<MSG>, MSG)>
     ) -> Self {
         self.messages.extend(messages);
         self

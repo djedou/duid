@@ -11,20 +11,3 @@ pub mod console {
 pub mod web_sys {
     pub use web_sys::{EventTarget, HtmlElement, HtmlStyleElement, Node, CanvasRenderingContext2d, HtmlCanvasElement, Document, Window};
 }
-
-pub mod duid_nuts {
-    pub use nuts::publish;
-
-    #[derive(Debug)]
-    pub struct NutsActivityMsg {
-        pub msg: Box<dyn std::fmt::Debug>
-    }
-
-    impl NutsActivityMsg {
-        pub fn new<MSG: std::fmt::Debug + 'static>(msg: MSG) -> NutsActivityMsg {
-            NutsActivityMsg {
-                msg: Box::new(msg)
-            }
-        }
-    }
-}

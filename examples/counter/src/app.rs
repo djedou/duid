@@ -2,7 +2,7 @@ use duid::{
     html::{div, text, nodes::Node,
         attributes::{classes, selectors}
     },
-    duid_events::{NodeMapMsg, Cmd,Sub}
+    duid_events::{NodeMapMsg, Cmd, Sub}
 };
 use crate::button::{ButtonModel, ButtonMsg, button_dec_view, button_inc_view, button_update};
 
