@@ -52,8 +52,6 @@ where
         mount: &str,
         replace: bool,
         use_shadow: bool,
-        base_styles: HashMap<String, String>,
-        styles: HashMap<String, String>
     ) -> Dom<MSG> 
     where
         DSP: Dispatch<MSG> + Clone + 'static,
@@ -71,9 +69,9 @@ where
             replace,
             use_shadow, 
             real_node: None,
-            document: doc,
-            base_styles,
-            styles,
+            document: doc,   
+            base_styles: HashMap::with_capacity(0), // to be remove later on,
+            styles: HashMap::with_capacity(0), // to be remove later on
             style_container: StyleContainer::new()
         }
     }

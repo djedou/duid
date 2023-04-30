@@ -4,6 +4,7 @@ use crate::{
     core::{
         duid_events::{Dispatch, Cmd},
         util::{window, request_animation_frame_for_closure},
+        window::Window,
         v_node::ViewBuilder,
         apps::UserApp
     },
@@ -12,7 +13,6 @@ use crate::{
 };
 use wasm_bindgen::{closure::Closure};
 use wasm_bindgen::JsCast;
-use std::collections::HashMap;
 
 
 pub struct Duid<MDL, MSG> 
@@ -35,7 +35,7 @@ where
         Duid {
             user_app: Rc::clone(&self.user_app),
             dom: Rc::clone(&self.dom),
-            effects: Rc::clone(&self.effects),
+            effects: Rc::clone(&self.effects)
         }
     }
 }
@@ -49,24 +49,21 @@ where
     pub fn new(
         mount_node: &str,
         virtual_dom: UserApp<MDL, MSG>,
-        base_styles: HashMap<String, String>,
-        styles: HashMap<String, String>,
         replace: bool,
         use_shadow: bool
     ) -> Self {
 
         Duid {
             user_app: Rc::new(RefCell::new(virtual_dom)),
-            dom: Rc::new(RefCell::new(Dom::new::<Self>(mount_node, replace, use_shadow, base_styles, styles))),
+            dom: Rc::new(RefCell::new(Dom::new::<Self>(mount_node, replace, use_shadow))),
             effects: Rc::new(RefCell::new(Effects::new()))
         }
     }
 
     pub fn start(
         mount_node: &str,
-        virtual_dom: UserApp<MDL, MSG>,
-        base_styles: HashMap<String, String>,
-        styles: HashMap<String, String>
+        title: Option<String>,
+        virtual_dom: UserApp<MDL, MSG>
     ) -> Self
     {
         console_log::init_with_level(tracing::log::Level::Debug).unwrap();
@@ -74,9 +71,14 @@ where
             tracing::error!("{:?}", info);
         }));
         
-        let program = Self::new(mount_node, virtual_dom, base_styles, styles, true, false);
-        
+        let program = Self::new(mount_node, virtual_dom, true, false);
         program.mount();
+        match title {
+            Some(t) => {
+                Window::set_title(&t);
+            }, 
+            None => {}
+        }
         program
     }
     

@@ -204,6 +204,11 @@ where
         return DataState::Tag;
     }
 
+    let props: Vec<_> = old.props.iter().map(|p| p.name()).collect();
+    if props.iter().any(|&p| p == "duid-route") {
+        return DataState::Tag;
+    }
+
     if old.value != new.value {
         return DataState::Value;
     }

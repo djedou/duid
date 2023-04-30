@@ -6,6 +6,7 @@ pub mod svg;
 pub(crate) mod v_node;
 pub mod util;
 pub mod networks;
+pub mod window;
 
 use std::cell::Cell;
 use std::collections::HashMap;

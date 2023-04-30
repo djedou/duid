@@ -12,6 +12,10 @@ pub fn history() -> web_sys::History {
     window().history().expect("should have a history object")
 }
 
+pub fn location() -> web_sys::Location {
+    window().location()
+}
+
 pub fn request_animation_frame<F>(f: F)
 where
     F: FnMut() + 'static,

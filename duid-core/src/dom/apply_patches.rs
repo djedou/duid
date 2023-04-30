@@ -40,8 +40,8 @@ where
                 if let Some((parent_id, index)) = id.get_index_in_parent_children(&old_arena.nodes_ids) {
                     let parent_element: Element = 
                         doc.query_selector(&format!("[duid-id=\"{}\"]", parent_id.get_duid_id()))
-                        .expect("Unable to get element")
-                        .expect("Unable to get element");
+                        .expect("Unable to get element, help: Text node should be inside other html tag")
+                        .expect("Unable to get element, help: Text node should be inside other html tag");
                     
                     let Some(ref new_value) = value else {
                         panic!("we did not get id {} node's value", id.get_duid_id());
