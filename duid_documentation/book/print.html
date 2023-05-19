@@ -1,0 +1,310 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>duid_documentation</title>
+        <meta name="robots" content="noindex" />
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="styles/introduction.html"><strong aria-hidden="true">1.</strong> Styles</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="styles/backgrounds.html"><strong aria-hidden="true">1.1.</strong> Backgrounds</a></li><li class="chapter-item expanded "><a href="styles/borders.html"><strong aria-hidden="true">1.2.</strong> Borders</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">duid_documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="styles"><a class="header" href="#styles">Styles</a></h1>
+<p>Introduction</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="backgrounds"><a class="header" href="#backgrounds">Backgrounds</a></h1>
+<h2 id="background-attachment"><a class="header" href="#background-attachment">background attachment</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Properties</th><th>CSS</th></tr></thead><tbody>
+<tr><td>bg-fixed</td><td>background-attachment: fixed</td></tr>
+<tr><td>bg-local</td><td>background-attachment: local</td></tr>
+<tr><td>bg-scroll</td><td>background-attachment: scroll</td></tr>
+</tbody></table>
+</div>
+<h2 id="background-clip"><a class="header" href="#background-clip">background clip</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Properties</th><th>CSS</th></tr></thead><tbody>
+<tr><td>bg-clip-border</td><td>background-clip: border-box</td></tr>
+<tr><td>bg-clip-padding</td><td>background-clip: padding-box</td></tr>
+<tr><td>bg-clip-content</td><td>background-clip: content-box</td></tr>
+<tr><td>bg-clip-text</td><td>background-clip: text</td></tr>
+</tbody></table>
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="borders"><a class="header" href="#borders">Borders</a></h1>
+<h2 id="border-radius"><a class="header" href="#border-radius">border radius</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Properties</th><th>CSS</th></tr></thead><tbody>
+<tr><td>rounded-none</td><td>border-radius: 0px</td></tr>
+<tr><td>rounded-sm</td><td>border-radius: 0.125rem</td></tr>
+<tr><td>rounded</td><td>border-radius: 0.25rem</td></tr>
+<tr><td>rounded-md</td><td>border-radius: 0.375rem</td></tr>
+<tr><td>rounded-lg</td><td>border-radius: 0.5rem</td></tr>
+<tr><td>rounded-xl</td><td>border-radius: 0.75rem</td></tr>
+<tr><td>rounded-2xl</td><td>border-radius: 1rem</td></tr>
+<tr><td>rounded-3xl</td><td>border-radius: 1.5rem</td></tr>
+<tr><td>rounded-full</td><td>border-radius: 9999px</td></tr>
+<tr><td>rounded-t-none</td><td>border-top-left-radius: 0px;border-top-right-radius: 0px</td></tr>
+<tr><td>rounded-t-sm</td><td>border-top-left-radius: 0.125rem;border-top-right-radius: 0.125rem</td></tr>
+<tr><td>rounded-t</td><td>border-top-left-radius: 0.25rem;border-top-right-radius: 0.25rem</td></tr>
+<tr><td>rounded-t-md</td><td>border-top-left-radius: 0.375rem;border-top-right-radius: 0.375rem</td></tr>
+<tr><td>rounded-t-lg</td><td>border-top-left-radius: 0.5rem;border-top-right-radius: 0.5rem</td></tr>
+<tr><td>rounded-t-xl</td><td>border-top-left-radius: 0.75rem;border-top-right-radius: 0.75rem</td></tr>
+<tr><td>rounded-t-2xl</td><td>border-top-left-radius: 1rem;border-top-right-radius: 1rem</td></tr>
+<tr><td>rounded-t-3xl</td><td>border-top-left-radius: 1.5rem;border-top-right-radius: 1.5rem</td></tr>
+<tr><td>rounded-t-full</td><td>border-top-left-radius: 9999px;border-top-right-radius: 9999px</td></tr>
+<tr><td>rounded-r-none</td><td>border-top-right-radius: 0px;border-bottom-right-radius: 0px</td></tr>
+<tr><td>rounded-r-sm</td><td>border-top-right-radius: 0.125rem;border-bottom-right-radius: 0.125rem</td></tr>
+<tr><td>rounded-r</td><td>border-top-right-radius: 0.25rem;border-bottom-right-radius: 0.25rem</td></tr>
+<tr><td>rounded-r-md</td><td>border-top-right-radius: 0.375rem;border-bottom-right-radius: 0.375rem</td></tr>
+<tr><td>rounded-r-lg</td><td>border-top-right-radius: 0.5rem;border-bottom-right-radius: 0.5rem</td></tr>
+<tr><td>rounded-r-xl</td><td>border-top-right-radius: 0.75rem;border-bottom-right-radius: 0.75rem</td></tr>
+<tr><td>rounded-r-2xl</td><td>border-top-right-radius: 1rem;border-bottom-right-radius: 1rem</td></tr>
+<tr><td>rounded-r-3xl</td><td>border-top-right-radius: 1.5rem;border-bottom-right-radius: 1.5rem</td></tr>
+<tr><td>rounded-r-full</td><td>border-top-right-radius: 9999px;border-bottom-right-radius: 9999px</td></tr>
+<tr><td>rounded-b-none</td><td>border-bottom-right-radius: 0px;border-bottom-left-radius: 0px</td></tr>
+<tr><td>rounded-b-sm</td><td>border-bottom-right-radius: 0.125rem;order-bottom-left-radius: 0.125rem</td></tr>
+<tr><td>rounded-b</td><td>border-bottom-right-radius: 0.25rem;order-bottom-left-radius: 0.25rem</td></tr>
+<tr><td>rounded-b-md</td><td>border-bottom-right-radius: 0.375rem;order-bottom-left-radius: 0.375rem</td></tr>
+<tr><td>rounded-b-lg</td><td>border-bottom-right-radius: 0.5rem;order-bottom-left-radius: 0.5rem</td></tr>
+<tr><td>rounded-b-xl</td><td>border-bottom-right-radius: 0.75rem;order-bottom-left-radius: 0.75rem</td></tr>
+<tr><td>rounded-b-2xl</td><td>border-bottom-right-radius: 1rem;order-bottom-left-radius: 1rem</td></tr>
+<tr><td>rounded-b-3xl</td><td>border-bottom-right-radius: 1.5rem;order-bottom-left-radius: 1.5rem</td></tr>
+<tr><td>rounded-b-full</td><td>border-bottom-right-radius: 9999px;border-bottom-left-radius: 9999px</td></tr>
+<tr><td>rounded-l-none</td><td>border-top-left-radius: 0px;border-bottom-left-radius: 0px</td></tr>
+<tr><td>rounded-l-sm</td><td>border-top-left-radius: 0.125rem;order-bottom-left-radius: 0.125rem</td></tr>
+<tr><td>rounded-l</td><td>border-top-left-radius: 0.25rem;order-bottom-left-radius: 0.25rem</td></tr>
+<tr><td>rounded-l-md</td><td>border-top-left-radius: 0.375rem;order-bottom-left-radius: 0.375rem</td></tr>
+<tr><td>rounded-l-lg</td><td>border-top-left-radius: 0.5rem;order-bottom-left-radius: 0.5rem</td></tr>
+<tr><td>rounded-l-xl</td><td>border-top-left-radius: 0.75rem;order-bottom-left-radius: 0.75rem</td></tr>
+<tr><td>rounded-l-2xl</td><td>border-top-left-radius: 1rem;order-bottom-left-radius: 1rem</td></tr>
+<tr><td>rounded-l-3xl</td><td>border-top-left-radius: 1.5rem;order-bottom-left-radius: 1.5rem</td></tr>
+<tr><td>rounded-l-full</td><td>border-top-left-radius: 9999px;border-bottom-left-radius: 9999px</td></tr>
+<tr><td>rounded-tl-none</td><td>border-top-left-radius: 0px</td></tr>
+<tr><td>rounded-tl-sm</td><td>border-top-left-radius: 0.125rem</td></tr>
+<tr><td>rounded-tl</td><td>border-top-left-radius: 0.25rem</td></tr>
+<tr><td>rounded-tl-md</td><td>border-top-left-radius: 0.375rem</td></tr>
+<tr><td>rounded-tl-lg</td><td>border-top-left-radius: 0.5rem</td></tr>
+<tr><td>rounded-tl-xl</td><td>border-top-left-radius: 0.75rem</td></tr>
+<tr><td>rounded-tl-2xl</td><td>border-top-left-radius: 1rem</td></tr>
+<tr><td>rounded-tl-3xl</td><td>border-top-left-radius: 1.5rem</td></tr>
+<tr><td>rounded-tl-full</td><td>border-top-left-radius: 9999px</td></tr>
+<tr><td>rounded-tr-none</td><td>border-top-right-radius: 0px</td></tr>
+<tr><td>rounded-tr-sm</td><td>border-top-right-radius: 0.125rem</td></tr>
+<tr><td>rounded-tr</td><td>border-top-right-radius: 0.25rem</td></tr>
+<tr><td>rounded-tr-md</td><td>border-top-right-radius: 0.375rem</td></tr>
+<tr><td>rounded-tr-lg</td><td>border-top-right-radius: 0.5rem</td></tr>
+<tr><td>rounded-tr-xl</td><td>border-top-right-radius: 0.75rem</td></tr>
+<tr><td>rounded-tr-2xl</td><td>border-top-right-radius: 1rem</td></tr>
+<tr><td>rounded-tr-3xl</td><td>border-top-right-radius: 1.5rem</td></tr>
+<tr><td>rounded-tr-full</td><td>border-top-right-radius: 9999px</td></tr>
+<tr><td>rounded-br-none</td><td>border-bottom-right-radius: 0px</td></tr>
+<tr><td>rounded-br-sm</td><td>border-bottom-right-radius: 0.125rem</td></tr>
+<tr><td>rounded-br</td><td>border-bottom-right-radius: 0.25rem</td></tr>
+<tr><td>rounded-br-md</td><td>border-bottom-right-radius: 0.375rem</td></tr>
+<tr><td>rounded-br-lg</td><td>border-bottom-right-radius: 0.5rem</td></tr>
+<tr><td>rounded-br-xl</td><td>border-bottom-right-radius: 0.75rem</td></tr>
+<tr><td>rounded-br-2xl</td><td>border-bottom-right-radius: 1rem</td></tr>
+<tr><td>rounded-br-3xl</td><td>border-bottom-right-radius: 1.5rem</td></tr>
+<tr><td>rounded-br-full</td><td>border-bottom-right-radius: 9999px</td></tr>
+<tr><td>rounded-bl-none</td><td>border-bottom-left-radius: 0px</td></tr>
+<tr><td>rounded-bl-sm</td><td>border-bottom-left-radius: 0.125rem</td></tr>
+<tr><td>rounded-bl</td><td>border-bottom-left-radius: 0.25rem</td></tr>
+<tr><td>rounded-bl-md</td><td>border-bottom-left-radius: 0.375rem</td></tr>
+<tr><td>rounded-bl-lg</td><td>border-bottom-left-radius: 0.5rem</td></tr>
+<tr><td>rounded-bl-xl</td><td>border-bottom-left-radius: 0.75rem</td></tr>
+<tr><td>rounded-bl-2xl</td><td>border-bottom-left-radius: 1rem</td></tr>
+<tr><td>rounded-bl-3xl</td><td>border-bottom-left-radius: 1.5rem</td></tr>
+<tr><td>rounded-bl-full</td><td>border-bottom-left-radius: 9999px</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>

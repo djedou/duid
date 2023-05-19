@@ -1,0 +1,6 @@
+[book]
+authors = ["djedou"]
+language = "en"
+multilingual = false
+src = "src"
+title = "duid_documentation"
